@@ -1,0 +1,4 @@
+project_id = "oncodwjhymqyfkdydmdo"
+
+[functions.generate-emoji]
+verify_jwt = false

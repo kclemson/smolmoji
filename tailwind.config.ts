@@ -57,6 +57,15 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        canvas: {
+          bg: "hsl(var(--canvas-bg))",
+        },
+        grid: {
+          line: "hsl(var(--grid-line))",
+        },
+        pixel: {
+          empty: "hsl(var(--pixel-empty))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
