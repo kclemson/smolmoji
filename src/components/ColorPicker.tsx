@@ -16,19 +16,21 @@ interface ColorPickerProps {
   onColorChange: (color: string) => void;
   isEyedropperActive?: boolean;
   onEyedropperToggle?: () => void;
+  compact?: boolean;
 }
 
 export const ColorPicker = ({ 
   selectedColor, 
   onColorChange, 
   isEyedropperActive = false,
-  onEyedropperToggle 
+  onEyedropperToggle,
+  compact = false
 }: ColorPickerProps) => {
   const [customColor, setCustomColor] = useState("#000000");
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
+    <div className={cn(compact ? "space-y-2" : "space-y-4")}>
+      <div className={cn("flex items-center", compact ? "gap-2" : "gap-3")}>
         <div className="flex-1">
           <Input
             type="color"
@@ -37,7 +39,7 @@ export const ColorPicker = ({
               setCustomColor(e.target.value);
               onColorChange(e.target.value);
             }}
-            className="h-12 cursor-pointer"
+            className={cn("cursor-pointer", compact ? "h-8" : "h-12")}
           />
         </div>
         <Button
@@ -45,7 +47,7 @@ export const ColorPicker = ({
           size="sm"
           onClick={() => onColorChange("transparent")}
           className={cn(
-            "h-12 px-4",
+            compact ? "h-8 px-3" : "h-12 px-4",
             selectedColor === "transparent" && "ring-2 ring-primary"
           )}
         >
@@ -57,16 +59,16 @@ export const ColorPicker = ({
             size="sm"
             onClick={onEyedropperToggle}
             className={cn(
-              "h-12 px-4",
+              compact ? "h-8 px-3" : "h-12 px-4",
               isEyedropperActive && "ring-2 ring-primary bg-primary/10"
             )}
           >
-            <Pipette className="h-4 w-4" />
+            <Pipette className={cn(compact ? "h-3 w-3" : "h-4 w-4")} />
           </Button>
         )}
       </div>
       
-      <div className="grid grid-cols-8 gap-2">
+      <div className={cn("grid grid-cols-8", compact ? "gap-1" : "gap-2")}>
         {PRESET_COLORS.map((color) => (
           <button
             key={color}

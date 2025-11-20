@@ -187,15 +187,6 @@ const Index = () => {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <label className="text-sm font-medium">Color Palette</label>
-              <ColorPicker
-                selectedColor={selectedColor}
-                onColorChange={setSelectedColor}
-                isEyedropperActive={isEyedropperActive}
-                onEyedropperToggle={handleEyedropperToggle}
-              />
-              </div>
 
               <div className="space-y-3">
                 <label className="text-sm font-medium">Export Options</label>
@@ -253,6 +244,15 @@ const Index = () => {
                     setPixels={setPixels}
                   />
                 </div>
+                
+                {/* Color Palette */}
+                <ColorPicker
+                  selectedColor={selectedColor}
+                  onColorChange={setSelectedColor}
+                  isEyedropperActive={isEyedropperActive}
+                  onEyedropperToggle={handleEyedropperToggle}
+                  compact={true}
+                />
               </div>
             </Card>
           </div>
