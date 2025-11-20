@@ -37,6 +37,7 @@ export const PixelCanvas = ({
   const [isDrawing, setIsDrawing] = useState(false);
   const [selectionStart, setSelectionStart] = useState<{x: number, y: number} | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<{x: number, y: number} | null>(null);
+  const [isRightClickDrag, setIsRightClickDrag] = useState(false);
   const pixelSize = 320 / gridSize;
 
   useEffect(() => {
@@ -139,14 +140,22 @@ export const PixelCanvas = ({
       ctx.stroke();
     }
 
-    // Draw selection rectangle
+    // Draw selection rectangle with different colors based on drag type
     if (selectionStart && selectionEnd) {
       const minX = Math.min(selectionStart.x, selectionEnd.x);
       const minY = Math.min(selectionStart.y, selectionEnd.y);
       const maxX = Math.max(selectionStart.x, selectionEnd.x);
       const maxY = Math.max(selectionStart.y, selectionEnd.y);
       
-      ctx.fillStyle = "rgba(59, 130, 246, 0.15)";
+      // Different colors for paint (left) vs restore (right)
+      const fillColor = isRightClickDrag 
+        ? "rgba(251, 146, 60, 0.15)"  // Orange for restore
+        : "rgba(59, 130, 246, 0.15)";  // Blue for paint
+      const strokeColor = isRightClickDrag
+        ? "rgba(251, 146, 60, 0.8)"   // Orange for restore
+        : "rgba(59, 130, 246, 0.8)";  // Blue for paint
+      
+      ctx.fillStyle = fillColor;
       ctx.fillRect(
         minX * pixelSize, 
         minY * pixelSize, 
@@ -154,7 +163,7 @@ export const PixelCanvas = ({
         (maxY - minY + 1) * pixelSize
       );
       
-      ctx.strokeStyle = "rgba(59, 130, 246, 0.8)";
+      ctx.strokeStyle = strokeColor;
       ctx.lineWidth = 2;
       ctx.strokeRect(
         minX * pixelSize, 
@@ -163,7 +172,7 @@ export const PixelCanvas = ({
         (maxY - minY + 1) * pixelSize
       );
     }
-  }, [pixels, gridSize, pixelSize, selectionStart, selectionEnd, backgroundColor]);
+  }, [pixels, gridSize, pixelSize, selectionStart, selectionEnd, backgroundColor, isRightClickDrag]);
 
   const colorDistance = (color1: string, color2: string): number => {
     // Parse rgba colors
@@ -317,7 +326,11 @@ export const PixelCanvas = ({
     const coords = getPixelCoords(e);
     if (!coords) return;
 
+    // Detect which mouse button was pressed
+    const isRightClick = e.button === 2;
+    
     setIsDrawing(true);
+    setIsRightClickDrag(isRightClick);
     setSelectionStart(coords);
     setSelectionEnd(coords);
   };
@@ -340,28 +353,47 @@ export const PixelCanvas = ({
       const isDrag = selectionStart.x !== selectionEnd.x || selectionStart.y !== selectionEnd.y;
       
       if (isDrag && !isEyedropperActive) {
-        // Fill the rectangle
+        // Calculate rectangle bounds
         const minX = Math.min(selectionStart.x, selectionEnd.x);
         const minY = Math.min(selectionStart.y, selectionEnd.y);
         const maxX = Math.max(selectionStart.x, selectionEnd.x);
         const maxY = Math.max(selectionStart.y, selectionEnd.y);
 
         const newPixels = pixels.map(row => [...row]);
-        for (let y = minY; y <= maxY; y++) {
-          for (let x = minX; x <= maxX; x++) {
-            newPixels[y][x] = selectedColor === "transparent" ? "transparent" : selectedColor;
+        
+        if (isRightClickDrag) {
+          // Restore rectangle to original AI pixels
+          if (originalPixels.length > 0) {
+            for (let y = minY; y <= maxY; y++) {
+              for (let x = minX; x <= maxX; x++) {
+                const originalColor = originalPixels[y]?.[x];
+                if (originalColor !== undefined) {
+                  newPixels[y][x] = originalColor;
+                }
+              }
+            }
+          }
+        } else {
+          // Paint rectangle with selected color (existing behavior)
+          for (let y = minY; y <= maxY; y++) {
+            for (let x = minX; x <= maxX; x++) {
+              newPixels[y][x] = selectedColor === "transparent" ? "transparent" : selectedColor;
+            }
           }
         }
+        
         setPixels(newPixels);
         onPixelChange();
         onEditComplete?.(newPixels);
       } else {
-        // Single click - the onClick handler already painted it
+        // Single click - the onClick handler already painted it (for left-click)
+        // For right-click, handleContextMenu will handle it
         onEditComplete?.(pixels);
       }
 
       setSelectionStart(null);
       setSelectionEnd(null);
+      setIsRightClickDrag(false); // Reset the flag
     }
   };
 
