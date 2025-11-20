@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PixelCanvas } from "@/components/PixelCanvas";
-import { ColorPicker } from "@/components/ColorPicker";
+import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { Download, Sparkles, Loader2, Undo2, Redo2 } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
@@ -15,6 +15,7 @@ const Index = () => {
   const [prompt, setPrompt] = useState("");
   const [imageData, setImageData] = useLocalStorage<string | null>("emoji-imageData", null);
   const [selectedColor, setSelectedColor] = useLocalStorage("emoji-selectedColor", "#000000");
+  const [customColors, setCustomColors] = useLocalStorage<string[]>("emoji-customColors", DEFAULT_CUSTOM_COLORS);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEyedropperActive, setIsEyedropperActive] = useState(false);
   const [pixels, setPixels] = useDebouncedLocalStorage<string[][]>("emoji-pixels", []);
@@ -323,6 +324,8 @@ const Index = () => {
             <ColorPicker
                 selectedColor={selectedColor}
                 onColorChange={setSelectedColor}
+                customColors={customColors}
+                onCustomColorsChange={setCustomColors}
                 isEyedropperActive={isEyedropperActive}
                 onEyedropperToggle={handleEyedropperToggle}
               />
