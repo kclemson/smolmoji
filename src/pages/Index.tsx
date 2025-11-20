@@ -344,55 +344,23 @@ const Index = () => {
                 </Button>
               </div>
               
-              {/* Main Canvas with Tools - Centered Container */}
+              {/* Main Canvas - Centered */}
               <div className="flex justify-center">
-                <div className="flex items-center gap-4">
-                  {/* Left: Tools */}
-                  <div className="flex flex-col gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={handleEyedropperToggle}
-                      className={cn(
-                        "w-10 h-10",
-                        isEyedropperActive && "ring-2 ring-primary bg-primary/10"
-                      )}
-                      title="Eyedropper (pick color from canvas)"
-                    >
-                      <Pipette className="h-5 w-5" />
-                    </Button>
-                    
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setSelectedColor("transparent")}
-                      className={cn(
-                        "w-10 h-10",
-                        selectedColor === "transparent" && "ring-2 ring-primary"
-                      )}
-                      title="Eraser"
-                    >
-                      <Eraser className="h-5 w-5" />
-                    </Button>
-                  </div>
-                  
-                  {/* Right: Canvas */}
-                  <PixelCanvas
-                    imageData={imageData}
-                    onPixelChange={handlePixelChange}
-                    selectedColor={selectedColor}
-                    gridSize={32}
-                    canvasRef={mainCanvasRef}
-                    isEyedropperActive={isEyedropperActive}
-                    onColorPick={handleColorPick}
-                    pixels={pixels}
-                    setPixels={setPixels}
-                    onEditComplete={handlePixelEditComplete}
-                    backgroundColor={backgroundColor}
-                    originalPixels={originalPixels}
-                    setOriginalPixels={setOriginalPixels}
-                  />
-                </div>
+                <PixelCanvas
+                  imageData={imageData}
+                  onPixelChange={handlePixelChange}
+                  selectedColor={selectedColor}
+                  gridSize={32}
+                  canvasRef={mainCanvasRef}
+                  isEyedropperActive={isEyedropperActive}
+                  onColorPick={handleColorPick}
+                  pixels={pixels}
+                  setPixels={setPixels}
+                  onEditComplete={handlePixelEditComplete}
+                  backgroundColor={backgroundColor}
+                  originalPixels={originalPixels}
+                  setOriginalPixels={setOriginalPixels}
+                />
               </div>
               
               {/* Instructions */}
@@ -400,33 +368,59 @@ const Index = () => {
                 left click to color, right click to revert. click and drag to create a rectangle.
               </p>
             
-            {/* Undo/Redo and Shift Controls */}
-            <div className="flex justify-center gap-4 items-center">
-              {/* Undo/Redo */}
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={undo}
-                  disabled={historyIndex <= 0}
-                  className="gap-2"
-                  title="Undo (Ctrl+Z)"
-                >
-                  <Undo2 className="w-4 h-4" />
-                  Undo
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={redo}
-                  disabled={historyIndex >= historyStack.length - 1}
-                  className="gap-2"
-                  title="Redo (Ctrl+Y)"
-                >
-                  <Redo2 className="w-4 h-4" />
-                  Redo
-                </Button>
-              </div>
+            {/* Compact Tools Row: Eyedropper, Eraser, Undo, Redo, Separator, Shift Controls */}
+            <div className="flex justify-center gap-2 items-center">
+              {/* Eyedropper */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleEyedropperToggle}
+                className={cn(
+                  "w-8 h-8 p-0",
+                  isEyedropperActive && "ring-2 ring-primary bg-primary/10"
+                )}
+                title="Eyedropper (pick color from canvas)"
+              >
+                <Pipette className="h-3.5 w-3.5" />
+              </Button>
+              
+              {/* Eraser */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedColor("transparent")}
+                className={cn(
+                  "w-8 h-8 p-0",
+                  selectedColor === "transparent" && "ring-2 ring-primary"
+                )}
+                title="Eraser"
+              >
+                <Eraser className="h-3.5 w-3.5" />
+              </Button>
+              
+              {/* Undo */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={undo}
+                disabled={historyIndex <= 0}
+                className="w-8 h-8 p-0"
+                title="Undo (Ctrl+Z)"
+              >
+                <Undo2 className="h-3.5 w-3.5" />
+              </Button>
+              
+              {/* Redo */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={redo}
+                disabled={historyIndex >= historyStack.length - 1}
+                className="w-8 h-8 p-0"
+                title="Redo (Ctrl+Y)"
+              >
+                <Redo2 className="h-3.5 w-3.5" />
+              </Button>
               
               {/* Separator */}
               <div className="w-px h-8 bg-border" />
@@ -441,9 +435,9 @@ const Index = () => {
                     onClick={() => shiftPixels('up')}
                     disabled={pixels.length === 0}
                     title="Shift pixels up"
-                    className="w-10 h-10 p-0"
+                    className="w-8 h-8 p-0"
                   >
-                    <ArrowUp className="w-4 h-4" />
+                    <ArrowUp className="h-3.5 w-3.5" />
                   </Button>
                 </div>
                 
@@ -455,9 +449,9 @@ const Index = () => {
                     onClick={() => shiftPixels('left')}
                     disabled={pixels.length === 0}
                     title="Shift pixels left"
-                    className="w-10 h-10 p-0"
+                    className="w-8 h-8 p-0"
                   >
-                    <ArrowLeft className="w-4 h-4" />
+                    <ArrowLeft className="h-3.5 w-3.5" />
                   </Button>
                 </div>
                 
@@ -469,9 +463,9 @@ const Index = () => {
                     onClick={() => shiftPixels('down')}
                     disabled={pixels.length === 0}
                     title="Shift pixels down"
-                    className="w-10 h-10 p-0"
+                    className="w-8 h-8 p-0"
                   >
-                    <ArrowDown className="w-4 h-4" />
+                    <ArrowDown className="h-3.5 w-3.5" />
                   </Button>
                 </div>
                 
@@ -483,9 +477,9 @@ const Index = () => {
                     onClick={() => shiftPixels('right')}
                     disabled={pixels.length === 0}
                     title="Shift pixels right"
-                    className="w-10 h-10 p-0"
+                    className="w-8 h-8 p-0"
                   >
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </div>
