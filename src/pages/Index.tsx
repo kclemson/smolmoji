@@ -7,7 +7,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PixelCanvas } from "@/components/PixelCanvas";
 import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
+import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, ZoomIn, ZoomOut } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useDebouncedLocalStorage } from "@/hooks/useDebouncedLocalStorage";
 import { cn } from "@/lib/utils";
@@ -177,6 +177,70 @@ const Index = () => {
           newPixels[newY][newX] = color;
         }
         // Pixels that fall off the edge are simply discarded
+      });
+    });
+    
+    setPixels(newPixels);
+    pushToHistory(newPixels);
+  }, [pixels, pushToHistory]);
+
+  const scaleEmoji = useCallback((scaleFactor: number) => {
+    if (pixels.length === 0) return;
+    
+    // Find bounding box of non-transparent pixels
+    let minX = 32, minY = 32, maxX = -1, maxY = -1;
+    pixels.forEach((row, y) => {
+      row.forEach((color, x) => {
+        if (color !== 'transparent') {
+          minX = Math.min(minX, x);
+          minY = Math.min(minY, y);
+          maxX = Math.max(maxX, x);
+          maxY = Math.max(maxY, y);
+        }
+      });
+    });
+    
+    if (maxX === -1) return; // No content
+    
+    // Extract content
+    const contentWidth = maxX - minX + 1;
+    const contentHeight = maxY - minY + 1;
+    const content: string[][] = [];
+    for (let y = minY; y <= maxY; y++) {
+      content.push(pixels[y].slice(minX, maxX + 1));
+    }
+    
+    // Calculate new dimensions
+    const newWidth = Math.round(contentWidth * scaleFactor);
+    const newHeight = Math.round(contentHeight * scaleFactor);
+    
+    // Prevent scaling too large or too small
+    if (newWidth < 2 || newHeight < 2 || newWidth > 32 || newHeight > 32) {
+      return;
+    }
+    
+    // Nearest-neighbor scale
+    const scaled: string[][] = [];
+    for (let newY = 0; newY < newHeight; newY++) {
+      const row: string[] = [];
+      for (let newX = 0; newX < newWidth; newX++) {
+        const srcX = Math.floor((newX / newWidth) * contentWidth);
+        const srcY = Math.floor((newY / newHeight) * contentHeight);
+        row.push(content[srcY][srcX]);
+      }
+      scaled.push(row);
+    }
+    
+    // Center in 32x32 grid
+    const newPixels: string[][] = Array(32).fill(null).map(() => 
+      Array(32).fill('transparent')
+    );
+    const offsetX = Math.floor((32 - newWidth) / 2);
+    const offsetY = Math.floor((32 - newHeight) / 2);
+    
+    scaled.forEach((row, y) => {
+      row.forEach((color, x) => {
+        newPixels[offsetY + y][offsetX + x] = color;
       });
     });
     
@@ -396,6 +460,32 @@ const Index = () => {
                 title="Redo (Ctrl+Y)"
               >
                 <Redo2 className="h-3.5 w-3.5" />
+              </Button>
+              
+              {/* Separator */}
+              <div className="w-px h-8 bg-border" />
+              
+              {/* Zoom Controls */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => scaleEmoji(1.2)}
+                disabled={pixels.length === 0}
+                title="Zoom in (make emoji bigger)"
+                className="w-8 h-8 p-0"
+              >
+                <ZoomIn className="h-3.5 w-3.5" />
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => scaleEmoji(0.8)}
+                disabled={pixels.length === 0}
+                title="Zoom out (make emoji smaller)"
+                className="w-8 h-8 p-0"
+              >
+                <ZoomOut className="h-3.5 w-3.5" />
               </Button>
               
               {/* Separator */}
