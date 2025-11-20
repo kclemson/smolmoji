@@ -223,12 +223,14 @@ const Index = () => {
 
           </div>
 
-          {/* Right Panel - Preview & Canvas */}
+          {/* Right Panel - Canvas */}
           <div className="space-y-6">
-            {/* 32x32 Preview */}
+            {/* Pixel Editor */}
             <Card className="p-6">
               <div className="space-y-4">
-                <label className="text-sm font-medium text-center block">32x32 Preview</label>
+                <label className="text-sm font-medium">Pixel Editor (32x32)</label>
+                
+                {/* 32x32 Preview */}
                 <div className="flex justify-center">
                   <canvas
                     ref={preview32Ref}
@@ -237,16 +239,6 @@ const Index = () => {
                     className="border-2 border-border rounded pixelated"
                     style={{ imageRendering: "pixelated" }}
                   />
-                </div>
-              </div>
-            </Card>
-
-            {/* Pixel Editor */}
-            <Card className="p-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">Pixel Editor (32x32)</label>
-                  <span className="text-xs text-muted-foreground">Click or drag to draw</span>
                 </div>
                 <div className="flex justify-center">
                   <PixelCanvas
