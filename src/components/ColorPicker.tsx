@@ -66,20 +66,22 @@ export const ColorPicker = ({
         )}
       </div>
       
-      <div className="grid grid-cols-8 gap-2">
-        {PRESET_COLORS.map((color) => (
-          <button
-            key={color}
-            onClick={() => onColorChange(color)}
-            className={cn(
-              "w-8 h-8 rounded-md border-2 transition-all hover:scale-110",
-              selectedColor === color 
-                ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background" 
-                : "border-border"
-            )}
-            style={{ backgroundColor: color }}
-          />
-        ))}
+      <div className="flex justify-center">
+        <div className="grid grid-cols-8 gap-2">
+          {PRESET_COLORS.map((color) => (
+            <button
+              key={color}
+              onClick={() => onColorChange(color)}
+              className={cn(
+                "w-8 h-8 rounded-md border-2 transition-all hover:scale-110",
+                selectedColor === color 
+                  ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background" 
+                  : "border-border"
+              )}
+              style={{ backgroundColor: color }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
