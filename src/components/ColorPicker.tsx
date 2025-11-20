@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Pipette, RectangleHorizontal } from "lucide-react";
+import { Pipette, RectangleHorizontal, Eraser } from "lucide-react";
 
 const PRESET_COLORS = [
   // Row 1: Basic colors
@@ -42,46 +42,46 @@ export const ColorPicker = ({
               setCustomColor(e.target.value);
               onColorChange(e.target.value);
             }}
-            className="cursor-pointer h-8 w-full"
+            className="cursor-pointer w-8 h-8"
           />
           
           <Button
             variant="outline"
-            size="sm"
+            size="icon"
             onClick={() => onColorChange("transparent")}
             className={cn(
-              "h-8 px-3 w-full",
+              "w-8 h-8",
               selectedColor === "transparent" && "ring-2 ring-primary"
             )}
           >
-            Eraser
+            <Eraser className="h-4 w-4" />
           </Button>
           
           {onEyedropperToggle && (
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
               onClick={onEyedropperToggle}
               className={cn(
-                "h-8 px-3 w-full",
+                "w-8 h-8",
                 isEyedropperActive && "ring-2 ring-primary bg-primary/10"
               )}
             >
-              <Pipette className="h-3 w-3" />
+              <Pipette className="h-4 w-4" />
             </Button>
           )}
 
           {onMultiSelectToggle && (
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
               onClick={onMultiSelectToggle}
               className={cn(
-                "h-8 px-3 w-full",
+                "w-8 h-8",
                 isMultiSelectActive && "ring-2 ring-primary bg-primary/10"
               )}
             >
-              <RectangleHorizontal className="h-3 w-3" />
+              <RectangleHorizontal className="h-4 w-4" />
             </Button>
           )}
         </div>
