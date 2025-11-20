@@ -31,27 +31,34 @@ serve(async (req) => {
         messages: [
           {
             role: "user",
-            content: `CANVAS SETUP - CRITICAL:
-- 32x32 pixel canvas with TRANSPARENT BACKGROUND (alpha = 0)
-- Empty areas must be COMPLETELY TRANSPARENT - literally nothing drawn there
-- DO NOT scatter white, black, gray, or ANY colored pixels in empty areas
-- Empty space = NO PIXELS AT ALL, not sparse dots, not noise, not anything
+            content: `YOU ARE A PIXEL ART STICKER DESIGNER. You will create ONLY the sticker itself - nothing else exists on the canvas.
 
-Create a pixel art emoji based on this concept: ${prompt}.
+Create a pixel art emoji of: ${prompt}
 
-WHAT TO DRAW:
-- ONLY draw the emoji subject itself (the character, object, or symbol)
-- Use clean, solid edges forming a cohesive shape with defined boundaries
-- Fill the emoji shape with solid colors - no scattered pixels outside its silhouette
-- The emoji should FILL most of the canvas (24-28 pixels in both width and height)
+CRITICAL UNDERSTANDING:
+- You are NOT drawing on a background
+- You are NOT filling a canvas
+- You are ONLY creating the emoji shape itself as a sticker
+- Imagine cutting out the emoji shape with scissors - you only draw what's inside that cutout
+- Everything outside the emoji shape DOES NOT EXIST - you literally draw nothing there
 
-WHAT NOT TO DRAW - CRITICAL:
-❌ NO scattered dots or pixels in empty areas around the emoji
-❌ NO checkerboard patterns to indicate transparency
-❌ NO white/black/gray "noise" pixels outside the emoji shape
-❌ NO partial transparency effects extending into empty space
-❌ NO random pixels that aren't part of the emoji's actual design
-❌ Empty background means NOTHING is drawn there - pure transparent alpha channel
+THE EMOJI SHAPE:
+- Draw ONLY the emoji pixels that form the actual design
+- The emoji should be 24-28 pixels wide and 24-28 pixels tall
+- Use solid, bold colors for the main structure (3-5 primary colors)
+- Add subtle shading only where it enhances the design
+- The emoji must have clean, defined edges
+
+WHAT EXISTS ON YOUR CANVAS:
+✓ The emoji pixels (eyes, mouth, body, features, etc.)
+✓ Clean edges defining the emoji boundary
+
+WHAT DOES NOT EXIST:
+✗ Background of any kind
+✗ Scattered pixels outside the emoji
+✗ Dots or noise to represent "empty space"
+✗ Checkerboard patterns
+✗ Any pixel that is not part of the emoji design itself
 
 SIZE REQUIREMENTS:
 - FILL MOST OF THE CANVAS - the emoji should be LARGE and dominant
