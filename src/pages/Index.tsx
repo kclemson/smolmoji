@@ -7,9 +7,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PixelCanvas } from "@/components/PixelCanvas";
 import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Sparkles, Loader2, Undo2, Redo2 } from "lucide-react";
+import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useDebouncedLocalStorage } from "@/hooks/useDebouncedLocalStorage";
+import { cn } from "@/lib/utils";
 
 const Index = () => {
   const [prompt, setPrompt] = useState("");
@@ -306,8 +307,38 @@ const Index = () => {
                 </Button>
               </div>
               
-              {/* Main Canvas */}
-              <div className="flex justify-center">
+              {/* Main Canvas with Tools */}
+              <div className="flex items-center justify-center gap-4">
+                {/* Left: Tools */}
+                <div className="flex flex-col gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleEyedropperToggle}
+                    className={cn(
+                      "w-10 h-10",
+                      isEyedropperActive && "ring-2 ring-primary bg-primary/10"
+                    )}
+                    title="Eyedropper (pick color from canvas)"
+                  >
+                    <Pipette className="h-5 w-5" />
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setSelectedColor("transparent")}
+                    className={cn(
+                      "w-10 h-10",
+                      selectedColor === "transparent" && "ring-2 ring-primary"
+                    )}
+                    title="Eraser"
+                  >
+                    <Eraser className="h-5 w-5" />
+                  </Button>
+                </div>
+                
+                {/* Right: Canvas */}
                 <PixelCanvas
                   imageData={imageData}
                   onPixelChange={handlePixelChange}
@@ -358,8 +389,6 @@ const Index = () => {
             onColorChange={setSelectedColor}
             customColors={customColors}
             onCustomColorsChange={setCustomColors}
-            isEyedropperActive={isEyedropperActive}
-            onEyedropperToggle={handleEyedropperToggle}
           />
         </div>
             </div>

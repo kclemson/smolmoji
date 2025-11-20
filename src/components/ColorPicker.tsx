@@ -24,25 +24,21 @@ interface ColorPickerProps {
   onColorChange: (color: string) => void;
   customColors: string[];
   onCustomColorsChange: (colors: string[]) => void;
-  isEyedropperActive?: boolean;
-  onEyedropperToggle?: () => void;
 }
 
 export const ColorPicker = ({ 
   selectedColor, 
   onColorChange,
   customColors,
-  onCustomColorsChange,
-  isEyedropperActive = false,
-  onEyedropperToggle
+  onCustomColorsChange
 }: ColorPickerProps) => {
   const [customColor, setCustomColor] = useState("#000000");
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex gap-3 items-start">
-        {/* Left: Tools Section */}
-        <div className="grid grid-cols-2 gap-2">
+      <div className="flex flex-col gap-2">
+        {/* Custom Color Picker */}
+        <div className="flex justify-center">
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -80,37 +76,9 @@ export const ColorPicker = ({
               </div>
             </PopoverContent>
           </Popover>
-          
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onColorChange("transparent")}
-            className={cn(
-              "w-8 h-8",
-              selectedColor === "transparent" && "ring-2 ring-primary"
-            )}
-          >
-            <Eraser className="h-4 w-4" />
-          </Button>
-          
-          {onEyedropperToggle && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={onEyedropperToggle}
-              className={cn(
-                "w-8 h-8",
-                isEyedropperActive && "ring-2 ring-primary bg-primary/10"
-              )}
-            >
-              <Pipette className="h-4 w-4" />
-            </Button>
-          )}
         </div>
         
-        <Separator orientation="vertical" className="self-stretch w-[2px] bg-gray-500" />
-        
-        {/* Right: Color Grid */}
+        {/* Color Grid */}
         <div className="flex flex-col gap-2">
           {/* Row 1: Static colors */}
           <div className="grid grid-cols-9 gap-2">
