@@ -22,7 +22,7 @@ interface ColorPickerProps {
   selectedColor: string;
   onColorChange: (color: string) => void;
   customColors: string[];
-  onCustomColorsChange: (colors: string[]) => void;
+  onCustomColorsChange: (colors: string[] | ((prev: string[]) => string[])) => void;
 }
 
 export const ColorPicker = ({ 
@@ -69,11 +69,13 @@ export const ColorPicker = ({
                   setCustomColor(newColor);
                   onColorChange(newColor);
                   
-                  // Add to custom colors FIFO style
-                  if (!customColors.includes(newColor)) {
-                    const updatedColors = [newColor, ...customColors].slice(0, 8);
-                    onCustomColorsChange(updatedColors);
-                  }
+                  // Add to custom colors FIFO style using functional update
+                  onCustomColorsChange((prevColors) => {
+                    if (!prevColors.includes(newColor)) {
+                      return [newColor, ...prevColors].slice(0, 8);
+                    }
+                    return prevColors; // Color already exists, no change
+                  });
                 }}
                 className="absolute w-8 h-8 opacity-0 pointer-events-none"
               />
