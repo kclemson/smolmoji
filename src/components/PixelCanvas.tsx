@@ -141,8 +141,8 @@ export const PixelCanvas = ({
     }
 
     // Draw selection rectangle with different colors based on drag type
-    // Only draw if we've actually dragged (coordinates differ)
-    if (selectionStart && selectionEnd && 
+    // Only draw if we're actively drawing and coordinates differ
+    if (isDrawing && selectionStart && selectionEnd && 
         (selectionStart.x !== selectionEnd.x || selectionStart.y !== selectionEnd.y)) {
       const minX = Math.min(selectionStart.x, selectionEnd.x);
       const minY = Math.min(selectionStart.y, selectionEnd.y);
