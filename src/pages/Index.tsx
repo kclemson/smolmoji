@@ -250,7 +250,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background p-4 sm:p-8">
-      <div className="max-w-md mx-auto space-y-8">
+      <div 
+        className="w-full max-w-md mx-auto space-y-8"
+        style={{ maxWidth: '448px', width: '100%' }}
+      >
         {/* Header */}
         <div className="text-center">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">

@@ -40,7 +40,10 @@ export const ColorPicker = ({
         {/* Color Grid */}
         <div className="flex flex-col gap-2">
           {/* Row 1: Static colors */}
-          <div className="grid grid-cols-9 gap-2">
+          <div 
+            className="grid grid-cols-9 gap-2 w-full"
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(9, minmax(0, 1fr))', width: '100%' }}
+          >
             {STATIC_COLORS.map((color) => (
               <button
                 key={color}
@@ -57,7 +60,10 @@ export const ColorPicker = ({
           </div>
           
           {/* Row 2: Color Picker + Recent/Custom colors */}
-          <div className="grid grid-cols-9 gap-2">
+          <div 
+            className="grid grid-cols-9 gap-2 w-full"
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(9, minmax(0, 1fr))', width: '100%' }}
+          >
             {/* First box: Color Picker Button */}
             <div className="relative">
               <input
