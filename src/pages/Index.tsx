@@ -199,17 +199,18 @@ const Index = () => {
           <Card className="p-6">
             <div className="space-y-3">
               <label className="text-sm font-medium">Design Direction</label>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="e.g., happy cat, fire symbol, laughing face..."
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
-                  className="flex-1"
-                />
+              <Input
+                placeholder="e.g., happy cat, fire symbol, laughing face..."
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
+                className="w-full"
+              />
+              <div className="flex justify-center">
                 <Button 
                   onClick={handleGenerate} 
                   disabled={isGenerating}
+                  size="sm"
                   className="gap-2"
                 >
                   {isGenerating ? (
@@ -257,6 +258,7 @@ const Index = () => {
               </div>
               <Button 
                 onClick={handleDownload} 
+                size="sm"
                 className="gap-2"
                 disabled={!imageData}
                 variant="default"
