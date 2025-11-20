@@ -13,6 +13,8 @@ interface PixelCanvasProps {
   setPixels: (pixels: string[][]) => void;
   onEditComplete?: (pixels: string[][]) => void;
   backgroundColor?: "transparent" | "white" | "black";
+  originalPixels: string[][];
+  setOriginalPixels: (pixels: string[][]) => void;
 }
 
 export const PixelCanvas = ({ 
@@ -26,7 +28,9 @@ export const PixelCanvas = ({
   pixels,
   setPixels,
   onEditComplete,
-  backgroundColor = "transparent"
+  backgroundColor = "transparent",
+  originalPixels,
+  setOriginalPixels
 }: PixelCanvasProps) => {
   const internalCanvasRef = useRef<HTMLCanvasElement>(null);
   const canvasRef = externalCanvasRef || internalCanvasRef;
@@ -41,6 +45,7 @@ export const PixelCanvas = ({
       Array(gridSize).fill("transparent")
     );
     setPixels(emptyGrid);
+    setOriginalPixels([]);
   }, [gridSize]);
 
   useEffect(() => {
@@ -82,6 +87,7 @@ export const PixelCanvas = ({
         
         // Remove edge-connected background pixels
         const cleanedPixels = removeEdgeBackground(newPixels, gridSize);
+        setOriginalPixels(cleanedPixels.map(row => [...row]));
         setPixels(cleanedPixels);
       };
       img.src = imageData;
@@ -359,6 +365,24 @@ export const PixelCanvas = ({
     }
   };
 
+  const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    
+    const coords = getPixelCoords(e);
+    if (!coords) return;
+    
+    if (originalPixels.length === 0) return;
+    
+    const originalColor = originalPixels[coords.y]?.[coords.x];
+    if (originalColor !== undefined) {
+      const newPixels = pixels.map(row => [...row]);
+      newPixels[coords.y][coords.x] = originalColor;
+      setPixels(newPixels);
+      onPixelChange();
+      onEditComplete?.(newPixels);
+    }
+  };
+
   return (
     <div className="relative">
       <canvas
@@ -375,6 +399,7 @@ export const PixelCanvas = ({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onMouseMove={handleMouseMove}
+        onContextMenu={handleContextMenu}
       />
     </div>
   );
