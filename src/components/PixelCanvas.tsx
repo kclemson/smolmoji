@@ -6,15 +6,18 @@ interface PixelCanvasProps {
   onPixelChange: (x: number, y: number, color: string) => void;
   selectedColor: string;
   gridSize?: number;
+  canvasRef?: React.RefObject<HTMLCanvasElement>;
 }
 
 export const PixelCanvas = ({ 
   imageData, 
   onPixelChange, 
   selectedColor,
-  gridSize = 32 
+  gridSize = 32,
+  canvasRef: externalCanvasRef
 }: PixelCanvasProps) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const internalCanvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = externalCanvasRef || internalCanvasRef;
   const [pixels, setPixels] = useState<string[][]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const pixelSize = 400 / gridSize;
