@@ -52,6 +52,21 @@ const Index = () => {
     }
   };
 
+  const handleStartOver = async () => {
+    // Clear all local storage state
+    setImageData(null);
+    setSelectedColor("#000000");
+    setCustomColors([]);
+    setPixels([]);
+    setOriginalPixels([]);
+    setBackgroundColor("transparent");
+    setHistoryStack([]);
+    setHistoryIndex(-1);
+    
+    // Regenerate with current prompt
+    await handleGenerate();
+  };
+
   const updatePreviews = () => {
     const preview32 = preview32Ref.current;
     if (!preview32) return;
@@ -246,7 +261,7 @@ const Index = () => {
                 </RadioGroup>
               </div>
               
-              <div className="flex justify-center">
+              <div className="flex justify-center gap-2">
                 <Button 
                   onClick={handleGenerate} 
                   disabled={isGenerating}
@@ -259,6 +274,15 @@ const Index = () => {
                     <Sparkles className="w-4 h-4" />
                   )}
                   Generate
+                </Button>
+                <Button 
+                  onClick={handleStartOver} 
+                  disabled={isGenerating || !prompt.trim()}
+                  size="sm"
+                  variant="outline"
+                  className="gap-2"
+                >
+                  Start Over
                 </Button>
               </div>
             </div>
