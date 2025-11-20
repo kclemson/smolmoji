@@ -326,6 +326,9 @@ export const PixelCanvas = ({
     const coords = getPixelCoords(e);
     if (!coords) return;
 
+    // Reset any previous drag state first
+    setIsRightClickDrag(false);
+    
     // Detect which mouse button was pressed
     const isRightClick = e.button === 2;
     
@@ -347,6 +350,7 @@ export const PixelCanvas = ({
 
   const handleMouseUp = () => {
     setIsDrawing(false);
+    setIsRightClickDrag(false); // Reset immediately when mouse is released
 
     // Check if we dragged (start !== end) or just clicked (start === end)
     if (selectionStart && selectionEnd) {
@@ -393,7 +397,6 @@ export const PixelCanvas = ({
 
       setSelectionStart(null);
       setSelectionEnd(null);
-      setIsRightClickDrag(false); // Reset the flag
     }
   };
 
