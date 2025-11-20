@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { useState, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { Pipette, RectangleHorizontal, Eraser, Palette } from "lucide-react";
 
 const PRESET_COLORS = [
@@ -97,6 +98,8 @@ export const ColorPicker = ({
             </Button>
           )}
         </div>
+        
+        <Separator orientation="vertical" className="h-auto" />
         
         {/* Right: Color Grid */}
         <div className="grid grid-cols-8 gap-2">
