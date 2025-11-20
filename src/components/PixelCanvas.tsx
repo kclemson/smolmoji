@@ -3,12 +3,14 @@ import { cn } from "@/lib/utils";
 
 interface PixelCanvasProps {
   imageData: string | null;
-  onPixelChange: (x: number, y: number, color: string) => void;
+  onPixelChange: () => void;
   selectedColor: string;
   gridSize?: number;
   canvasRef?: React.RefObject<HTMLCanvasElement>;
   isEyedropperActive?: boolean;
   onColorPick?: (color: string) => void;
+  pixels: string[][];
+  setPixels: (pixels: string[][]) => void;
 }
 
 export const PixelCanvas = ({ 
@@ -18,11 +20,12 @@ export const PixelCanvas = ({
   gridSize = 32,
   canvasRef: externalCanvasRef,
   isEyedropperActive = false,
-  onColorPick
+  onColorPick,
+  pixels,
+  setPixels
 }: PixelCanvasProps) => {
   const internalCanvasRef = useRef<HTMLCanvasElement>(null);
   const canvasRef = externalCanvasRef || internalCanvasRef;
-  const [pixels, setPixels] = useState<string[][]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const pixelSize = 400 / gridSize;
 
@@ -136,7 +139,7 @@ export const PixelCanvas = ({
       const newPixels = [...pixels];
       newPixels[y][x] = selectedColor === "transparent" ? "transparent" : selectedColor;
       setPixels(newPixels);
-      onPixelChange(x, y, newPixels[y][x]);
+      onPixelChange();
     }
   };
 
