@@ -31,7 +31,9 @@ serve(async (req) => {
         messages: [
           {
             role: "user",
-            content: `Create a pixel art emoji based on this concept: ${prompt}.
+            content: `TRANSPARENT BACKGROUND REQUIRED: Generate only the emoji pixels with a completely transparent background using alpha channel. No white, black, or colored background pixels.
+
+Create a pixel art emoji based on this concept: ${prompt}.
 
 CRITICAL REQUIREMENTS:
 - 32x32 pixels MAXIMUM - must be clearly readable at this tiny size
