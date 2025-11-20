@@ -80,7 +80,9 @@ export const PixelCanvas = ({
           }
         }
         
-        setPixels(newPixels);
+        // Remove edge-connected background pixels
+        const cleanedPixels = removeEdgeBackground(newPixels, gridSize);
+        setPixels(cleanedPixels);
       };
       img.src = imageData;
     }
@@ -156,6 +158,73 @@ export const PixelCanvas = ({
       );
     }
   }, [pixels, gridSize, pixelSize, selectionStart, selectionEnd, backgroundColor]);
+
+  const removeEdgeBackground = (pixels: string[][], gridSize: number): string[][] => {
+    // Step 1: Sample edge pixels and find most common color
+    const edgeColors = new Map<string, number>();
+    
+    // Sample edges
+    for (let x = 0; x < gridSize; x++) {
+      // Top edge
+      if (pixels[0][x] !== "transparent") edgeColors.set(pixels[0][x], (edgeColors.get(pixels[0][x]) || 0) + 1);
+      // Bottom edge
+      if (pixels[gridSize-1][x] !== "transparent") edgeColors.set(pixels[gridSize-1][x], (edgeColors.get(pixels[gridSize-1][x]) || 0) + 1);
+    }
+    for (let y = 0; y < gridSize; y++) {
+      // Left edge
+      if (pixels[y][0] !== "transparent") edgeColors.set(pixels[y][0], (edgeColors.get(pixels[y][0]) || 0) + 1);
+      // Right edge
+      if (pixels[y][gridSize-1] !== "transparent") edgeColors.set(pixels[y][gridSize-1], (edgeColors.get(pixels[y][gridSize-1]) || 0) + 1);
+    }
+    
+    // Find most common edge color
+    if (edgeColors.size === 0) return pixels; // No background to remove
+    
+    let bgColor = "";
+    let maxCount = 0;
+    edgeColors.forEach((count, color) => {
+      if (count > maxCount) {
+        maxCount = count;
+        bgColor = color;
+      }
+    });
+    
+    // Step 2: Flood fill from all edges matching background color
+    const visited = Array(gridSize).fill(null).map(() => Array(gridSize).fill(false));
+    const queue: [number, number][] = [];
+    
+    // Add all edge pixels matching background color to queue
+    for (let x = 0; x < gridSize; x++) {
+      if (pixels[0][x] === bgColor) queue.push([0, x]);
+      if (pixels[gridSize-1][x] === bgColor) queue.push([gridSize-1, x]);
+    }
+    for (let y = 0; y < gridSize; y++) {
+      if (pixels[y][0] === bgColor) queue.push([y, 0]);
+      if (pixels[y][gridSize-1] === bgColor) queue.push([y, gridSize-1]);
+    }
+    
+    // Flood fill
+    const result = pixels.map(row => [...row]); // Clone array
+    
+    while (queue.length > 0) {
+      const [y, x] = queue.shift()!;
+      
+      if (visited[y][x]) continue;
+      visited[y][x] = true;
+      
+      if (pixels[y][x] === bgColor) {
+        result[y][x] = "transparent";
+        
+        // Add neighbors to queue
+        if (y > 0 && !visited[y-1][x]) queue.push([y-1, x]);
+        if (y < gridSize-1 && !visited[y+1][x]) queue.push([y+1, x]);
+        if (x > 0 && !visited[y][x-1]) queue.push([y, x-1]);
+        if (x < gridSize-1 && !visited[y][x+1]) queue.push([y, x+1]);
+      }
+    }
+    
+    return result;
+  };
 
   const getPixelCoords = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
