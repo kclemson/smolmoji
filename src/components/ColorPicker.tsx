@@ -59,7 +59,7 @@ export const ColorPicker = ({
           {/* Row 2: Color Picker + Recent/Custom colors */}
           <div className="grid grid-cols-9 gap-2">
             {/* First box: Color Picker Button */}
-            <>
+            <div className="relative">
               <input
                 ref={colorInputRef}
                 type="color"
@@ -75,7 +75,7 @@ export const ColorPicker = ({
                     onCustomColorsChange(updatedColors);
                   }
                 }}
-                className="hidden"
+                className="absolute w-8 h-8 opacity-0 pointer-events-none"
               />
               <button
                 onClick={() => colorInputRef.current?.click()}
@@ -86,7 +86,7 @@ export const ColorPicker = ({
               >
                 <Palette className="h-4 w-4" />
               </button>
-            </>
+            </div>
 
             {/* Remaining 8 boxes: Recent custom colors */}
             {Array.from({ length: 8 }).map((_, index) => {
