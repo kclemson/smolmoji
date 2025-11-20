@@ -6,21 +6,24 @@ import { PixelCanvas } from "@/components/PixelCanvas";
 import { ColorPicker } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { Download, Sparkles, Loader2, Undo2, Redo2 } from "lucide-react";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useDebouncedLocalStorage } from "@/hooks/useDebouncedLocalStorage";
 
 const Index = () => {
   const [prompt, setPrompt] = useState("");
-  const [imageData, setImageData] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState("#000000");
+  const [imageData, setImageData] = useLocalStorage<string | null>("emoji-imageData", null);
+  const [selectedColor, setSelectedColor] = useLocalStorage("emoji-selectedColor", "#000000");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEyedropperActive, setIsEyedropperActive] = useState(false);
-  const [pixels, setPixels] = useState<string[][]>([]);
-  const [backgroundColor, setBackgroundColor] = useState<"transparent" | "white" | "black">("transparent");
+  const [pixels, setPixels] = useDebouncedLocalStorage<string[][]>("emoji-pixels", []);
+  const [originalPixels, setOriginalPixels] = useLocalStorage<string[][]>("emoji-originalPixels", []);
+  const [backgroundColor, setBackgroundColor] = useLocalStorage<"transparent" | "white" | "black">("emoji-backgroundColor", "transparent");
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
   const preview32Ref = useRef<HTMLCanvasElement>(null);
   
   // Undo/Redo state
-  const [historyStack, setHistoryStack] = useState<string[][][]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [historyStack, setHistoryStack] = useLocalStorage<string[][][]>("emoji-historyStack", []);
+  const [historyIndex, setHistoryIndex] = useLocalStorage("emoji-historyIndex", -1);
   const MAX_HISTORY = 50;
 
   const handleGenerate = async () => {
@@ -296,6 +299,8 @@ const Index = () => {
                   setPixels={setPixels}
                   onEditComplete={handlePixelEditComplete}
                   backgroundColor={backgroundColor}
+                  originalPixels={originalPixels}
+                  setOriginalPixels={setOriginalPixels}
               />
             </div>
             
