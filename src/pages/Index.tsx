@@ -2,11 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { PixelCanvas } from "@/components/PixelCanvas";
 import { ColorPicker } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { Download, Sparkles, Loader2 } from "lucide-react";
 
 const Index = () => {
@@ -19,15 +17,9 @@ const Index = () => {
   const [backgroundColor, setBackgroundColor] = useState<"transparent" | "white" | "black">("transparent");
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
   const preview32Ref = useRef<HTMLCanvasElement>(null);
-  const { toast } = useToast();
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
-      toast({
-        title: "Enter a prompt",
-        description: "Describe the emoji you want to create",
-        variant: "destructive",
-      });
       return;
     }
 
@@ -41,18 +33,9 @@ const Index = () => {
 
       if (data.imageUrl) {
         setImageData(data.imageUrl);
-        toast({
-          title: "Emoji generated!",
-          description: "You can now edit it or download as PNG",
-        });
       }
     } catch (error: any) {
       console.error("Generation error:", error);
-      toast({
-        title: "Generation failed",
-        description: error.message || "Please try again",
-        variant: "destructive",
-      });
     } finally {
       setIsGenerating(false);
     }
@@ -90,10 +73,6 @@ const Index = () => {
   const handleColorPick = (color: string) => {
     setSelectedColor(color);
     setIsEyedropperActive(false);
-    toast({
-      title: "Color picked!",
-      description: "Selected color from canvas",
-    });
   };
 
   useEffect(() => {
@@ -141,11 +120,6 @@ const Index = () => {
       a.download = `discord-emoji-${Date.now()}.png`;
       a.click();
       URL.revokeObjectURL(url);
-      
-      toast({
-        title: "Downloaded!",
-        description: "Your emoji has been saved as PNG",
-      });
     });
   };
 
