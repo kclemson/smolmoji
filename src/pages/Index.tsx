@@ -13,7 +13,6 @@ const Index = () => {
   const [selectedColor, setSelectedColor] = useState("#000000");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEyedropperActive, setIsEyedropperActive] = useState(false);
-  const [isMultiSelectActive, setIsMultiSelectActive] = useState(false);
   const [pixels, setPixels] = useState<string[][]>([]);
   const [backgroundColor, setBackgroundColor] = useState<"transparent" | "white" | "black">("transparent");
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -74,12 +73,6 @@ const Index = () => {
 
   const handleEyedropperToggle = () => {
     setIsEyedropperActive(!isEyedropperActive);
-    setIsMultiSelectActive(false);
-  };
-
-  const handleMultiSelectToggle = () => {
-    setIsMultiSelectActive(!isMultiSelectActive);
-    setIsEyedropperActive(false);
   };
 
   const handleColorPick = (color: string) => {
@@ -298,7 +291,6 @@ const Index = () => {
                   gridSize={32}
                   canvasRef={mainCanvasRef}
                   isEyedropperActive={isEyedropperActive}
-                  isMultiSelectActive={isMultiSelectActive}
                   onColorPick={handleColorPick}
                   pixels={pixels}
                   setPixels={setPixels}
@@ -313,8 +305,6 @@ const Index = () => {
                 onColorChange={setSelectedColor}
                 isEyedropperActive={isEyedropperActive}
                 onEyedropperToggle={handleEyedropperToggle}
-                isMultiSelectActive={isMultiSelectActive}
-                onMultiSelectToggle={handleMultiSelectToggle}
               />
             </div>
           </Card>

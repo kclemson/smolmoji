@@ -8,7 +8,6 @@ interface PixelCanvasProps {
   gridSize?: number;
   canvasRef?: React.RefObject<HTMLCanvasElement>;
   isEyedropperActive?: boolean;
-  isMultiSelectActive?: boolean;
   onColorPick?: (color: string) => void;
   pixels: string[][];
   setPixels: (pixels: string[][]) => void;
@@ -23,7 +22,6 @@ export const PixelCanvas = ({
   gridSize = 32,
   canvasRef: externalCanvasRef,
   isEyedropperActive = false,
-  isMultiSelectActive = false,
   onColorPick,
   pixels,
   setPixels,
@@ -186,10 +184,10 @@ export const PixelCanvas = ({
       return;
     }
 
-    // If multi-select mode, don't paint individual pixels on click
-    if (isMultiSelectActive) return;
+    // Don't paint if we're in the middle of dragging a selection
+    if (isDrawing) return;
 
-    // Normal drawing mode
+    // Normal drawing mode - single click
     const newPixels = [...pixels];
     newPixels[coords.y][coords.x] = selectedColor === "transparent" ? "transparent" : selectedColor;
     setPixels(newPixels);
@@ -201,50 +199,50 @@ export const PixelCanvas = ({
     if (!coords) return;
 
     setIsDrawing(true);
-
-    if (isMultiSelectActive) {
-      setSelectionStart(coords);
-      setSelectionEnd(coords);
-    }
+    setSelectionStart(coords);
+    setSelectionEnd(coords);
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const coords = getPixelCoords(e);
     if (!coords || !isDrawing) return;
 
-    if (isMultiSelectActive && selectionStart) {
+    // If we're dragging and not in eyedropper mode, update the selection
+    if (!isEyedropperActive && selectionStart) {
       setSelectionEnd(coords);
-      return;
-    }
-
-    if (!isEyedropperActive) {
-      handleCanvasClick(e);
     }
   };
 
   const handleMouseUp = () => {
     setIsDrawing(false);
 
-    if (isMultiSelectActive && selectionStart && selectionEnd) {
-      const minX = Math.min(selectionStart.x, selectionEnd.x);
-      const minY = Math.min(selectionStart.y, selectionEnd.y);
-      const maxX = Math.max(selectionStart.x, selectionEnd.x);
-      const maxY = Math.max(selectionStart.y, selectionEnd.y);
+    // Check if we dragged (start !== end) or just clicked (start === end)
+    if (selectionStart && selectionEnd) {
+      const isDrag = selectionStart.x !== selectionEnd.x || selectionStart.y !== selectionEnd.y;
+      
+      if (isDrag && !isEyedropperActive) {
+        // Fill the rectangle
+        const minX = Math.min(selectionStart.x, selectionEnd.x);
+        const minY = Math.min(selectionStart.y, selectionEnd.y);
+        const maxX = Math.max(selectionStart.x, selectionEnd.x);
+        const maxY = Math.max(selectionStart.y, selectionEnd.y);
 
-      const newPixels = pixels.map(row => [...row]);
-      for (let y = minY; y <= maxY; y++) {
-        for (let x = minX; x <= maxX; x++) {
-          newPixels[y][x] = selectedColor === "transparent" ? "transparent" : selectedColor;
+        const newPixels = pixels.map(row => [...row]);
+        for (let y = minY; y <= maxY; y++) {
+          for (let x = minX; x <= maxX; x++) {
+            newPixels[y][x] = selectedColor === "transparent" ? "transparent" : selectedColor;
+          }
         }
+        setPixels(newPixels);
+        onPixelChange();
+        onEditComplete?.(newPixels);
+      } else {
+        // Single click - the onClick handler already painted it
+        onEditComplete?.(pixels);
       }
-      setPixels(newPixels);
-      onPixelChange();
-      onEditComplete?.(newPixels);
 
       setSelectionStart(null);
       setSelectionEnd(null);
-    } else if (!isMultiSelectActive) {
-      onEditComplete?.(pixels);
     }
   };
 
@@ -257,8 +255,7 @@ export const PixelCanvas = ({
         className={cn(
           "border-2 border-border rounded-lg",
           "bg-[hsl(var(--canvas-bg))]",
-          isEyedropperActive ? "cursor-crosshair" : 
-          isMultiSelectActive ? "cursor-cell" : "cursor-pointer"
+          isEyedropperActive ? "cursor-crosshair" : "cursor-cell"
         )}
         onClick={handleCanvasClick}
         onMouseDown={handleMouseDown}
