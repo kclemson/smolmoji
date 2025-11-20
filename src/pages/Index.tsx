@@ -16,7 +16,7 @@ const Index = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEyedropperActive, setIsEyedropperActive] = useState(false);
   const [pixels, setPixels] = useState<string[][]>([]);
-  const [useTransparentBackground, setUseTransparentBackground] = useState(true);
+  const [backgroundColor, setBackgroundColor] = useState<"transparent" | "white" | "black">("transparent");
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
   const preview32Ref = useRef<HTMLCanvasElement>(null);
   const { toast } = useToast();
@@ -111,9 +111,12 @@ const Index = () => {
 
     ctx.imageSmoothingEnabled = false;
 
-    // Fill background if not transparent
-    if (!useTransparentBackground) {
+    // Fill background based on selection
+    if (backgroundColor === "white") {
       ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, 128, 128);
+    } else if (backgroundColor === "black") {
+      ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, 128, 128);
     }
 
@@ -189,21 +192,37 @@ const Index = () => {
             </div>
           </Card>
 
-          {/* Row 2: Background Toggle + Download */}
+          {/* Row 2: Background Selection + Download */}
           <Card className="p-6">
             <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <Checkbox 
-                  id="transparent-bg"
-                  checked={useTransparentBackground}
-                  onCheckedChange={(checked) => setUseTransparentBackground(checked as boolean)}
-                />
-                <label 
-                  htmlFor="transparent-bg"
-                  className="text-sm font-medium cursor-pointer"
-                >
-                  Transparent Background
-                </label>
+              <div className="space-y-2 flex-1">
+                <label className="text-sm font-medium">Background</label>
+                <div className="flex gap-2">
+                  <Button
+                    variant={backgroundColor === "transparent" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setBackgroundColor("transparent")}
+                    className="flex-1"
+                  >
+                    Transparent
+                  </Button>
+                  <Button
+                    variant={backgroundColor === "white" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setBackgroundColor("white")}
+                    className="flex-1"
+                  >
+                    White
+                  </Button>
+                  <Button
+                    variant={backgroundColor === "black" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setBackgroundColor("black")}
+                    className="flex-1"
+                  >
+                    Black
+                  </Button>
+                </div>
               </div>
               <Button 
                 onClick={handleDownload} 
