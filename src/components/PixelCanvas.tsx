@@ -12,6 +12,7 @@ interface PixelCanvasProps {
   onColorPick?: (color: string) => void;
   pixels: string[][];
   setPixels: (pixels: string[][]) => void;
+  onEditComplete?: (pixels: string[][]) => void;
 }
 
 export const PixelCanvas = ({ 
@@ -24,7 +25,8 @@ export const PixelCanvas = ({
   isMultiSelectActive = false,
   onColorPick,
   pixels,
-  setPixels
+  setPixels,
+  onEditComplete
 }: PixelCanvasProps) => {
   const internalCanvasRef = useRef<HTMLCanvasElement>(null);
   const canvasRef = externalCanvasRef || internalCanvasRef;
@@ -226,9 +228,12 @@ export const PixelCanvas = ({
       }
       setPixels(newPixels);
       onPixelChange();
+      onEditComplete?.(newPixels);
 
       setSelectionStart(null);
       setSelectionEnd(null);
+    } else if (!isMultiSelectActive) {
+      onEditComplete?.(pixels);
     }
   };
 
