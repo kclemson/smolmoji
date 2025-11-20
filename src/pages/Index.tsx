@@ -262,9 +262,8 @@ const Index = () => {
         <div className="space-y-6">
           {/* Row 1: Design Direction + Background + Generate */}
           <div className="space-y-3">
-              <Label className="text-xs text-muted-foreground">Design Direction:</Label>
-              <Textarea
-                placeholder="e.g., happy cat, fire symbol, laughing face..."
+          <Textarea
+            placeholder="Describe your emoji idea... e.g., wizard cat casting spell, glitching heart, steaming ramen bowl, pixel sword with aura, ninja penguin, disco ball party"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 onKeyDown={(e) => {
