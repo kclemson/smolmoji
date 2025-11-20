@@ -303,6 +303,7 @@ const Index = () => {
                   pixels={pixels}
                   setPixels={setPixels}
                   onEditComplete={handlePixelEditComplete}
+                  backgroundColor={backgroundColor}
                 />
               </div>
               

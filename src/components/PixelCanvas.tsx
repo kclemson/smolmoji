@@ -13,6 +13,7 @@ interface PixelCanvasProps {
   pixels: string[][];
   setPixels: (pixels: string[][]) => void;
   onEditComplete?: (pixels: string[][]) => void;
+  backgroundColor?: "transparent" | "white" | "black";
 }
 
 export const PixelCanvas = ({ 
@@ -26,7 +27,8 @@ export const PixelCanvas = ({
   onColorPick,
   pixels,
   setPixels,
-  onEditComplete
+  onEditComplete,
+  backgroundColor = "transparent"
 }: PixelCanvasProps) => {
   const internalCanvasRef = useRef<HTMLCanvasElement>(null);
   const canvasRef = externalCanvasRef || internalCanvasRef;
@@ -96,6 +98,15 @@ export const PixelCanvas = ({
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Fill background based on selection
+    if (backgroundColor === "white") {
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    } else if (backgroundColor === "black") {
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
     // Draw pixels
     pixels.forEach((row, y) => {
       row.forEach((color, x) => {
@@ -146,7 +157,7 @@ export const PixelCanvas = ({
         (maxY - minY + 1) * pixelSize
       );
     }
-  }, [pixels, gridSize, pixelSize, selectionStart, selectionEnd]);
+  }, [pixels, gridSize, pixelSize, selectionStart, selectionEnd, backgroundColor]);
 
   const getPixelCoords = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
