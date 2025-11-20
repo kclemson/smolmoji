@@ -120,11 +120,6 @@ export const ColorPicker = ({
           </div>
         </div>
       </div>
-      
-      {/* Instructions - spans full width */}
-      <p className="text-xs text-muted-foreground text-center w-full">
-        left click to color, right click to revert. click and drag to create a rectangle.
-      </p>
     </div>
   );
 };

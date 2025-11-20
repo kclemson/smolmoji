@@ -307,54 +307,61 @@ const Index = () => {
                 </Button>
               </div>
               
-              {/* Main Canvas with Tools */}
-              <div className="flex items-center justify-center gap-4">
-                {/* Left: Tools */}
-                <div className="flex flex-col gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleEyedropperToggle}
-                    className={cn(
-                      "w-10 h-10",
-                      isEyedropperActive && "ring-2 ring-primary bg-primary/10"
-                    )}
-                    title="Eyedropper (pick color from canvas)"
-                  >
-                    <Pipette className="h-5 w-5" />
-                  </Button>
+              {/* Main Canvas with Tools - Centered Container */}
+              <div className="flex justify-center">
+                <div className="flex items-center gap-4">
+                  {/* Left: Tools */}
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleEyedropperToggle}
+                      className={cn(
+                        "w-10 h-10",
+                        isEyedropperActive && "ring-2 ring-primary bg-primary/10"
+                      )}
+                      title="Eyedropper (pick color from canvas)"
+                    >
+                      <Pipette className="h-5 w-5" />
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setSelectedColor("transparent")}
+                      className={cn(
+                        "w-10 h-10",
+                        selectedColor === "transparent" && "ring-2 ring-primary"
+                      )}
+                      title="Eraser"
+                    >
+                      <Eraser className="h-5 w-5" />
+                    </Button>
+                  </div>
                   
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setSelectedColor("transparent")}
-                    className={cn(
-                      "w-10 h-10",
-                      selectedColor === "transparent" && "ring-2 ring-primary"
-                    )}
-                    title="Eraser"
-                  >
-                    <Eraser className="h-5 w-5" />
-                  </Button>
+                  {/* Right: Canvas */}
+                  <PixelCanvas
+                    imageData={imageData}
+                    onPixelChange={handlePixelChange}
+                    selectedColor={selectedColor}
+                    gridSize={32}
+                    canvasRef={mainCanvasRef}
+                    isEyedropperActive={isEyedropperActive}
+                    onColorPick={handleColorPick}
+                    pixels={pixels}
+                    setPixels={setPixels}
+                    onEditComplete={handlePixelEditComplete}
+                    backgroundColor={backgroundColor}
+                    originalPixels={originalPixels}
+                    setOriginalPixels={setOriginalPixels}
+                  />
                 </div>
-                
-                {/* Right: Canvas */}
-                <PixelCanvas
-                  imageData={imageData}
-                  onPixelChange={handlePixelChange}
-                  selectedColor={selectedColor}
-                  gridSize={32}
-                  canvasRef={mainCanvasRef}
-                  isEyedropperActive={isEyedropperActive}
-                  onColorPick={handleColorPick}
-                  pixels={pixels}
-                  setPixels={setPixels}
-                  onEditComplete={handlePixelEditComplete}
-                  backgroundColor={backgroundColor}
-                  originalPixels={originalPixels}
-                  setOriginalPixels={setOriginalPixels}
-              />
-            </div>
+              </div>
+              
+              {/* Instructions */}
+              <p className="text-xs text-muted-foreground text-center">
+                left click to color, right click to revert. click and drag to create a rectangle.
+              </p>
             
             {/* Undo/Redo Controls */}
             <div className="flex justify-center gap-2">
