@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Pipette } from "lucide-react";
 
 const PRESET_COLORS = [
   // Row 1: Basic colors
@@ -13,9 +14,16 @@ const PRESET_COLORS = [
 interface ColorPickerProps {
   selectedColor: string;
   onColorChange: (color: string) => void;
+  isEyedropperActive?: boolean;
+  onEyedropperToggle?: () => void;
 }
 
-export const ColorPicker = ({ selectedColor, onColorChange }: ColorPickerProps) => {
+export const ColorPicker = ({ 
+  selectedColor, 
+  onColorChange, 
+  isEyedropperActive = false,
+  onEyedropperToggle 
+}: ColorPickerProps) => {
   const [customColor, setCustomColor] = useState("#000000");
 
   return (
@@ -43,6 +51,19 @@ export const ColorPicker = ({ selectedColor, onColorChange }: ColorPickerProps) 
         >
           Eraser
         </Button>
+        {onEyedropperToggle && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onEyedropperToggle}
+            className={cn(
+              "h-12 px-4",
+              isEyedropperActive && "ring-2 ring-primary bg-primary/10"
+            )}
+          >
+            <Pipette className="h-4 w-4" />
+          </Button>
+        )}
       </div>
       
       <div className="grid grid-cols-8 gap-2">

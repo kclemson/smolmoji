@@ -13,6 +13,7 @@ const Index = () => {
   const [imageData, setImageData] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState("#000000");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isEyedropperActive, setIsEyedropperActive] = useState(false);
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
   const preview32Ref = useRef<HTMLCanvasElement>(null);
   const preview48Ref = useRef<HTMLCanvasElement>(null);
@@ -80,6 +81,19 @@ const Index = () => {
   const handlePixelChange = (x: number, y: number, color: string) => {
     // Update previews immediately when pixels change
     setTimeout(updatePreviews, 0);
+  };
+
+  const handleEyedropperToggle = () => {
+    setIsEyedropperActive(!isEyedropperActive);
+  };
+
+  const handleColorPick = (color: string) => {
+    setSelectedColor(color);
+    setIsEyedropperActive(false);
+    toast({
+      title: "Color picked!",
+      description: "Selected color from canvas",
+    });
   };
 
   useEffect(() => {
@@ -165,10 +179,12 @@ const Index = () => {
 
               <div className="space-y-3">
                 <label className="text-sm font-medium">Color Palette</label>
-                <ColorPicker 
-                  selectedColor={selectedColor}
-                  onColorChange={setSelectedColor}
-                />
+              <ColorPicker
+                selectedColor={selectedColor}
+                onColorChange={setSelectedColor}
+                isEyedropperActive={isEyedropperActive}
+                onEyedropperToggle={handleEyedropperToggle}
+              />
               </div>
 
               <Button 
@@ -200,6 +216,8 @@ const Index = () => {
                     selectedColor={selectedColor}
                     gridSize={32}
                     canvasRef={mainCanvasRef}
+                    isEyedropperActive={isEyedropperActive}
+                    onColorPick={handleColorPick}
                   />
                 </div>
               </div>
