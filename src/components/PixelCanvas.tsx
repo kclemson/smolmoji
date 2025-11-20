@@ -351,6 +351,9 @@ export const PixelCanvas = ({
   };
 
   const handleMouseUp = () => {
+    // Capture current drag mode before resetting state
+    const wasRightClickDrag = isRightClickDrag;
+    
     setIsDrawing(false);
     setIsRightClickDrag(false); // Reset immediately when mouse is released
 
@@ -367,7 +370,7 @@ export const PixelCanvas = ({
 
         const newPixels = pixels.map(row => [...row]);
         
-        if (isRightClickDrag) {
+        if (wasRightClickDrag) {
           // Restore rectangle to original AI pixels
           if (originalPixels.length > 0) {
             for (let y = minY; y <= maxY; y++) {
