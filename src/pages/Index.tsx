@@ -277,27 +277,6 @@ const Index = () => {
                 className="w-full text-sm resize-none"
               />
               
-              <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Background:</Label>
-                <RadioGroup 
-                  value={backgroundColor} 
-                  onValueChange={(value) => setBackgroundColor(value as "transparent" | "white" | "black")}
-                  className="flex gap-4"
-                >
-                  <div className="flex items-center space-x-1.5">
-                    <RadioGroupItem value="transparent" id="bg-transparent" />
-                    <Label htmlFor="bg-transparent" className="text-sm cursor-pointer">Transparent</Label>
-                  </div>
-                  <div className="flex items-center space-x-1.5">
-                    <RadioGroupItem value="white" id="bg-white" />
-                    <Label htmlFor="bg-white" className="text-sm cursor-pointer">White</Label>
-                  </div>
-                  <div className="flex items-center space-x-1.5">
-                    <RadioGroupItem value="black" id="bg-black" />
-                    <Label htmlFor="bg-black" className="text-sm cursor-pointer">Black</Label>
-                  </div>
-                </RadioGroup>
-              </div>
               
               <div className="flex justify-center">
                 <Button 
@@ -493,6 +472,31 @@ const Index = () => {
             customColors={customColors}
             onCustomColorsChange={setCustomColors}
           />
+        </div>
+
+        {/* Background Selection - Moved below color picker */}
+        <div className="flex justify-center">
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">Background:</Label>
+            <RadioGroup 
+              value={backgroundColor} 
+              onValueChange={(value) => setBackgroundColor(value as "transparent" | "white" | "black")}
+              className="flex gap-4"
+            >
+              <div className="flex items-center space-x-1.5">
+                <RadioGroupItem value="transparent" id="bg-transparent" />
+                <Label htmlFor="bg-transparent" className="text-xs text-muted-foreground cursor-pointer">Transparent</Label>
+              </div>
+              <div className="flex items-center space-x-1.5">
+                <RadioGroupItem value="white" id="bg-white" />
+                <Label htmlFor="bg-white" className="text-xs text-muted-foreground cursor-pointer">White</Label>
+              </div>
+              <div className="flex items-center space-x-1.5">
+                <RadioGroupItem value="black" id="bg-black" />
+                <Label htmlFor="bg-black" className="text-xs text-muted-foreground cursor-pointer">Black</Label>
+              </div>
+            </RadioGroup>
+          </div>
         </div>
         </div>
       </div>
