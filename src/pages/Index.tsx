@@ -62,6 +62,17 @@ const Index = () => {
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, 32, 32);
     
+    // Fill background based on selection
+    if (backgroundColor === "white") {
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, 32, 32);
+    } else if (backgroundColor === "black") {
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, 32, 32);
+    }
+    // If transparent, leave it cleared (already done by clearRect above)
+    
+    // Draw emoji pixels on top
     pixels.forEach((row, y) => {
       row.forEach((color, x) => {
         if (color !== "transparent") {
@@ -87,9 +98,9 @@ const Index = () => {
   };
 
   useEffect(() => {
-    // Update previews whenever pixels change
+    // Update previews whenever pixels or background changes
     updatePreviews();
-  }, [pixels]);
+  }, [pixels, backgroundColor]);
 
   // Undo/Redo functions
   const pushToHistory = useCallback((newPixels: string[][]) => {
