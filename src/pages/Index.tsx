@@ -351,15 +351,17 @@ const Index = () => {
               </Button>
             </div>
             
-            {/* Color Palette */}
-            <ColorPicker
-                selectedColor={selectedColor}
-                onColorChange={setSelectedColor}
-                customColors={customColors}
-                onCustomColorsChange={setCustomColors}
-                isEyedropperActive={isEyedropperActive}
-                onEyedropperToggle={handleEyedropperToggle}
-              />
+        {/* Color Palette */}
+        <div className="flex justify-center">
+          <ColorPicker
+            selectedColor={selectedColor}
+            onColorChange={setSelectedColor}
+            customColors={customColors}
+            onCustomColorsChange={setCustomColors}
+            isEyedropperActive={isEyedropperActive}
+            onEyedropperToggle={handleEyedropperToggle}
+          />
+        </div>
             </div>
           </Card>
         </div>

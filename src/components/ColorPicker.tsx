@@ -6,7 +6,15 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Pipette, Eraser, Palette } from "lucide-react";
 
 const STATIC_COLORS = [
-  "#000000", "#FFFFFF", "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF6600", "#9900FF",
+  "#000000", // Black
+  "#FFFFFF", // White
+  "#FF0000", // Red
+  "#FF6600", // Orange
+  "#FFFF00", // Yellow
+  "#00FF00", // Green
+  "#4169E1", // Royal Blue
+  "#00FFFF", // Cyan Blue
+  "#9900FF", // Purple
 ];
 
 export const DEFAULT_CUSTOM_COLORS: string[] = [];
@@ -105,7 +113,7 @@ export const ColorPicker = ({
         {/* Right: Color Grid */}
         <div className="flex flex-col gap-2">
           {/* Row 1: Static colors */}
-          <div className="grid grid-cols-8 gap-2">
+          <div className="grid grid-cols-9 gap-2">
             {STATIC_COLORS.map((color) => (
               <button
                 key={color}
