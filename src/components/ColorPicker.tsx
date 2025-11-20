@@ -32,9 +32,9 @@ export const ColorPicker = ({
 
   return (
     <div className="flex justify-center">
-      <div className="grid grid-cols-8 gap-2">
-        {/* Controls row */}
-        <div className="col-span-4">
+      <div className="flex gap-4 items-start">
+        {/* Left: Tools Section */}
+        <div className="flex flex-col gap-2">
           <Input
             type="color"
             value={customColor}
@@ -44,62 +44,64 @@ export const ColorPicker = ({
             }}
             className="cursor-pointer h-8 w-full"
           />
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onColorChange("transparent")}
+            className={cn(
+              "h-8 px-3 w-full",
+              selectedColor === "transparent" && "ring-2 ring-primary"
+            )}
+          >
+            Eraser
+          </Button>
+          
+          {onEyedropperToggle && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEyedropperToggle}
+              className={cn(
+                "h-8 px-3 w-full",
+                isEyedropperActive && "ring-2 ring-primary bg-primary/10"
+              )}
+            >
+              <Pipette className="h-3 w-3" />
+            </Button>
+          )}
+
+          {onMultiSelectToggle && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onMultiSelectToggle}
+              className={cn(
+                "h-8 px-3 w-full",
+                isMultiSelectActive && "ring-2 ring-primary bg-primary/10"
+              )}
+            >
+              <RectangleHorizontal className="h-3 w-3" />
+            </Button>
+          )}
         </div>
         
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onColorChange("transparent")}
-          className={cn(
-            "h-8 px-3",
-            selectedColor === "transparent" && "ring-2 ring-primary"
-          )}
-        >
-          Eraser
-        </Button>
-        
-        {onEyedropperToggle && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onEyedropperToggle}
-            className={cn(
-              "h-8 px-3",
-              isEyedropperActive && "ring-2 ring-primary bg-primary/10"
-            )}
-          >
-            <Pipette className="h-3 w-3" />
-          </Button>
-        )}
-
-        {onMultiSelectToggle && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onMultiSelectToggle}
-            className={cn(
-              "h-8 px-3",
-              isMultiSelectActive && "ring-2 ring-primary bg-primary/10"
-            )}
-          >
-            <RectangleHorizontal className="h-3 w-3" />
-          </Button>
-        )}
-        
-        {/* Color buttons */}
-        {PRESET_COLORS.map((color) => (
-          <button
-            key={color}
-            onClick={() => onColorChange(color)}
-            className={cn(
-              "w-8 h-8 rounded-md border-2 transition-all hover:scale-110",
-              selectedColor === color 
-                ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background" 
-                : "border-border"
-            )}
-            style={{ backgroundColor: color }}
-          />
-        ))}
+        {/* Right: Color Grid */}
+        <div className="grid grid-cols-8 gap-2">
+          {PRESET_COLORS.map((color) => (
+            <button
+              key={color}
+              onClick={() => onColorChange(color)}
+              className={cn(
+                "w-8 h-8 rounded-md border-2 transition-all hover:scale-110",
+                selectedColor === color 
+                  ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background" 
+                  : "border-border"
+              )}
+              style={{ backgroundColor: color }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
