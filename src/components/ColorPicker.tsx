@@ -33,7 +33,8 @@ export const ColorPicker = ({
   const [customColor, setCustomColor] = useState("#000000");
 
   return (
-    <div className="flex gap-3 items-start">
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-3 items-start">
         {/* Left: Tools Section */}
         <div className="grid grid-cols-2 gap-2">
           <Popover>
@@ -138,12 +139,13 @@ export const ColorPicker = ({
               />
             ))}
           </div>
-          
-          {/* Instructions */}
-          <p className="text-xs text-muted-foreground text-center mt-1">
-            click and drag to fill in a rectangle - right click to revert
-          </p>
         </div>
       </div>
+      
+      {/* Instructions - spans full width */}
+      <p className="text-xs text-muted-foreground text-center w-full">
+        click and drag to fill in a rectangle - right click to revert
+      </p>
+    </div>
   );
 };
