@@ -214,7 +214,7 @@ const Index = () => {
         {/* Header */}
         <div className="text-center">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Emoji Craft
+            Emoji Lab
           </h1>
         </div>
 
