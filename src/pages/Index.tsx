@@ -249,29 +249,11 @@ const Index = () => {
             </div>
           </Card>
 
-          {/* Row 2: Download */}
-          <Card className="p-6">
-            <div className="flex justify-center">
-              <Button 
-                onClick={handleDownload} 
-                size="sm"
-                className="gap-2"
-                disabled={!imageData}
-                variant="default"
-              >
-                <Download className="w-4 h-4" />
-                Download PNG (128x128)
-              </Button>
-            </div>
-          </Card>
-
-          {/* Row 3: Pixel Editor */}
+          {/* Pixel Editor */}
           <Card className="p-6">
             <div className="space-y-4">
-              <label className="text-sm font-medium">Pixel Editor (32x32)</label>
-              
-              {/* 32x32 Preview */}
-              <div className="flex justify-center">
+              {/* 32x32 Preview + Download Button */}
+              <div className="flex items-center justify-center gap-4">
                 <canvas
                   ref={preview32Ref}
                   width={32}
@@ -283,7 +265,19 @@ const Index = () => {
                     height: "32px"
                   }}
                 />
+                <Button 
+                  onClick={handleDownload} 
+                  size="sm"
+                  className="gap-2"
+                  disabled={!imageData}
+                  variant="default"
+                >
+                  <Download className="w-4 h-4" />
+                  Download PNG (128x128)
+                </Button>
               </div>
+              
+              {/* Main Canvas */}
               <div className="flex justify-center">
                 <PixelCanvas
                   imageData={imageData}
