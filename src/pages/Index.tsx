@@ -2,6 +2,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PixelCanvas } from "@/components/PixelCanvas";
 import { ColorPicker } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
@@ -195,7 +197,7 @@ const Index = () => {
 
         {/* Single Column Layout */}
         <div className="space-y-6">
-          {/* Row 1: Design Direction + Generate */}
+          {/* Row 1: Design Direction + Background + Generate */}
           <Card className="p-6">
             <div className="space-y-3">
               <label className="text-sm font-medium">Design Direction</label>
@@ -206,6 +208,29 @@ const Index = () => {
                 onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
                 className="w-full"
               />
+              
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Background</Label>
+                <RadioGroup 
+                  value={backgroundColor} 
+                  onValueChange={(value) => setBackgroundColor(value as "transparent" | "white" | "black")}
+                  className="flex gap-4"
+                >
+                  <div className="flex items-center space-x-1.5">
+                    <RadioGroupItem value="transparent" id="bg-transparent" />
+                    <Label htmlFor="bg-transparent" className="text-sm cursor-pointer">Transparent</Label>
+                  </div>
+                  <div className="flex items-center space-x-1.5">
+                    <RadioGroupItem value="white" id="bg-white" />
+                    <Label htmlFor="bg-white" className="text-sm cursor-pointer">White</Label>
+                  </div>
+                  <div className="flex items-center space-x-1.5">
+                    <RadioGroupItem value="black" id="bg-black" />
+                    <Label htmlFor="bg-black" className="text-sm cursor-pointer">Black</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              
               <div className="flex justify-center">
                 <Button 
                   onClick={handleGenerate} 
@@ -224,38 +249,9 @@ const Index = () => {
             </div>
           </Card>
 
-          {/* Row 2: Background Selection + Download */}
+          {/* Row 2: Download */}
           <Card className="p-6">
-            <div className="flex items-center justify-between gap-4">
-              <div className="space-y-2 flex-1">
-                <label className="text-sm font-medium">Background</label>
-                <div className="flex gap-2">
-                  <Button
-                    variant={backgroundColor === "transparent" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setBackgroundColor("transparent")}
-                    className="flex-1"
-                  >
-                    Transparent
-                  </Button>
-                  <Button
-                    variant={backgroundColor === "white" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setBackgroundColor("white")}
-                    className="flex-1"
-                  >
-                    White
-                  </Button>
-                  <Button
-                    variant={backgroundColor === "black" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setBackgroundColor("black")}
-                    className="flex-1"
-                  >
-                    Black
-                  </Button>
-                </div>
-              </div>
+            <div className="flex justify-center">
               <Button 
                 onClick={handleDownload} 
                 size="sm"
