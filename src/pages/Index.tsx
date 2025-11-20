@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -122,7 +122,7 @@ const Index = () => {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement) return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       
       const mod = navigator.platform.includes('Mac') ? e.metaKey : e.ctrlKey;
       
@@ -199,12 +199,18 @@ const Index = () => {
           <Card className="p-6">
             <div className="space-y-3">
               <Label className="text-xs text-muted-foreground">Design Direction:</Label>
-              <Input
+              <Textarea
                 placeholder="e.g., happy cat, fire symbol, laughing face..."
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
-                className="w-full"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    handleGenerate();
+                  }
+                }}
+                rows={2}
+                className="w-full text-sm resize-none"
               />
               
               <div className="space-y-2">
