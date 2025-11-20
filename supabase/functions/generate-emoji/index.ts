@@ -31,9 +31,42 @@ serve(async (req) => {
         messages: [
           {
             role: "user",
-            content: `Create a pixel art emoji with this style: ${prompt}. 
-            The emoji should be 32x32 pixels, simple, clear, and suitable for Discord. 
-            Use bold colors and clear shapes. Make it fun and expressive.`,
+            content: `Create a pixel art emoji based on this concept: ${prompt}.
+
+CRITICAL REQUIREMENTS:
+- 32x32 pixels MAXIMUM - must be clearly readable at this tiny size
+- Use standard emoji design principles (like Unicode emojis 😀🎉❤️🔥)
+- Design should be instantly recognizable when scaled down
+- Think minimalist for the core design - less is more
+
+COLOR GUIDANCE:
+- Start with 3-5 PRIMARY bold, solid colors for the main structure and shapes
+- You MAY add subtle shade variations (lighter/darker tones) for visual effects like:
+  * Highlights and shadows for depth
+  * Smooth gradients for dimensional effects
+  * Reflections or shine effects
+- Example: A tinfoil hat might use silver/gray as primary, then add lighter highlights and darker creases
+- Each color variation should serve a clear visual purpose
+
+DESIGN PRINCIPLES:
+- Create large, simple geometric shapes for the base - NO tiny details
+- Strong contrast between primary colors
+- Shading should ENHANCE the design, not complicate it
+- The design must read clearly even without the subtle shading
+
+AVOID:
+- Overly complex patterns or intricate designs
+- Thin lines or tiny details that blur at small sizes
+- Realistic rendering with excessive texture
+- Random color variations without purpose
+- More than 8-10 total colors (including shade variations)
+
+Examples of good emoji design:
+- Simple smiley: circle + dots for eyes + curve for mouth (2-3 colors + shading)
+- Fire emoji: flame shape with red/orange/yellow gradient (3-5 colors)
+- Heart: solid shape with subtle highlight (2-3 colors)
+
+Your design should be as simple and clear as standard Unicode emojis, with purposeful shading for visual polish.`,
           },
         ],
         modalities: ["image", "text"],
