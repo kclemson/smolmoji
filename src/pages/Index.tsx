@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { PixelCanvas } from "@/components/PixelCanvas";
 import { ColorPicker } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
@@ -147,7 +148,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background p-6">
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center space-y-3">
           <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -158,104 +159,103 @@ const Index = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Left Panel - Controls */}
-          <div className="space-y-6">
-            <Card className="p-6 space-y-6">
-              <div className="space-y-3">
-                <label className="text-sm font-medium">Design Direction</label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="e.g., happy cat, fire symbol, laughing face..."
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
-                    className="flex-1"
-                  />
-                  <Button 
-                    onClick={handleGenerate} 
-                    disabled={isGenerating}
-                    className="gap-2"
-                  >
-                    {isGenerating ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-4 h-4" />
-                    )}
-                    Generate
-                  </Button>
-                </div>
-              </div>
-
-
-              <div className="space-y-3">
-                <label className="text-sm font-medium">Export Options</label>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setUseTransparentBackground(!useTransparentBackground)}
-                  className="w-full"
+        {/* Single Column Layout */}
+        <div className="space-y-6">
+          {/* Row 1: Design Direction + Generate */}
+          <Card className="p-6">
+            <div className="space-y-3">
+              <label className="text-sm font-medium">Design Direction</label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="e.g., happy cat, fire symbol, laughing face..."
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
+                  className="flex-1"
+                />
+                <Button 
+                  onClick={handleGenerate} 
+                  disabled={isGenerating}
+                  className="gap-2"
                 >
-                  Background: {useTransparentBackground ? "Transparent" : "White"}
+                  {isGenerating ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="w-4 h-4" />
+                  )}
+                  Generate
                 </Button>
               </div>
+            </div>
+          </Card>
 
+          {/* Row 2: Background Toggle + Download */}
+          <Card className="p-6">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Checkbox 
+                  id="transparent-bg"
+                  checked={useTransparentBackground}
+                  onCheckedChange={(checked) => setUseTransparentBackground(checked as boolean)}
+                />
+                <label 
+                  htmlFor="transparent-bg"
+                  className="text-sm font-medium cursor-pointer"
+                >
+                  Transparent Background
+                </label>
+              </div>
               <Button 
                 onClick={handleDownload} 
-                className="w-full gap-2"
+                className="gap-2"
                 disabled={!imageData}
                 variant="default"
-                size="lg"
               >
                 <Download className="w-4 h-4" />
                 Download PNG (128x128)
               </Button>
-            </Card>
+            </div>
+          </Card>
 
-          </div>
-
-          {/* Right Panel - Canvas */}
-          <div className="space-y-6">
-            {/* Pixel Editor */}
-            <Card className="p-6">
-              <div className="space-y-4">
-                <label className="text-sm font-medium">Pixel Editor (32x32)</label>
-                
-                {/* 32x32 Preview */}
-                <div className="flex justify-center">
-                  <canvas
-                    ref={preview32Ref}
-                    width={32}
-                    height={32}
-                    className="border-2 border-border rounded pixelated"
-                    style={{ imageRendering: "pixelated" }}
-                  />
-                </div>
-                <div className="flex justify-center">
-                  <PixelCanvas
-                    imageData={imageData}
-                    onPixelChange={handlePixelChange}
-                    selectedColor={selectedColor}
-                    gridSize={32}
-                    canvasRef={mainCanvasRef}
-                    isEyedropperActive={isEyedropperActive}
-                    onColorPick={handleColorPick}
-                    pixels={pixels}
-                    setPixels={setPixels}
-                  />
-                </div>
-                
-                {/* Color Palette */}
-                <ColorPicker
-                  selectedColor={selectedColor}
-                  onColorChange={setSelectedColor}
-                  isEyedropperActive={isEyedropperActive}
-                  onEyedropperToggle={handleEyedropperToggle}
-                  compact={true}
+          {/* Row 3: Pixel Editor */}
+          <Card className="p-6">
+            <div className="space-y-4">
+              <label className="text-sm font-medium">Pixel Editor (32x32)</label>
+              
+              {/* 32x32 Preview */}
+              <div className="flex justify-center">
+                <canvas
+                  ref={preview32Ref}
+                  width={32}
+                  height={32}
+                  className="border-2 border-border rounded pixelated"
+                  style={{ imageRendering: "pixelated" }}
                 />
               </div>
-            </Card>
-          </div>
+              <div className="flex justify-center">
+                <PixelCanvas
+                  imageData={imageData}
+                  onPixelChange={handlePixelChange}
+                  selectedColor={selectedColor}
+                  gridSize={32}
+                  canvasRef={mainCanvasRef}
+                  isEyedropperActive={isEyedropperActive}
+                  onColorPick={handleColorPick}
+                  pixels={pixels}
+                  setPixels={setPixels}
+                />
+              </div>
+              
+              {/* Color Palette */}
+              <ColorPicker
+                selectedColor={selectedColor}
+                onColorChange={setSelectedColor}
+                isEyedropperActive={isEyedropperActive}
+                onEyedropperToggle={handleEyedropperToggle}
+                compact={true}
+              />
+            </div>
+          </Card>
         </div>
       </div>
     </div>
