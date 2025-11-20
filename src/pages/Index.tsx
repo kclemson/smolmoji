@@ -7,7 +7,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PixelCanvas } from "@/components/PixelCanvas";
 import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser } from "lucide-react";
+import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useDebouncedLocalStorage } from "@/hooks/useDebouncedLocalStorage";
 import { cn } from "@/lib/utils";
@@ -144,6 +144,45 @@ const Index = () => {
   const handlePixelEditComplete = useCallback((newPixels: string[][]) => {
     pushToHistory(newPixels);
   }, [pushToHistory]);
+
+  const shiftPixels = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
+    if (pixels.length === 0) return;
+    
+    const newPixels: string[][] = Array(32).fill(null).map(() => Array(32).fill('transparent'));
+    
+    pixels.forEach((row, y) => {
+      row.forEach((color, x) => {
+        if (color === 'transparent') return; // Skip background pixels
+        
+        let newX = x;
+        let newY = y;
+        
+        switch (direction) {
+          case 'up':
+            newY = y - 1;
+            break;
+          case 'down':
+            newY = y + 1;
+            break;
+          case 'left':
+            newX = x - 1;
+            break;
+          case 'right':
+            newX = x + 1;
+            break;
+        }
+        
+        // Only place pixel if it's within bounds
+        if (newX >= 0 && newX < 32 && newY >= 0 && newY < 32) {
+          newPixels[newY][newX] = color;
+        }
+        // Pixels that fall off the edge are simply discarded
+      });
+    });
+    
+    setPixels(newPixels);
+    pushToHistory(newPixels);
+  }, [pixels, pushToHistory]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -363,30 +402,95 @@ const Index = () => {
                 left click to color, right click to revert. click and drag to create a rectangle.
               </p>
             
-            {/* Undo/Redo Controls */}
-            <div className="flex justify-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={undo}
-                disabled={historyIndex <= 0}
-                className="gap-2"
-                title="Undo (Ctrl+Z)"
-              >
-                <Undo2 className="w-4 h-4" />
-                Undo
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={redo}
-                disabled={historyIndex >= historyStack.length - 1}
-                className="gap-2"
-                title="Redo (Ctrl+Y)"
-              >
-                <Redo2 className="w-4 h-4" />
-                Redo
-              </Button>
+            {/* Undo/Redo and Shift Controls */}
+            <div className="flex justify-center gap-4 items-center">
+              {/* Undo/Redo */}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={undo}
+                  disabled={historyIndex <= 0}
+                  className="gap-2"
+                  title="Undo (Ctrl+Z)"
+                >
+                  <Undo2 className="w-4 h-4" />
+                  Undo
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={redo}
+                  disabled={historyIndex >= historyStack.length - 1}
+                  className="gap-2"
+                  title="Redo (Ctrl+Y)"
+                >
+                  <Redo2 className="w-4 h-4" />
+                  Redo
+                </Button>
+              </div>
+              
+              {/* Separator */}
+              <div className="w-px h-8 bg-border" />
+              
+              {/* D-Pad Shift Controls */}
+              <div className="grid grid-cols-3 grid-rows-2 gap-1 w-fit">
+                {/* Up button - centered in top row */}
+                <div className="col-start-2 row-start-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => shiftPixels('up')}
+                    disabled={pixels.length === 0}
+                    title="Shift pixels up"
+                    className="w-10 h-10 p-0"
+                  >
+                    <ArrowUp className="w-4 h-4" />
+                  </Button>
+                </div>
+                
+                {/* Left button */}
+                <div className="col-start-1 row-start-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => shiftPixels('left')}
+                    disabled={pixels.length === 0}
+                    title="Shift pixels left"
+                    className="w-10 h-10 p-0"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                  </Button>
+                </div>
+                
+                {/* Down button - centered in bottom row */}
+                <div className="col-start-2 row-start-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => shiftPixels('down')}
+                    disabled={pixels.length === 0}
+                    title="Shift pixels down"
+                    className="w-10 h-10 p-0"
+                  >
+                    <ArrowDown className="w-4 h-4" />
+                  </Button>
+                </div>
+                
+                {/* Right button */}
+                <div className="col-start-3 row-start-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => shiftPixels('right')}
+                    disabled={pixels.length === 0}
+                    title="Shift pixels right"
+                    className="w-10 h-10 p-0"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
             
         {/* Color Palette */}
