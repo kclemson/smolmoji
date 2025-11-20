@@ -270,7 +270,7 @@ const Index = () => {
                   size="sm"
                   className="gap-2"
                   disabled={!imageData}
-                  variant="default"
+                  variant="outline"
                 >
                   <Download className="w-4 h-4" />
                   Download PNG (128x128)
