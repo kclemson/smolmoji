@@ -261,8 +261,7 @@ const Index = () => {
         {/* Single Column Layout */}
         <div className="space-y-6">
           {/* Row 1: Design Direction + Background + Generate */}
-          <Card className="p-6">
-            <div className="space-y-3">
+          <div className="space-y-3">
               <Label className="text-xs text-muted-foreground">Design Direction:</Label>
               <Textarea
                 placeholder="e.g., happy cat, fire symbol, laughing face..."
@@ -316,11 +315,10 @@ const Index = () => {
                 </Button>
               </div>
             </div>
-          </Card>
+          </div>
 
           {/* Pixel Editor */}
-          <Card className="p-6">
-            <div className="space-y-4">
+          <div className="space-y-4">
               {/* 32x32 Preview + Download Button */}
               <div className="flex items-center justify-center gap-4">
                 <canvas
@@ -502,8 +500,6 @@ const Index = () => {
             onCustomColorsChange={setCustomColors}
           />
         </div>
-            </div>
-          </Card>
         </div>
       </div>
     </div>
