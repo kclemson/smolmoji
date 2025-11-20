@@ -9,9 +9,7 @@ const STATIC_COLORS = [
   "#000000", "#FFFFFF", "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF6600", "#9900FF",
 ];
 
-export const DEFAULT_CUSTOM_COLORS = [
-  "#808080", "#C0C0C0", "#800000", "#008000", "#000080", "#808000", "#FF1493", "#00CED1",
-];
+export const DEFAULT_CUSTOM_COLORS: string[] = [];
 
 interface ColorPickerProps {
   selectedColor: string;
@@ -125,19 +123,25 @@ export const ColorPicker = ({
           
           {/* Row 2: Recent/Custom colors */}
           <div className="grid grid-cols-8 gap-2">
-            {customColors.map((color, index) => (
-              <button
-                key={`custom-${index}`}
-                onClick={() => onColorChange(color)}
-                className={cn(
-                  "w-8 h-8 rounded-md border-2 transition-all hover:scale-110",
-                  selectedColor === color 
-                    ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background" 
-                    : "border-border"
-                )}
-                style={{ backgroundColor: color }}
-              />
-            ))}
+            {Array.from({ length: 8 }).map((_, index) => {
+              const color = customColors[index];
+              return (
+                <button
+                  key={`custom-${index}`}
+                  onClick={() => color && onColorChange(color)}
+                  className={cn(
+                    "w-8 h-8 rounded-md border-2 transition-all",
+                    color ? "hover:scale-110 cursor-pointer" : "cursor-default",
+                    color && selectedColor === color 
+                      ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background" 
+                      : "border-border",
+                    !color && "bg-muted/20"
+                  )}
+                  style={color ? { backgroundColor: color } : {}}
+                  disabled={!color}
+                />
+              );
+            })}
           </div>
         </div>
       </div>
