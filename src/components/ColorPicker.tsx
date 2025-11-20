@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Pipette } from "lucide-react";
+import { Pipette, RectangleHorizontal } from "lucide-react";
 
 const PRESET_COLORS = [
   // Row 1: Basic colors
@@ -16,13 +16,17 @@ interface ColorPickerProps {
   onColorChange: (color: string) => void;
   isEyedropperActive?: boolean;
   onEyedropperToggle?: () => void;
+  isMultiSelectActive?: boolean;
+  onMultiSelectToggle?: () => void;
 }
 
 export const ColorPicker = ({ 
   selectedColor, 
   onColorChange, 
   isEyedropperActive = false,
-  onEyedropperToggle
+  onEyedropperToggle,
+  isMultiSelectActive = false,
+  onMultiSelectToggle
 }: ColorPickerProps) => {
   const [customColor, setCustomColor] = useState("#000000");
 
@@ -47,7 +51,7 @@ export const ColorPicker = ({
           size="sm"
           onClick={() => onColorChange("transparent")}
           className={cn(
-            "col-span-2 h-8 px-3",
+            "h-8 px-3",
             selectedColor === "transparent" && "ring-2 ring-primary"
           )}
         >
@@ -60,11 +64,25 @@ export const ColorPicker = ({
             size="sm"
             onClick={onEyedropperToggle}
             className={cn(
-              "col-span-2 h-8 px-3",
+              "h-8 px-3",
               isEyedropperActive && "ring-2 ring-primary bg-primary/10"
             )}
           >
             <Pipette className="h-3 w-3" />
+          </Button>
+        )}
+
+        {onMultiSelectToggle && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onMultiSelectToggle}
+            className={cn(
+              "h-8 px-3",
+              isMultiSelectActive && "ring-2 ring-primary bg-primary/10"
+            )}
+          >
+            <RectangleHorizontal className="h-3 w-3" />
           </Button>
         )}
         
