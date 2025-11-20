@@ -250,7 +250,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background p-4 sm:p-8">
-      <div className="max-w-2xl mx-auto space-y-8">
+      <div className="max-w-md mx-auto space-y-8">
         {/* Header */}
         <div className="text-center">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -261,7 +261,7 @@ const Index = () => {
         {/* Single Column Layout */}
         <div className="space-y-6">
           {/* Row 1: Design Direction + Background + Generate */}
-          <div className="space-y-3 max-w-xl mx-auto">
+          <div className="space-y-3">
           <Textarea
             placeholder="Describe your emoji idea... e.g., wizard cat casting spell, glitching heart, steaming ramen bowl, pixel sword with aura, ninja penguin, disco ball party"
                 value={prompt}
