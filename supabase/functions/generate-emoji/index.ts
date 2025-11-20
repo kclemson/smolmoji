@@ -36,13 +36,20 @@ serve(async (req) => {
 Create a pixel art emoji based on this concept: ${prompt}.
 
 CRITICAL REQUIREMENTS:
-- 32x32 pixels MAXIMUM - must be clearly readable at this tiny size
+- 32x32 pixel canvas - your emoji should FILL most of this space (24-28 pixels in each dimension)
 - Use standard emoji design principles (like Unicode emojis 😀🎉❤️🔥)
 - Design should be instantly recognizable when scaled down
 - Think minimalist for the core design - less is more
 - DO NOT DRAW A BACKGROUND - leave empty space around the emoji completely empty
 - NO checkerboard patterns, NO background pixels of any color
 - Only draw the actual emoji pixels - everything else should be empty/no pixels
+
+SIZE REQUIREMENTS:
+- FILL MOST OF THE CANVAS - the emoji should be LARGE and dominant
+- Use at least 24-28 pixels in both width and height (out of 32x32)
+- Keep margins SMALL - maximum 2-4 pixels of empty space on each side
+- The emoji should NOT float in the center with lots of empty space
+- Think of it like this: if the canvas is a picture frame, the emoji should nearly fill that frame
 
 COLOR GUIDANCE:
 - Start with 3-5 PRIMARY bold, solid colors for the main structure and shapes
