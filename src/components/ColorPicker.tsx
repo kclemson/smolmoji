@@ -29,8 +29,7 @@ export const ColorPicker = ({
   const colorInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="flex justify-center">
-      <div className="flex gap-4 items-start">
+    <div className="flex gap-3 items-start">
         {/* Left: Tools Section */}
         <div className="grid grid-cols-2 gap-2">
           <input
@@ -100,6 +99,5 @@ export const ColorPicker = ({
           ))}
         </div>
       </div>
-    </div>
   );
 };
