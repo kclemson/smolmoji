@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { PixelCanvas } from "@/components/PixelCanvas";
 import { ColorPicker } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Sparkles, Loader2 } from "lucide-react";
+import { Download, Sparkles, Loader2, Undo2, Redo2 } from "lucide-react";
 
 const Index = () => {
   const [prompt, setPrompt] = useState("");
@@ -296,11 +296,37 @@ const Index = () => {
                   setPixels={setPixels}
                   onEditComplete={handlePixelEditComplete}
                   backgroundColor={backgroundColor}
-                />
-              </div>
-              
-              {/* Color Palette */}
-              <ColorPicker
+              />
+            </div>
+            
+            {/* Undo/Redo Controls */}
+            <div className="flex justify-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={undo}
+                disabled={historyIndex <= 0}
+                className="gap-2"
+                title="Undo (Ctrl+Z)"
+              >
+                <Undo2 className="w-4 h-4" />
+                Undo
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={redo}
+                disabled={historyIndex >= historyStack.length - 1}
+                className="gap-2"
+                title="Redo (Ctrl+Y)"
+              >
+                <Redo2 className="w-4 h-4" />
+                Redo
+              </Button>
+            </div>
+            
+            {/* Color Palette */}
+            <ColorPicker
                 selectedColor={selectedColor}
                 onColorChange={setSelectedColor}
                 isEyedropperActive={isEyedropperActive}
