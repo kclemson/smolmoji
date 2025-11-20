@@ -5,23 +5,28 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Pipette, Eraser, Palette } from "lucide-react";
 
-const PRESET_COLORS = [
-  // Row 1: Basic colors
+const STATIC_COLORS = [
   "#000000", "#FFFFFF", "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF6600", "#9900FF",
-  // Row 2: Common pixel art colors
+];
+
+export const DEFAULT_CUSTOM_COLORS = [
   "#808080", "#C0C0C0", "#800000", "#008000", "#000080", "#808000", "#FF1493", "#00CED1",
 ];
 
 interface ColorPickerProps {
   selectedColor: string;
   onColorChange: (color: string) => void;
+  customColors: string[];
+  onCustomColorsChange: (colors: string[]) => void;
   isEyedropperActive?: boolean;
   onEyedropperToggle?: () => void;
 }
 
 export const ColorPicker = ({ 
   selectedColor, 
-  onColorChange, 
+  onColorChange,
+  customColors,
+  onCustomColorsChange,
   isEyedropperActive = false,
   onEyedropperToggle
 }: ColorPickerProps) => {
@@ -38,8 +43,15 @@ export const ColorPicker = ({
             className="hidden"
             value={customColor}
             onChange={(e) => {
-              setCustomColor(e.target.value);
-              onColorChange(e.target.value);
+              const newColor = e.target.value;
+              setCustomColor(newColor);
+              onColorChange(newColor);
+              
+              // Add to custom colors if not already present
+              if (!customColors.includes(newColor)) {
+                const updatedColors = [newColor, ...customColors].slice(0, 8);
+                onCustomColorsChange(updatedColors);
+              }
             }}
           />
           
@@ -83,20 +95,40 @@ export const ColorPicker = ({
         <Separator orientation="vertical" className="self-stretch w-[2px] bg-gray-500" />
         
         {/* Right: Color Grid */}
-        <div className="grid grid-cols-8 gap-2">
-          {PRESET_COLORS.map((color) => (
-            <button
-              key={color}
-              onClick={() => onColorChange(color)}
-              className={cn(
-                "w-8 h-8 rounded-md border-2 transition-all hover:scale-110",
-                selectedColor === color 
-                  ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background" 
-                  : "border-border"
-              )}
-              style={{ backgroundColor: color }}
-            />
-          ))}
+        <div className="flex flex-col gap-2">
+          {/* Row 1: Static colors */}
+          <div className="grid grid-cols-8 gap-2">
+            {STATIC_COLORS.map((color) => (
+              <button
+                key={color}
+                onClick={() => onColorChange(color)}
+                className={cn(
+                  "w-8 h-8 rounded-md border-2 transition-all hover:scale-110",
+                  selectedColor === color 
+                    ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background" 
+                    : "border-border"
+                )}
+                style={{ backgroundColor: color }}
+              />
+            ))}
+          </div>
+          
+          {/* Row 2: Recent/Custom colors */}
+          <div className="grid grid-cols-8 gap-2">
+            {customColors.map((color, index) => (
+              <button
+                key={`custom-${index}`}
+                onClick={() => onColorChange(color)}
+                className={cn(
+                  "w-8 h-8 rounded-md border-2 transition-all hover:scale-110",
+                  selectedColor === color 
+                    ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background" 
+                    : "border-border"
+                )}
+                style={{ backgroundColor: color }}
+              />
+            ))}
+          </div>
         </div>
       </div>
   );
