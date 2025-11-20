@@ -7,6 +7,8 @@ interface PixelCanvasProps {
   selectedColor: string;
   gridSize?: number;
   canvasRef?: React.RefObject<HTMLCanvasElement>;
+  isEyedropperActive?: boolean;
+  onColorPick?: (color: string) => void;
 }
 
 export const PixelCanvas = ({ 
@@ -14,7 +16,9 @@ export const PixelCanvas = ({
   onPixelChange, 
   selectedColor,
   gridSize = 32,
-  canvasRef: externalCanvasRef
+  canvasRef: externalCanvasRef,
+  isEyedropperActive = false,
+  onColorPick
 }: PixelCanvasProps) => {
   const internalCanvasRef = useRef<HTMLCanvasElement>(null);
   const canvasRef = externalCanvasRef || internalCanvasRef;
@@ -119,6 +123,16 @@ export const PixelCanvas = ({
     const y = Math.floor((e.clientY - rect.top) / pixelSize);
 
     if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
+      // If eyedropper mode is active, pick the color instead of drawing
+      if (isEyedropperActive && onColorPick) {
+        const pickedColor = pixels[y][x];
+        if (pickedColor !== "transparent") {
+          onColorPick(pickedColor);
+        }
+        return;
+      }
+
+      // Normal drawing mode
       const newPixels = [...pixels];
       newPixels[y][x] = selectedColor === "transparent" ? "transparent" : selectedColor;
       setPixels(newPixels);
@@ -127,7 +141,7 @@ export const PixelCanvas = ({
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return;
+    if (!isDrawing || isEyedropperActive) return;
     handleCanvasClick(e);
   };
 
@@ -138,8 +152,9 @@ export const PixelCanvas = ({
         width={400}
         height={400}
         className={cn(
-          "border-2 border-border rounded-lg cursor-crosshair",
-          "bg-[hsl(var(--canvas-bg))]"
+          "border-2 border-border rounded-lg",
+          "bg-[hsl(var(--canvas-bg))]",
+          isEyedropperActive ? "cursor-crosshair" : "cursor-pointer"
         )}
         onClick={handleCanvasClick}
         onMouseDown={() => setIsDrawing(true)}
