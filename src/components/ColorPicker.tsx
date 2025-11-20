@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Pipette, RectangleHorizontal, Eraser, Palette } from "lucide-react";
+import { Pipette, Eraser, Palette } from "lucide-react";
 
 const PRESET_COLORS = [
   // Row 1: Basic colors
@@ -17,17 +17,13 @@ interface ColorPickerProps {
   onColorChange: (color: string) => void;
   isEyedropperActive?: boolean;
   onEyedropperToggle?: () => void;
-  isMultiSelectActive?: boolean;
-  onMultiSelectToggle?: () => void;
 }
 
 export const ColorPicker = ({ 
   selectedColor, 
   onColorChange, 
   isEyedropperActive = false,
-  onEyedropperToggle,
-  isMultiSelectActive = false,
-  onMultiSelectToggle
+  onEyedropperToggle
 }: ColorPickerProps) => {
   const [customColor, setCustomColor] = useState("#000000");
   const colorInputRef = useRef<HTMLInputElement>(null);
@@ -81,20 +77,6 @@ export const ColorPicker = ({
               )}
             >
               <Pipette className="h-4 w-4" />
-            </Button>
-          )}
-
-          {onMultiSelectToggle && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={onMultiSelectToggle}
-              className={cn(
-                "w-8 h-8",
-                isMultiSelectActive && "ring-2 ring-primary bg-primary/10"
-              )}
-            >
-              <RectangleHorizontal className="h-4 w-4" />
             </Button>
           )}
         </div>
