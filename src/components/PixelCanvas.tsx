@@ -8,6 +8,7 @@ interface PixelCanvasProps {
   gridSize?: number;
   canvasRef?: React.RefObject<HTMLCanvasElement>;
   isEyedropperActive?: boolean;
+  isMultiSelectActive?: boolean;
   onColorPick?: (color: string) => void;
   pixels: string[][];
   setPixels: (pixels: string[][]) => void;
@@ -20,6 +21,7 @@ export const PixelCanvas = ({
   gridSize = 32,
   canvasRef: externalCanvasRef,
   isEyedropperActive = false,
+  isMultiSelectActive = false,
   onColorPick,
   pixels,
   setPixels
@@ -27,6 +29,8 @@ export const PixelCanvas = ({
   const internalCanvasRef = useRef<HTMLCanvasElement>(null);
   const canvasRef = externalCanvasRef || internalCanvasRef;
   const [isDrawing, setIsDrawing] = useState(false);
+  const [selectionStart, setSelectionStart] = useState<{x: number, y: number} | null>(null);
+  const [selectionEnd, setSelectionEnd] = useState<{x: number, y: number} | null>(null);
   const pixelSize = 320 / gridSize;
 
   useEffect(() => {
@@ -115,37 +119,117 @@ export const PixelCanvas = ({
       ctx.lineTo(320, i * pixelSize);
       ctx.stroke();
     }
-  }, [pixels, gridSize, pixelSize]);
 
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    // Draw selection rectangle
+    if (selectionStart && selectionEnd) {
+      const minX = Math.min(selectionStart.x, selectionEnd.x);
+      const minY = Math.min(selectionStart.y, selectionEnd.y);
+      const maxX = Math.max(selectionStart.x, selectionEnd.x);
+      const maxY = Math.max(selectionStart.y, selectionEnd.y);
+      
+      ctx.fillStyle = "rgba(59, 130, 246, 0.15)";
+      ctx.fillRect(
+        minX * pixelSize, 
+        minY * pixelSize, 
+        (maxX - minX + 1) * pixelSize, 
+        (maxY - minY + 1) * pixelSize
+      );
+      
+      ctx.strokeStyle = "rgba(59, 130, 246, 0.8)";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(
+        minX * pixelSize, 
+        minY * pixelSize, 
+        (maxX - minX + 1) * pixelSize, 
+        (maxY - minY + 1) * pixelSize
+      );
+    }
+  }, [pixels, gridSize, pixelSize, selectionStart, selectionEnd]);
+
+  const getPixelCoords = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return null;
 
     const rect = canvas.getBoundingClientRect();
     const x = Math.floor((e.clientX - rect.left) / pixelSize);
     const y = Math.floor((e.clientY - rect.top) / pixelSize);
 
     if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
-      // If eyedropper mode is active, pick the color instead of drawing
-      if (isEyedropperActive && onColorPick) {
-        const pickedColor = pixels[y][x];
-        if (pickedColor !== "transparent") {
-          onColorPick(pickedColor);
-        }
-        return;
-      }
+      return { x, y };
+    }
+    return null;
+  };
 
-      // Normal drawing mode
-      const newPixels = [...pixels];
-      newPixels[y][x] = selectedColor === "transparent" ? "transparent" : selectedColor;
-      setPixels(newPixels);
-      onPixelChange();
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const coords = getPixelCoords(e);
+    if (!coords) return;
+
+    // If eyedropper mode is active, pick the color instead of drawing
+    if (isEyedropperActive && onColorPick) {
+      const pickedColor = pixels[coords.y][coords.x];
+      if (pickedColor !== "transparent") {
+        onColorPick(pickedColor);
+      }
+      return;
+    }
+
+    // If multi-select mode, don't paint individual pixels on click
+    if (isMultiSelectActive) return;
+
+    // Normal drawing mode
+    const newPixels = [...pixels];
+    newPixels[coords.y][coords.x] = selectedColor === "transparent" ? "transparent" : selectedColor;
+    setPixels(newPixels);
+    onPixelChange();
+  };
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const coords = getPixelCoords(e);
+    if (!coords) return;
+
+    setIsDrawing(true);
+
+    if (isMultiSelectActive) {
+      setSelectionStart(coords);
+      setSelectionEnd(coords);
     }
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing || isEyedropperActive) return;
-    handleCanvasClick(e);
+    const coords = getPixelCoords(e);
+    if (!coords || !isDrawing) return;
+
+    if (isMultiSelectActive && selectionStart) {
+      setSelectionEnd(coords);
+      return;
+    }
+
+    if (!isEyedropperActive) {
+      handleCanvasClick(e);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDrawing(false);
+
+    if (isMultiSelectActive && selectionStart && selectionEnd) {
+      const minX = Math.min(selectionStart.x, selectionEnd.x);
+      const minY = Math.min(selectionStart.y, selectionEnd.y);
+      const maxX = Math.max(selectionStart.x, selectionEnd.x);
+      const maxY = Math.max(selectionStart.y, selectionEnd.y);
+
+      const newPixels = pixels.map(row => [...row]);
+      for (let y = minY; y <= maxY; y++) {
+        for (let x = minX; x <= maxX; x++) {
+          newPixels[y][x] = selectedColor === "transparent" ? "transparent" : selectedColor;
+        }
+      }
+      setPixels(newPixels);
+      onPixelChange();
+
+      setSelectionStart(null);
+      setSelectionEnd(null);
+    }
   };
 
   return (
@@ -157,12 +241,13 @@ export const PixelCanvas = ({
         className={cn(
           "border-2 border-border rounded-lg",
           "bg-[hsl(var(--canvas-bg))]",
-          isEyedropperActive ? "cursor-crosshair" : "cursor-pointer"
+          isEyedropperActive ? "cursor-crosshair" : 
+          isMultiSelectActive ? "cursor-cell" : "cursor-pointer"
         )}
         onClick={handleCanvasClick}
-        onMouseDown={() => setIsDrawing(true)}
-        onMouseUp={() => setIsDrawing(false)}
-        onMouseLeave={() => setIsDrawing(false)}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
         onMouseMove={handleMouseMove}
       />
     </div>
