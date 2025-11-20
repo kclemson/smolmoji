@@ -151,20 +151,9 @@ export const PixelCanvas = ({
       const maxY = Math.max(selectionStart.y, selectionEnd.y);
       
       // Different colors for paint (left) vs restore (right)
-      const fillColor = isRightClickDrag 
-        ? "rgba(251, 146, 60, 0.15)"  // Orange for restore
-        : "rgba(59, 130, 246, 0.15)";  // Blue for paint
       const strokeColor = isRightClickDrag
         ? "rgba(251, 146, 60, 0.8)"   // Orange for restore
         : "rgba(59, 130, 246, 0.8)";  // Blue for paint
-      
-      ctx.fillStyle = fillColor;
-      ctx.fillRect(
-        minX * pixelSize, 
-        minY * pixelSize, 
-        (maxX - minX + 1) * pixelSize, 
-        (maxY - minY + 1) * pixelSize
-      );
       
       ctx.strokeStyle = strokeColor;
       ctx.lineWidth = 2;
