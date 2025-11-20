@@ -38,6 +38,9 @@ CRITICAL REQUIREMENTS:
 - Use standard emoji design principles (like Unicode emojis 😀🎉❤️🔥)
 - Design should be instantly recognizable when scaled down
 - Think minimalist for the core design - less is more
+- TRANSPARENT BACKGROUND ONLY - generate only the emoji pixels with no background
+- Use alpha channel/transparency for the background
+- No white, black, or colored background pixels
 
 COLOR GUIDANCE:
 - Start with 3-5 PRIMARY bold, solid colors for the main structure and shapes
@@ -55,6 +58,7 @@ DESIGN PRINCIPLES:
 - The design must read clearly even without the subtle shading
 
 AVOID:
+- White, black, or any colored background - ONLY transparent background
 - Overly complex patterns or intricate designs
 - Thin lines or tiny details that blur at small sizes
 - Realistic rendering with excessive texture
@@ -62,11 +66,11 @@ AVOID:
 - More than 8-10 total colors (including shade variations)
 
 Examples of good emoji design:
-- Simple smiley: circle + dots for eyes + curve for mouth (2-3 colors + shading)
-- Fire emoji: flame shape with red/orange/yellow gradient (3-5 colors)
-- Heart: solid shape with subtle highlight (2-3 colors)
+- Simple smiley: circle + dots for eyes + curve for mouth (2-3 colors + shading) on transparent background
+- Fire emoji: flame shape with red/orange/yellow gradient (3-5 colors) on transparent background
+- Heart: solid shape with subtle highlight (2-3 colors) on transparent background
 
-Your design should be as simple and clear as standard Unicode emojis, with purposeful shading for visual polish.`,
+Your design should be as simple and clear as standard Unicode emojis, with purposeful shading for visual polish, and MUST have a completely transparent background with no background pixels.`,
           },
         ],
         modalities: ["image", "text"],
