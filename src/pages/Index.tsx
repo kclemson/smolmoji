@@ -18,7 +18,6 @@ const Index = () => {
   const [useTransparentBackground, setUseTransparentBackground] = useState(true);
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
   const preview32Ref = useRef<HTMLCanvasElement>(null);
-  const preview48Ref = useRef<HTMLCanvasElement>(null);
   const { toast } = useToast();
 
   const handleGenerate = async () => {
@@ -60,31 +59,22 @@ const Index = () => {
 
   const updatePreviews = () => {
     const preview32 = preview32Ref.current;
-    const preview48 = preview48Ref.current;
+    if (!preview32) return;
+
+    const ctx = preview32.getContext("2d");
+    if (!ctx) return;
     
-    if (!preview32 || !preview48) return;
-
-    const renderPixels = (canvas: HTMLCanvasElement, size: number) => {
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      
-      ctx.imageSmoothingEnabled = false;
-      ctx.clearRect(0, 0, size, size);
-      
-      const pixelSize = size / 32; // 32x32 grid
-      
-      pixels.forEach((row, y) => {
-        row.forEach((color, x) => {
-          if (color !== "transparent") {
-            ctx.fillStyle = color;
-            ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
-          }
-        });
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, 32, 32);
+    
+    pixels.forEach((row, y) => {
+      row.forEach((color, x) => {
+        if (color !== "transparent") {
+          ctx.fillStyle = color;
+          ctx.fillRect(x, y, 1, 1);
+        }
       });
-    };
-
-    renderPixels(preview32, 32);
-    renderPixels(preview48, 48);
+    });
   };
 
   const handlePixelChange = () => {
@@ -233,8 +223,25 @@ const Index = () => {
 
           </div>
 
-          {/* Right Panel - Canvas & Previews */}
+          {/* Right Panel - Preview & Canvas */}
           <div className="space-y-6">
+            {/* 32x32 Preview */}
+            <Card className="p-6">
+              <div className="space-y-4">
+                <label className="text-sm font-medium text-center block">32x32 Preview</label>
+                <div className="flex justify-center">
+                  <canvas
+                    ref={preview32Ref}
+                    width={32}
+                    height={32}
+                    className="border-2 border-border rounded pixelated"
+                    style={{ imageRendering: "pixelated" }}
+                  />
+                </div>
+              </div>
+            </Card>
+
+            {/* Pixel Editor */}
             <Card className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -253,34 +260,6 @@ const Index = () => {
                     pixels={pixels}
                     setPixels={setPixels}
                   />
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-6">
-              <div className="space-y-4">
-                <label className="text-sm font-medium">Size Previews</label>
-                <div className="flex gap-8 justify-center items-end">
-                  <div className="space-y-2 text-center">
-                    <canvas
-                      ref={preview32Ref}
-                      width={32}
-                      height={32}
-                      className="border-2 border-border rounded pixelated mx-auto"
-                      style={{ imageRendering: "pixelated" }}
-                    />
-                    <p className="text-xs text-muted-foreground">32×32 (Actual)</p>
-                  </div>
-                  <div className="space-y-2 text-center">
-                    <canvas
-                      ref={preview48Ref}
-                      width={48}
-                      height={48}
-                      className="border-2 border-border rounded pixelated mx-auto"
-                      style={{ imageRendering: "pixelated" }}
-                    />
-                    <p className="text-xs text-muted-foreground">48×48 (1.5× Scale)</p>
-                  </div>
                 </div>
               </div>
             </Card>
