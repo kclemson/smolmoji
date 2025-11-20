@@ -27,7 +27,7 @@ export const PixelCanvas = ({
   const internalCanvasRef = useRef<HTMLCanvasElement>(null);
   const canvasRef = externalCanvasRef || internalCanvasRef;
   const [isDrawing, setIsDrawing] = useState(false);
-  const pixelSize = 400 / gridSize;
+  const pixelSize = 320 / gridSize;
 
   useEffect(() => {
     // Initialize empty grid
@@ -107,12 +107,12 @@ export const PixelCanvas = ({
     for (let i = 0; i <= gridSize; i++) {
       ctx.beginPath();
       ctx.moveTo(i * pixelSize, 0);
-      ctx.lineTo(i * pixelSize, 400);
+      ctx.lineTo(i * pixelSize, 320);
       ctx.stroke();
       
       ctx.beginPath();
       ctx.moveTo(0, i * pixelSize);
-      ctx.lineTo(400, i * pixelSize);
+      ctx.lineTo(320, i * pixelSize);
       ctx.stroke();
     }
   }, [pixels, gridSize, pixelSize]);
@@ -152,8 +152,8 @@ export const PixelCanvas = ({
     <div className="relative">
       <canvas
         ref={canvasRef}
-        width={400}
-        height={400}
+        width={320}
+        height={320}
         className={cn(
           "border-2 border-border rounded-lg",
           "bg-[hsl(var(--canvas-bg))]",

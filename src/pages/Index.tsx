@@ -147,8 +147,8 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background p-4 sm:p-8">
+      <div className="max-w-2xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center space-y-3">
           <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -229,7 +229,11 @@ const Index = () => {
                   width={32}
                   height={32}
                   className="border-2 border-border rounded pixelated"
-                  style={{ imageRendering: "pixelated" }}
+                  style={{ 
+                    imageRendering: "pixelated",
+                    width: "160px",
+                    height: "160px"
+                  }}
                 />
               </div>
               <div className="flex justify-center">
