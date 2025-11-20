@@ -14,6 +14,8 @@ const Index = () => {
   const [selectedColor, setSelectedColor] = useState("#000000");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEyedropperActive, setIsEyedropperActive] = useState(false);
+  const [pixels, setPixels] = useState<string[][]>([]);
+  const [useTransparentBackground, setUseTransparentBackground] = useState(true);
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
   const preview32Ref = useRef<HTMLCanvasElement>(null);
   const preview48Ref = useRef<HTMLCanvasElement>(null);
@@ -57,28 +59,35 @@ const Index = () => {
   };
 
   const updatePreviews = () => {
-    const mainCanvas = mainCanvasRef.current;
     const preview32 = preview32Ref.current;
     const preview48 = preview48Ref.current;
     
-    if (!mainCanvas || !preview32 || !preview48) return;
+    if (!preview32 || !preview48) return;
 
-    const ctx32 = preview32.getContext("2d");
-    const ctx48 = preview48.getContext("2d");
-    
-    if (!ctx32 || !ctx48) return;
+    const renderPixels = (canvas: HTMLCanvasElement, size: number) => {
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, size, size);
+      
+      const pixelSize = size / 32; // 32x32 grid
+      
+      pixels.forEach((row, y) => {
+        row.forEach((color, x) => {
+          if (color !== "transparent") {
+            ctx.fillStyle = color;
+            ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+          }
+        });
+      });
+    };
 
-    ctx32.imageSmoothingEnabled = false;
-    ctx48.imageSmoothingEnabled = false;
-
-    ctx32.clearRect(0, 0, 32, 32);
-    ctx48.clearRect(0, 0, 48, 48);
-
-    ctx32.drawImage(mainCanvas, 0, 0, 32, 32);
-    ctx48.drawImage(mainCanvas, 0, 0, 48, 48);
+    renderPixels(preview32, 32);
+    renderPixels(preview48, 48);
   };
 
-  const handlePixelChange = (x: number, y: number, color: string) => {
+  const handlePixelChange = () => {
     // Update previews immediately when pixels change
     setTimeout(updatePreviews, 0);
   };
@@ -97,16 +106,11 @@ const Index = () => {
   };
 
   useEffect(() => {
-    if (!imageData) return;
-    
-    // Small delay to ensure main canvas has rendered the new image
-    setTimeout(updatePreviews, 100);
-  }, [imageData]);
+    // Update previews whenever pixels change
+    updatePreviews();
+  }, [pixels]);
 
   const handleDownload = () => {
-    const canvas = mainCanvasRef.current;
-    if (!canvas) return;
-
     // Create a temporary canvas for the final image
     const tempCanvas = document.createElement("canvas");
     tempCanvas.width = 128; // Discord emoji size
@@ -114,9 +118,25 @@ const Index = () => {
     const ctx = tempCanvas.getContext("2d");
     if (!ctx) return;
 
-    // Draw the current canvas scaled to 128x128
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(canvas, 0, 0, 128, 128);
+
+    // Fill background if not transparent
+    if (!useTransparentBackground) {
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, 128, 128);
+    }
+
+    // Render pixels
+    const pixelSize = 128 / 32;
+    
+    pixels.forEach((row, y) => {
+      row.forEach((color, x) => {
+        if (color !== "transparent") {
+          ctx.fillStyle = color;
+          ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+        }
+      });
+    });
 
     // Download
     tempCanvas.toBlob((blob) => {
@@ -187,6 +207,18 @@ const Index = () => {
               />
               </div>
 
+              <div className="space-y-3">
+                <label className="text-sm font-medium">Export Options</label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setUseTransparentBackground(!useTransparentBackground)}
+                  className="w-full"
+                >
+                  Background: {useTransparentBackground ? "Transparent" : "White"}
+                </Button>
+              </div>
+
               <Button 
                 onClick={handleDownload} 
                 className="w-full gap-2"
@@ -218,6 +250,8 @@ const Index = () => {
                     canvasRef={mainCanvasRef}
                     isEyedropperActive={isEyedropperActive}
                     onColorPick={handleColorPick}
+                    pixels={pixels}
+                    setPixels={setPixels}
                   />
                 </div>
               </div>
