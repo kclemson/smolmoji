@@ -124,7 +124,7 @@ export const ColorPicker = ({
       
       {/* Instructions - spans full width */}
       <p className="text-xs text-muted-foreground text-center w-full">
-        click and drag to fill in a rectangle - right click to revert
+        left click to color, right click to revert. click and drag to create a rectangle.
       </p>
     </div>
   );
