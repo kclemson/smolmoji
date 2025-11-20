@@ -99,7 +99,7 @@ export const ColorPicker = ({
           )}
         </div>
         
-        <Separator orientation="vertical" className="h-auto" />
+        <Separator orientation="vertical" className="h-auto w-[2px] bg-gray-500" />
         
         {/* Right: Color Grid */}
         <div className="grid grid-cols-8 gap-2">
