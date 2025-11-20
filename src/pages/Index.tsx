@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -18,6 +18,11 @@ const Index = () => {
   const [backgroundColor, setBackgroundColor] = useState<"transparent" | "white" | "black">("transparent");
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
   const preview32Ref = useRef<HTMLCanvasElement>(null);
+  
+  // Undo/Redo state
+  const [historyStack, setHistoryStack] = useState<string[][][]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const MAX_HISTORY = 50;
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -86,6 +91,55 @@ const Index = () => {
     // Update previews whenever pixels change
     updatePreviews();
   }, [pixels]);
+
+  // Undo/Redo functions
+  const pushToHistory = useCallback((newPixels: string[][]) => {
+    setHistoryStack(prev => {
+      const truncated = prev.slice(0, historyIndex + 1);
+      const newStack = [...truncated, structuredClone(newPixels)];
+      return newStack.slice(-MAX_HISTORY);
+    });
+    setHistoryIndex(prev => Math.min(prev + 1, MAX_HISTORY - 1));
+  }, [historyIndex]);
+
+  const undo = useCallback(() => {
+    if (historyIndex <= 0) return;
+    const newIndex = historyIndex - 1;
+    setHistoryIndex(newIndex);
+    setPixels(structuredClone(historyStack[newIndex]));
+  }, [historyIndex, historyStack]);
+
+  const redo = useCallback(() => {
+    if (historyIndex >= historyStack.length - 1) return;
+    const newIndex = historyIndex + 1;
+    setHistoryIndex(newIndex);
+    setPixels(structuredClone(historyStack[newIndex]));
+  }, [historyIndex, historyStack]);
+
+  const handlePixelEditComplete = useCallback((newPixels: string[][]) => {
+    pushToHistory(newPixels);
+  }, [pushToHistory]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement) return;
+      
+      const mod = navigator.platform.includes('Mac') ? e.metaKey : e.ctrlKey;
+      
+      if (mod && e.key === 'z') {
+        e.preventDefault();
+        undo();
+      }
+      if (mod && e.key === 'y') {
+        e.preventDefault();
+        redo();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [undo, redo]);
 
   const handleDownload = () => {
     // Create a temporary canvas for the final image
@@ -248,6 +302,7 @@ const Index = () => {
                   onColorPick={handleColorPick}
                   pixels={pixels}
                   setPixels={setPixels}
+                  onEditComplete={handlePixelEditComplete}
                 />
               </div>
               
