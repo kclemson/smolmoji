@@ -34,6 +34,19 @@ const Index = () => {
       return;
     }
 
+    // Check if regenerating (there's existing work)
+    const isRegenerating = pixels.length > 0 || imageData !== null;
+    
+    // Clear state when regenerating
+    if (isRegenerating) {
+      setImageData(null);
+      setPixels([]);
+      setOriginalPixels([]);
+      setCustomColors([]);
+      setHistoryStack([]);
+      setHistoryIndex(-1);
+    }
+
     setIsGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-emoji", {
@@ -52,20 +65,6 @@ const Index = () => {
     }
   };
 
-  const handleStartOver = async () => {
-    // Clear all local storage state
-    setImageData(null);
-    setSelectedColor("#000000");
-    setCustomColors([]);
-    setPixels([]);
-    setOriginalPixels([]);
-    setBackgroundColor("transparent");
-    setHistoryStack([]);
-    setHistoryIndex(-1);
-    
-    // Regenerate with current prompt
-    await handleGenerate();
-  };
 
   const updatePreviews = () => {
     const preview32 = preview32Ref.current;
@@ -261,7 +260,7 @@ const Index = () => {
                 </RadioGroup>
               </div>
               
-              <div className="flex justify-center gap-2">
+              <div className="flex justify-center">
                 <Button 
                   onClick={handleGenerate} 
                   disabled={isGenerating}
@@ -273,16 +272,7 @@ const Index = () => {
                   ) : (
                     <Sparkles className="w-4 h-4" />
                   )}
-                  Generate
-                </Button>
-                <Button 
-                  onClick={handleStartOver} 
-                  disabled={isGenerating || !prompt.trim()}
-                  size="sm"
-                  variant="outline"
-                  className="gap-2"
-                >
-                  Start Over
+                  {pixels.length > 0 || imageData !== null ? "Re-generate" : "Generate"}
                 </Button>
               </div>
             </div>
