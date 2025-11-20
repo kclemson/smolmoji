@@ -341,11 +341,6 @@ const Index = () => {
                   setOriginalPixels={setOriginalPixels}
                 />
               </div>
-              
-              {/* Instructions */}
-              <p className="text-xs text-muted-foreground text-center">
-                left click to color, right click to revert. click and drag to create a rectangle.
-              </p>
             
             {/* Compact Tools Row: Eyedropper, Eraser, Undo, Redo, Separator, Shift Controls */}
             <div className="flex justify-center gap-2 items-center">
@@ -498,6 +493,11 @@ const Index = () => {
             </RadioGroup>
           </div>
         </div>
+
+        {/* Instructions */}
+        <p className="text-xs text-muted-foreground text-center">
+          left click to color, right click to revert. click and drag to create a rectangle.
+        </p>
         </div>
       </div>
     </div>
