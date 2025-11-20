@@ -38,6 +38,7 @@ export const PixelCanvas = ({
   const [selectionStart, setSelectionStart] = useState<{x: number, y: number} | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<{x: number, y: number} | null>(null);
   const [isRightClickDrag, setIsRightClickDrag] = useState(false);
+  const cleanupRef = useRef<(() => void) | null>(null);
   const pixelSize = 320 / gridSize;
 
   useEffect(() => {
@@ -338,19 +339,51 @@ export const PixelCanvas = ({
     setIsRightClickDrag(isRightClick);
     setSelectionStart(coords);
     setSelectionEnd(coords);
+
+    // Attach global listeners to prevent context menu and handle mouseup outside canvas
+    const handleGlobalContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+    
+    const handleGlobalMouseUp = () => {
+      handleMouseUp();
+    };
+    
+    document.addEventListener('contextmenu', handleGlobalContextMenu);
+    document.addEventListener('mouseup', handleGlobalMouseUp);
+    
+    // Store cleanup function
+    cleanupRef.current = () => {
+      document.removeEventListener('contextmenu', handleGlobalContextMenu);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const coords = getPixelCoords(e);
-    if (!coords || !isDrawing) return;
-
+    if (!isDrawing || !canvasRef.current) return;
+    
+    // Calculate coordinates even when outside canvas
+    const rect = canvasRef.current.getBoundingClientRect();
+    const rawX = Math.floor((e.clientX - rect.left) / pixelSize);
+    const rawY = Math.floor((e.clientY - rect.top) / pixelSize);
+    
+    // Clamp to grid boundaries
+    const x = Math.max(0, Math.min(gridSize - 1, rawX));
+    const y = Math.max(0, Math.min(gridSize - 1, rawY));
+    
     // If we're dragging and not in eyedropper mode, update the selection
     if (!isEyedropperActive && selectionStart) {
-      setSelectionEnd(coords);
+      setSelectionEnd({ x, y });
     }
   };
 
   const handleMouseUp = () => {
+    // Clean up global listeners
+    if (cleanupRef.current) {
+      cleanupRef.current();
+      cleanupRef.current = null;
+    }
+    
     // Capture current drag mode before resetting state
     const wasRightClickDrag = isRightClickDrag;
     
