@@ -31,7 +31,7 @@ serve(async (req) => {
         messages: [
           {
             role: "user",
-            content: `TRANSPARENT BACKGROUND REQUIRED: Generate only the emoji pixels with a completely transparent background using alpha channel. No white, black, or colored background pixels.
+            content: `NO BACKGROUND: Draw ONLY the emoji itself. Do not draw any background pixels whatsoever.
 
 Create a pixel art emoji based on this concept: ${prompt}.
 
@@ -40,9 +40,9 @@ CRITICAL REQUIREMENTS:
 - Use standard emoji design principles (like Unicode emojis 😀🎉❤️🔥)
 - Design should be instantly recognizable when scaled down
 - Think minimalist for the core design - less is more
-- TRANSPARENT BACKGROUND ONLY - generate only the emoji pixels with no background
-- Use alpha channel/transparency for the background
-- No white, black, or colored background pixels
+- DO NOT DRAW A BACKGROUND - leave empty space around the emoji completely empty
+- NO checkerboard patterns, NO background pixels of any color
+- Only draw the actual emoji pixels - everything else should be empty/no pixels
 
 COLOR GUIDANCE:
 - Start with 3-5 PRIMARY bold, solid colors for the main structure and shapes
@@ -60,7 +60,8 @@ DESIGN PRINCIPLES:
 - The design must read clearly even without the subtle shading
 
 AVOID:
-- White, black, or any colored background - ONLY transparent background
+- Drawing any background whatsoever - no white, black, gray, or checkerboard patterns
+- DO NOT draw a checkerboard/checker pattern to indicate emptiness
 - Overly complex patterns or intricate designs
 - Thin lines or tiny details that blur at small sizes
 - Realistic rendering with excessive texture
@@ -68,11 +69,11 @@ AVOID:
 - More than 8-10 total colors (including shade variations)
 
 Examples of good emoji design:
-- Simple smiley: circle + dots for eyes + curve for mouth (2-3 colors + shading) on transparent background
-- Fire emoji: flame shape with red/orange/yellow gradient (3-5 colors) on transparent background
-- Heart: solid shape with subtle highlight (2-3 colors) on transparent background
+- Simple smiley: circle + dots for eyes + curve for mouth (2-3 colors + shading), no background
+- Fire emoji: flame shape with red/orange/yellow gradient (3-5 colors), empty space around it
+- Heart: solid shape with subtle highlight (2-3 colors), nothing else drawn
 
-Your design should be as simple and clear as standard Unicode emojis, with purposeful shading for visual polish, and MUST have a completely transparent background with no background pixels.`,
+Your design should be as simple and clear as standard Unicode emojis, with purposeful shading for visual polish. Draw ONLY the emoji - do not draw any background, checkerboard patterns, or empty space indicators.`,
           },
         ],
         modalities: ["image", "text"],
