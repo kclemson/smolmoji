@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -11,9 +11,11 @@ import { Download, Sparkles, Loader2 } from "lucide-react";
 const Index = () => {
   const [prompt, setPrompt] = useState("");
   const [imageData, setImageData] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState("#FF6B6B");
+  const [selectedColor, setSelectedColor] = useState("#000000");
   const [isGenerating, setIsGenerating] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mainCanvasRef = useRef<HTMLCanvasElement>(null);
+  const preview32Ref = useRef<HTMLCanvasElement>(null);
+  const preview48Ref = useRef<HTMLCanvasElement>(null);
   const { toast } = useToast();
 
   const handleGenerate = async () => {
@@ -53,12 +55,42 @@ const Index = () => {
     }
   };
 
-  const handlePixelChange = (x: number, y: number, color: string) => {
-    // Pixel changes are handled directly in the canvas component
+  const updatePreviews = () => {
+    const mainCanvas = mainCanvasRef.current;
+    const preview32 = preview32Ref.current;
+    const preview48 = preview48Ref.current;
+    
+    if (!mainCanvas || !preview32 || !preview48) return;
+
+    const ctx32 = preview32.getContext("2d");
+    const ctx48 = preview48.getContext("2d");
+    
+    if (!ctx32 || !ctx48) return;
+
+    ctx32.imageSmoothingEnabled = false;
+    ctx48.imageSmoothingEnabled = false;
+
+    ctx32.clearRect(0, 0, 32, 32);
+    ctx48.clearRect(0, 0, 48, 48);
+
+    ctx32.drawImage(mainCanvas, 0, 0, 32, 32);
+    ctx48.drawImage(mainCanvas, 0, 0, 48, 48);
   };
 
+  const handlePixelChange = (x: number, y: number, color: string) => {
+    // Update previews immediately when pixels change
+    setTimeout(updatePreviews, 0);
+  };
+
+  useEffect(() => {
+    if (!imageData) return;
+    
+    // Small delay to ensure main canvas has rendered the new image
+    setTimeout(updatePreviews, 100);
+  }, [imageData]);
+
   const handleDownload = () => {
-    const canvas = document.querySelector("canvas") as HTMLCanvasElement;
+    const canvas = mainCanvasRef.current;
     if (!canvas) return;
 
     // Create a temporary canvas for the final image
@@ -151,49 +183,56 @@ const Index = () => {
               </Button>
             </Card>
 
-            {/* Preview */}
-            {imageData && (
-              <Card className="p-6">
-                <div className="space-y-3">
-                  <label className="text-sm font-medium">Discord Preview</label>
-                  <div className="flex items-center gap-4 p-4 bg-[#36393f] rounded-lg">
-                    <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-semibold">
-                      U
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-white text-sm font-medium mb-1">Username</div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[#dcddde] text-sm">Check this out!</span>
-                        <canvas
-                          ref={canvasRef}
-                          className="inline-block w-6 h-6 pixelated"
-                          style={{ imageRendering: "pixelated" }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            )}
           </div>
 
-          {/* Right Panel - Canvas */}
-          <Card className="p-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Pixel Editor (32x32)</label>
-                <span className="text-xs text-muted-foreground">Click or drag to draw</span>
+          {/* Right Panel - Canvas & Previews */}
+          <div className="space-y-6">
+            <Card className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium">Pixel Editor (32x32)</label>
+                  <span className="text-xs text-muted-foreground">Click or drag to draw</span>
+                </div>
+                <div className="flex justify-center">
+                  <PixelCanvas
+                    imageData={imageData}
+                    onPixelChange={handlePixelChange}
+                    selectedColor={selectedColor}
+                    gridSize={32}
+                    canvasRef={mainCanvasRef}
+                  />
+                </div>
               </div>
-              <div className="flex justify-center">
-                <PixelCanvas
-                  imageData={imageData}
-                  onPixelChange={handlePixelChange}
-                  selectedColor={selectedColor}
-                  gridSize={32}
-                />
+            </Card>
+
+            <Card className="p-6">
+              <div className="space-y-4">
+                <label className="text-sm font-medium">Size Previews</label>
+                <div className="flex gap-8 justify-center items-end">
+                  <div className="space-y-2 text-center">
+                    <canvas
+                      ref={preview32Ref}
+                      width={32}
+                      height={32}
+                      className="border-2 border-border rounded pixelated mx-auto"
+                      style={{ imageRendering: "pixelated" }}
+                    />
+                    <p className="text-xs text-muted-foreground">32×32 (Actual)</p>
+                  </div>
+                  <div className="space-y-2 text-center">
+                    <canvas
+                      ref={preview48Ref}
+                      width={48}
+                      height={48}
+                      className="border-2 border-border rounded pixelated mx-auto"
+                      style={{ imageRendering: "pixelated" }}
+                    />
+                    <p className="text-xs text-muted-foreground">48×48 (1.5× Scale)</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

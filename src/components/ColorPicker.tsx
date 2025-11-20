@@ -4,10 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 const PRESET_COLORS = [
-  "#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", 
-  "#98D8C8", "#F7DC6F", "#BB8FCE", "#85C1E2",
-  "#F8B88B", "#FAD02C", "#6C5CE7", "#00B894",
-  "#FD79A8", "#FDCB6E", "#E17055", "#74B9FF",
+  // Row 1: Basic colors
+  "#000000", "#FFFFFF", "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF6600", "#9900FF",
+  // Row 2: Common pixel art colors
+  "#808080", "#C0C0C0", "#800000", "#008000", "#000080", "#808000", "#FF1493", "#00CED1",
 ];
 
 interface ColorPickerProps {
