@@ -254,12 +254,12 @@ const Index = () => {
         {/* Header */}
         <div className="text-center">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Emoji Lab
+            smolmoji
           </h1>
         </div>
 
         {/* Single Column Layout */}
-        <div className="space-y-6">
+        <div className="space-y-3">
           {/* Row 1: Design Direction + Background + Generate */}
           <div className="space-y-3">
           <Textarea
@@ -399,7 +399,7 @@ const Index = () => {
               <div className="w-px h-8 bg-border" />
               
               {/* D-Pad Shift Controls */}
-              <div className="grid grid-cols-3 grid-rows-2 gap-1 w-fit">
+              <div className="grid grid-cols-3 grid-rows-2 gap-0.5 w-fit">
                 {/* Up button - centered in top row */}
                 <div className="col-start-2 row-start-1">
                   <Button
@@ -408,9 +408,9 @@ const Index = () => {
                     onClick={() => shiftPixels('up')}
                     disabled={pixels.length === 0}
                     title="Shift pixels up"
-                    className="w-8 h-8 p-0"
+                    className="w-6 h-6 p-0"
                   >
-                    <ArrowUp className="h-3.5 w-3.5" />
+                    <ArrowUp className="h-3 w-3" />
                   </Button>
                 </div>
                 
@@ -422,9 +422,9 @@ const Index = () => {
                     onClick={() => shiftPixels('left')}
                     disabled={pixels.length === 0}
                     title="Shift pixels left"
-                    className="w-8 h-8 p-0"
+                    className="w-6 h-6 p-0"
                   >
-                    <ArrowLeft className="h-3.5 w-3.5" />
+                    <ArrowLeft className="h-3 w-3" />
                   </Button>
                 </div>
                 
@@ -436,9 +436,9 @@ const Index = () => {
                     onClick={() => shiftPixels('down')}
                     disabled={pixels.length === 0}
                     title="Shift pixels down"
-                    className="w-8 h-8 p-0"
+                    className="w-6 h-6 p-0"
                   >
-                    <ArrowDown className="h-3.5 w-3.5" />
+                    <ArrowDown className="h-3 w-3" />
                   </Button>
                 </div>
                 
@@ -450,9 +450,9 @@ const Index = () => {
                     onClick={() => shiftPixels('right')}
                     disabled={pixels.length === 0}
                     title="Shift pixels right"
-                    className="w-8 h-8 p-0"
+                    className="w-6 h-6 p-0"
                   >
-                    <ArrowRight className="h-3.5 w-3.5" />
+                    <ArrowRight className="h-3 w-3" />
                   </Button>
                 </div>
               </div>
