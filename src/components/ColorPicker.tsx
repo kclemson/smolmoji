@@ -79,13 +79,12 @@ export const ColorPicker = ({
                     return prevColors; // Color already exists, no change
                   });
                 }}
-                className="absolute w-8 h-8 opacity-0 pointer-events-none"
+                className="absolute inset-0 w-8 h-8 opacity-0 cursor-pointer z-10"
               />
               <button
-                onClick={() => colorInputRef.current?.click()}
                 className={cn(
                   "w-8 h-8 rounded-md border-2 transition-all hover:scale-110",
-                  "border-border bg-muted/20 flex items-center justify-center"
+                  "border-border bg-muted/20 flex items-center justify-center pointer-events-none"
                 )}
               >
                 <Palette className="h-4 w-4" />
