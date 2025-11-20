@@ -65,8 +65,10 @@ export const ColorPicker = ({
                 type="color"
                 value={customColor}
                 onChange={(e) => {
+                  setCustomColor(e.target.value);
+                }}
+                onBlur={(e) => {
                   const newColor = e.target.value;
-                  setCustomColor(newColor);
                   onColorChange(newColor);
                   
                   // Add to custom colors FIFO style using functional update
