@@ -200,7 +200,7 @@ const Index = () => {
           {/* Row 1: Design Direction + Background + Generate */}
           <Card className="p-6">
             <div className="space-y-3">
-              <label className="text-sm font-medium">Design Direction</label>
+              <Label className="text-xs text-muted-foreground">Design Direction:</Label>
               <Input
                 placeholder="e.g., happy cat, fire symbol, laughing face..."
                 value={prompt}
@@ -210,7 +210,7 @@ const Index = () => {
               />
               
               <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Background</Label>
+                <Label className="text-xs text-muted-foreground">Background:</Label>
                 <RadioGroup 
                   value={backgroundColor} 
                   onValueChange={(value) => setBackgroundColor(value as "transparent" | "white" | "black")}
