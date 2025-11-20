@@ -273,7 +273,7 @@ const Index = () => {
                   variant="outline"
                 >
                   <Download className="w-4 h-4" />
-                  Download PNG (128x128)
+                  Download PNG
                 </Button>
               </div>
               
