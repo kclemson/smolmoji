@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Pipette, RectangleHorizontal, Eraser } from "lucide-react";
+import { Pipette, RectangleHorizontal, Eraser, Palette } from "lucide-react";
 
 const PRESET_COLORS = [
   // Row 1: Basic colors
@@ -29,21 +29,33 @@ export const ColorPicker = ({
   onMultiSelectToggle
 }: ColorPickerProps) => {
   const [customColor, setCustomColor] = useState("#000000");
+  const colorInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="flex justify-center">
       <div className="flex gap-4 items-start">
         {/* Left: Tools Section */}
-        <div className="flex flex-col gap-2">
-          <Input
+        <div className="grid grid-cols-2 gap-2">
+          <input
+            ref={colorInputRef}
             type="color"
+            className="hidden"
             value={customColor}
             onChange={(e) => {
               setCustomColor(e.target.value);
               onColorChange(e.target.value);
             }}
-            className="cursor-pointer w-8 h-8"
           />
+          
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => colorInputRef.current?.click()}
+            className={cn("w-8 h-8")}
+            style={customColor !== "#000000" ? { backgroundColor: customColor } : {}}
+          >
+            {customColor === "#000000" && <Palette className="h-4 w-4" />}
+          </Button>
           
           <Button
             variant="outline"
