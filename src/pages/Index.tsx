@@ -471,7 +471,7 @@ const Index = () => {
 
         {/* Background Selection - Moved below color picker */}
         <div className="flex justify-center">
-          <div className="space-y-2">
+          <div className="flex items-center gap-3">
             <Label className="text-xs text-muted-foreground">Background:</Label>
             <RadioGroup 
               value={backgroundColor} 
