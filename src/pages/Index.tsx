@@ -231,8 +231,8 @@ const Index = () => {
                   className="border-2 border-border rounded pixelated"
                   style={{ 
                     imageRendering: "pixelated",
-                    width: "160px",
-                    height: "160px"
+                    width: "32px",
+                    height: "32px"
                   }}
                 />
               </div>
@@ -251,12 +251,11 @@ const Index = () => {
               </div>
               
               {/* Color Palette */}
-              <ColorPicker
+              <ColorPicker 
                 selectedColor={selectedColor}
                 onColorChange={setSelectedColor}
                 isEyedropperActive={isEyedropperActive}
                 onEyedropperToggle={handleEyedropperToggle}
-                compact={true}
               />
             </div>
           </Card>
