@@ -138,6 +138,11 @@ export const ColorPicker = ({
               />
             ))}
           </div>
+          
+          {/* Instructions */}
+          <p className="text-xs text-muted-foreground text-center mt-1">
+            click and drag to fill in a rectangle - right click to revert
+          </p>
         </div>
       </div>
   );
