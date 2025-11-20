@@ -125,8 +125,9 @@ export const PixelCanvas = ({
       });
     });
 
-    // Draw grid
-    ctx.strokeStyle = "hsl(var(--grid-line))";
+    // Draw grid - resolve CSS variable to actual color
+    const gridLineColor = getComputedStyle(canvas).getPropertyValue('--grid-line');
+    ctx.strokeStyle = `hsl(${gridLineColor})`;
     ctx.lineWidth = 0.5;
     
     for (let i = 0; i <= gridSize; i++) {
