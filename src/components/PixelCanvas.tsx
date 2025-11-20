@@ -432,7 +432,13 @@ export const PixelCanvas = ({
         className={cn(
           "border-2 border-border rounded-lg",
           "bg-[hsl(var(--canvas-bg))]",
-          isEyedropperActive ? "cursor-crosshair" : "cursor-cell"
+          isEyedropperActive 
+            ? "cursor-crosshair" 
+            : isDrawing && isRightClickDrag
+              ? "cursor-alias"
+              : isDrawing
+                ? "cursor-copy"
+                : "cursor-cell"
         )}
         onClick={handleCanvasClick}
         onMouseDown={handleMouseDown}
