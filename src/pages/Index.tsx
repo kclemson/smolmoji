@@ -7,7 +7,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PixelCanvas } from "@/components/PixelCanvas";
 import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser } from "lucide-react";
+import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useDebouncedLocalStorage } from "@/hooks/useDebouncedLocalStorage";
 import { cn } from "@/lib/utils";
@@ -144,6 +144,46 @@ const Index = () => {
   const handlePixelEditComplete = useCallback((newPixels: string[][]) => {
     pushToHistory(newPixels);
   }, [pushToHistory]);
+
+  const shiftPixels = (direction: 'up' | 'down' | 'left' | 'right') => {
+    if (pixels.length === 0) return;
+    
+    const newPixels: string[][] = Array(32).fill(null).map(() => 
+      Array(32).fill("transparent")
+    );
+    
+    for (let y = 0; y < 32; y++) {
+      for (let x = 0; x < 32; x++) {
+        let sourceY = y;
+        let sourceX = x;
+        
+        // Calculate source position based on direction
+        switch (direction) {
+          case 'up':
+            sourceY = y + 1;
+            break;
+          case 'down':
+            sourceY = y - 1;
+            break;
+          case 'left':
+            sourceX = x + 1;
+            break;
+          case 'right':
+            sourceX = x - 1;
+            break;
+        }
+        
+        // Copy from source if within bounds
+        if (sourceY >= 0 && sourceY < 32 && sourceX >= 0 && sourceX < 32) {
+          newPixels[y][x] = pixels[sourceY][sourceX];
+        }
+        // Otherwise stays transparent (already initialized)
+      }
+    }
+    
+    setPixels(newPixels);
+    handlePixelEditComplete(newPixels);
+  };
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -362,6 +402,53 @@ const Index = () => {
               <p className="text-xs text-muted-foreground text-center">
                 left click to color, right click to revert. click and drag to create a rectangle.
               </p>
+
+              {/* Shift Controls */}
+              <div className="flex justify-center gap-2 pt-2">
+                <span className="text-xs text-muted-foreground flex items-center">Shift:</span>
+                <div className="flex gap-1">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => shiftPixels('up')}
+                    disabled={pixels.length === 0}
+                    className="h-7 w-7"
+                    title="Shift up by 1 pixel"
+                  >
+                    <ArrowUp className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => shiftPixels('down')}
+                    disabled={pixels.length === 0}
+                    className="h-7 w-7"
+                    title="Shift down by 1 pixel"
+                  >
+                    <ArrowDown className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => shiftPixels('left')}
+                    disabled={pixels.length === 0}
+                    className="h-7 w-7"
+                    title="Shift left by 1 pixel"
+                  >
+                    <ArrowLeft className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => shiftPixels('right')}
+                    disabled={pixels.length === 0}
+                    className="h-7 w-7"
+                    title="Shift right by 1 pixel"
+                  >
+                    <ArrowRight className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
             
             {/* Undo/Redo Controls */}
             <div className="flex justify-center gap-2">
