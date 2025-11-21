@@ -187,7 +187,7 @@ const Index = () => {
   const scaleEmoji = useCallback((direction: 'in' | 'out') => {
     if (pixels.length === 0) return;
     
-    // Step 1: Find bounding box of emoji content
+    // Find bounding box of content
     let minX = 32, minY = 32, maxX = -1, maxY = -1;
     pixels.forEach((row, y) => {
       row.forEach((color, x) => {
@@ -205,106 +205,64 @@ const Index = () => {
     const contentWidth = maxX - minX + 1;
     const contentHeight = maxY - minY + 1;
     
-    // Step 2: Create temporary canvas and draw current pixels to it
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = 32;
-    tempCanvas.height = 32;
-    const ctx = tempCanvas.getContext('2d');
-    if (!ctx) return;
-    
-    ctx.imageSmoothingEnabled = true; // Enable interpolation
-    ctx.imageSmoothingQuality = 'high'; // Use best quality
-    
-    // Draw current pixel grid to canvas
-    pixels.forEach((row, y) => {
-      row.forEach((color, x) => {
-        if (color !== 'transparent') {
-          ctx.fillStyle = color;
-          ctx.fillRect(x, y, 1, 1);
-        }
-      });
-    });
-    
-    // Step 3: Calculate scaling parameters
-    let sourceX: number, sourceY: number, sourceWidth: number, sourceHeight: number;
-    let destX: number, destY: number, destWidth: number, destHeight: number;
+    // Calculate new offset based on direction
+    let newOffsetX: number, newOffsetY: number;
+    let cropLeft = 0, cropRight = 0, cropTop = 0, cropBottom = 0;
     
     if (direction === 'in') {
-      // Zoom In: Crop to content bounds, then scale up to fill more space
-      sourceX = minX;
-      sourceY = minY;
-      sourceWidth = contentWidth;
-      sourceHeight = contentHeight;
+      // Zoom in: Remove 1px transparent border on each side (crop)
+      cropLeft = 1;
+      cropRight = 1;
+      cropTop = 1;
+      cropBottom = 1;
       
-      // Scale up by ~10% (make destination slightly larger than source)
-      const scaleFactor = 1.1;
-      destWidth = Math.min(32, Math.round(contentWidth * scaleFactor));
-      destHeight = Math.min(32, Math.round(contentHeight * scaleFactor));
+      const newContentWidth = contentWidth + 2; // Growing by removing border
+      const newContentHeight = contentHeight + 2;
       
-      // Center the scaled result
-      destX = Math.round((32 - destWidth) / 2);
-      destY = Math.round((32 - destHeight) / 2);
+      // Check if there's actually transparent space to remove
+      if (minX < 1 || minY < 1 || maxX > 30 || maxY > 30) {
+        return; // Already at edges
+      }
       
-      // Prevent zooming in too much
-      if (destWidth >= 32 || destHeight >= 32) return;
+      // Check if cropped content will fit
+      if (newContentWidth > 32 || newContentHeight > 32) return;
+      
+      // Center the larger content
+      newOffsetX = Math.round((32 - newContentWidth) / 2);
+      newOffsetY = Math.round((32 - newContentHeight) / 2);
       
     } else {
-      // Zoom Out: Take whole content, scale down, add transparent padding
-      sourceX = minX;
-      sourceY = minY;
-      sourceWidth = contentWidth;
-      sourceHeight = contentHeight;
+      // Zoom out: Add 1px transparent border on each side
+      const newContentWidth = contentWidth; // Keep same size, just add padding
+      const newContentHeight = contentHeight;
       
-      // Scale down by ~10% (make destination smaller than source)
-      const scaleFactor = 0.9;
-      destWidth = Math.max(1, Math.round(contentWidth * scaleFactor));
-      destHeight = Math.max(1, Math.round(contentHeight * scaleFactor));
+      // Check if content will still be visible with more padding
+      if (newContentWidth + 4 > 32 || newContentHeight + 4 > 32) return;
+      if (contentWidth < 4 || contentHeight < 4) return; // Too small already
       
-      // Center the scaled result
-      destX = Math.round((32 - destWidth) / 2);
-      destY = Math.round((32 - destHeight) / 2);
-      
-      // Prevent zooming out too much
-      if (destWidth < 4 || destHeight < 4) return;
+      // Center with more padding
+      newOffsetX = Math.round((32 - newContentWidth) / 2) + 1;
+      newOffsetY = Math.round((32 - newContentHeight) / 2) + 1;
     }
     
-    // Step 4: Create output canvas and scale the image
-    const outputCanvas = document.createElement('canvas');
-    outputCanvas.width = 32;
-    outputCanvas.height = 32;
-    const outputCtx = outputCanvas.getContext('2d');
-    if (!outputCtx) return;
-    
-    outputCtx.imageSmoothingEnabled = true;
-    outputCtx.imageSmoothingQuality = 'high';
-    
-    // Draw the scaled region
-    outputCtx.drawImage(
-      tempCanvas,
-      sourceX, sourceY, sourceWidth, sourceHeight,  // source rectangle
-      destX, destY, destWidth, destHeight            // destination rectangle
-    );
-    
-    // Step 5: Read pixel data back from canvas
-    const imageData = outputCtx.getImageData(0, 0, 32, 32);
-    const data = imageData.data;
+    // Create new pixel array with adjusted content position
     const newPixels: string[][] = Array(32).fill(null).map(() => 
       Array(32).fill('transparent')
     );
     
-    // Convert RGBA data back to our pixel array
-    for (let y = 0; y < 32; y++) {
-      for (let x = 0; x < 32; x++) {
-        const i = (y * 32 + x) * 4;
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        const a = data[i + 3];
-        
-        // If pixel has any opacity, convert to hex color
-        if (a > 0) {
-          const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-          newPixels[y][x] = hex;
+    // Copy pixels with new offset and cropping
+    for (let srcY = minY - cropTop; srcY <= maxY + cropBottom; srcY++) {
+      for (let srcX = minX - cropLeft; srcX <= maxX + cropRight; srcX++) {
+        if (srcX >= 0 && srcX < 32 && srcY >= 0 && srcY < 32) {
+          const color = pixels[srcY][srcX];
+          if (color !== 'transparent') {
+            const destX = newOffsetX + (srcX - minX + cropLeft);
+            const destY = newOffsetY + (srcY - minY + cropTop);
+            
+            if (destX >= 0 && destX < 32 && destY >= 0 && destY < 32) {
+              newPixels[destY][destX] = color;
+            }
+          }
         }
       }
     }
