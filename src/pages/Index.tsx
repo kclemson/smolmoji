@@ -192,32 +192,27 @@ const Index = () => {
     );
     
     if (direction === 'in') {
-      // Zoom In: Crop 1px border and scale up
+      // Zoom In: Crop outer 1px ring and shift inward
+      for (let y = 0; y < 31; y++) {
+        for (let x = 0; x < 31; x++) {
+          // Copy from (x+1, y+1) to (x, y)
+          if (y + 1 < pixels.length && x + 1 < pixels[y + 1].length) {
+            newPixels[y][x] = pixels[y + 1][x + 1];
+          }
+        }
+      }
+      // Right column and bottom row remain transparent
+    } else {
+      // Zoom Out: Add 1px border and shift outward
       for (let y = 0; y < 32; y++) {
         for (let x = 0; x < 32; x++) {
-          // Map output coords to source (30x30 center area)
-          const sourceX = 1 + Math.floor(x * 30 / 32);
-          const sourceY = 1 + Math.floor(y * 30 / 32);
-          
-          if (sourceY < pixels.length && sourceX < pixels[sourceY].length) {
-            newPixels[y][x] = pixels[sourceY][sourceX];
+          // Copy from (x, y) to (x+1, y+1)
+          if (y < pixels.length && x < pixels[y].length && y + 1 < 32 && x + 1 < 32) {
+            newPixels[y + 1][x + 1] = pixels[y][x];
           }
         }
       }
-    } else {
-      // Zoom Out: Scale down and add 1px border
-      for (let y = 1; y < 31; y++) {
-        for (let x = 1; x < 31; x++) {
-          // Map center 30x30 area to source 32x32
-          const sourceX = Math.floor((x - 1) * 31 / 29);
-          const sourceY = Math.floor((y - 1) * 31 / 29);
-          
-          if (sourceY < pixels.length && sourceX < pixels[sourceY].length) {
-            newPixels[y][x] = pixels[sourceY][sourceX];
-          }
-        }
-      }
-      // Border pixels remain transparent (default)
+      // Outer 1px ring remains transparent (the border)
     }
     
     setPixels(newPixels);
