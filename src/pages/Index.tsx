@@ -187,75 +187,41 @@ const Index = () => {
   const scaleEmoji = useCallback((direction: 'in' | 'out') => {
     if (pixels.length === 0) return;
     
-    // Create source canvas and draw current pixels
-    const sourceCanvas = document.createElement('canvas');
-    sourceCanvas.width = 32;
-    sourceCanvas.height = 32;
-    const sourceCtx = sourceCanvas.getContext('2d');
-    if (!sourceCtx) return;
-    
-    sourceCtx.imageSmoothingEnabled = false; // Nearest-neighbor for crisp pixels
-    
-    // Draw current pixels to source canvas
-    pixels.forEach((row, y) => {
-      row.forEach((color, x) => {
-        if (color !== 'transparent') {
-          sourceCtx.fillStyle = color;
-          sourceCtx.fillRect(x, y, 1, 1);
-        }
-      });
-    });
-    
-    // Create output canvas
-    const outputCanvas = document.createElement('canvas');
-    outputCanvas.width = 32;
-    outputCanvas.height = 32;
-    const outputCtx = outputCanvas.getContext('2d');
-    if (!outputCtx) return;
-    
-    outputCtx.imageSmoothingEnabled = false; // Nearest-neighbor for crisp pixels
-    
-    // Perform scaling operation
-    if (direction === 'in') {
-      // Zoom in: crop 1px from each edge and scale to fill 32x32
-      outputCtx.drawImage(
-        sourceCanvas,
-        1, 1, 30, 30,    // source: 30x30 area (1px cropped from each edge)
-        0, 0, 32, 32     // destination: scale to fill entire 32x32 canvas
-      );
-    } else {
-      // Zoom out: scale entire 32x32 down to 30x30 centered (adds 1px border)
-      outputCtx.drawImage(
-        sourceCanvas,
-        0, 0, 32, 32,    // source: entire 32x32 canvas
-        1, 1, 30, 30     // destination: shrink to centered 30x30 area
-      );
-    }
-    
-    // Read scaled pixels back from output canvas
-    const imageData = outputCtx.getImageData(0, 0, 32, 32);
     const newPixels: string[][] = Array(32).fill(null).map(() => 
       Array(32).fill('transparent')
     );
     
-    // Convert RGBA data back to our pixel format
-    for (let y = 0; y < 32; y++) {
-      for (let x = 0; x < 32; x++) {
-        const index = (y * 32 + x) * 4;
-        const r = imageData.data[index];
-        const g = imageData.data[index + 1];
-        const b = imageData.data[index + 2];
-        const a = imageData.data[index + 3];
-        
-        // Only set pixel if it has sufficient opacity (avoid anti-aliasing artifacts)
-        if (a > 10) {
-          // Convert RGB to hex
-          const hex = '#' + [r, g, b].map(v => 
-            v.toString(16).padStart(2, '0')
-          ).join('');
-          newPixels[y][x] = hex;
+    if (direction === 'in') {
+      // Zoom In: Crop 1px border and scale up
+      for (let y = 0; y < 32; y++) {
+        for (let x = 0; x < 32; x++) {
+          // Map output coords to source (30x30 center area)
+          const sourceX = Math.floor(x * 30 / 32);
+          const sourceY = Math.floor(y * 30 / 32);
+          
+          // Offset by 1 to skip the border we're cropping
+          const pixelX = sourceX + 1;
+          const pixelY = sourceY + 1;
+          
+          if (pixelY < pixels.length && pixelX < pixels[pixelY].length) {
+            newPixels[y][x] = pixels[pixelY][pixelX];
+          }
         }
       }
+    } else {
+      // Zoom Out: Scale down and add 1px border
+      for (let y = 1; y < 31; y++) {
+        for (let x = 1; x < 31; x++) {
+          // Map center 30x30 area to source 32x32
+          const sourceX = Math.floor((x - 1) * 32 / 30);
+          const sourceY = Math.floor((y - 1) * 32 / 30);
+          
+          if (sourceY < pixels.length && sourceX < pixels[sourceY].length) {
+            newPixels[y][x] = pixels[sourceY][sourceX];
+          }
+        }
+      }
+      // Border pixels remain transparent (default)
     }
     
     setPixels(newPixels);
