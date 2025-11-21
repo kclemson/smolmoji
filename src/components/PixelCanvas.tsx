@@ -182,7 +182,7 @@ export const PixelCanvas = ({
   };
 
   const removeEdgeBackground = (pixels: string[][], gridSize: number): string[][] => {
-    const COLOR_THRESHOLD = 30; // Colors within this distance are considered similar
+    const COLOR_THRESHOLD = 1; // Colors within this distance are considered similar
     
     // Step 1: Sample edge pixels and group similar colors
     const edgeColorGroups = new Map<string, { count: number, colors: Set<string> }>();
