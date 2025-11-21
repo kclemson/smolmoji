@@ -10,7 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2 } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useDebouncedLocalStorage } from "@/hooks/useDebouncedLocalStorage";
-import { findBoundingBox, scaleContent } from "@/lib/pixelUtils";
 import { cn } from "@/lib/utils";
 
 const Index = () => {
@@ -185,6 +184,51 @@ const Index = () => {
     pushToHistory(newPixels);
   }, [pixels, pushToHistory]);
 
+  const findBoundingBox = useCallback((pixelData: string[][]) => {
+    let minX = 32, minY = 32, maxX = -1, maxY = -1;
+    
+    for (let y = 0; y < 32; y++) {
+      for (let x = 0; x < 32; x++) {
+        if (pixelData[y][x] !== 'transparent') {
+          minX = Math.min(minX, x);
+          minY = Math.min(minY, y);
+          maxX = Math.max(maxX, x);
+          maxY = Math.max(maxY, y);
+        }
+      }
+    }
+    
+    if (maxX === -1) return null;
+    return { minX, minY, maxX, maxY };
+  }, []);
+
+  const scaleContent = useCallback((
+    sourcePixels: string[][],
+    sourceBounds: { minX: number; minY: number; maxX: number; maxY: number },
+    targetWidth: number,
+    targetHeight: number
+  ) => {
+    const sourceWidth = sourceBounds.maxX - sourceBounds.minX + 1;
+    const sourceHeight = sourceBounds.maxY - sourceBounds.minY + 1;
+    
+    const newPixels: string[][] = Array(32).fill(null).map(() => 
+      Array(32).fill('transparent')
+    );
+    
+    const targetX = Math.floor((32 - targetWidth) / 2);
+    const targetY = Math.floor((32 - targetHeight) / 2);
+    
+    for (let y = 0; y < targetHeight; y++) {
+      for (let x = 0; x < targetWidth; x++) {
+        const sourceX = sourceBounds.minX + Math.floor(x * sourceWidth / targetWidth);
+        const sourceY = sourceBounds.minY + Math.floor(y * sourceHeight / targetHeight);
+        newPixels[targetY + y][targetX + x] = sourcePixels[sourceY][sourceX];
+      }
+    }
+    
+    return newPixels;
+  }, []);
+
   const autoFitEmoji = useCallback(() => {
     if (pixels.length === 0) return;
     
@@ -202,7 +246,7 @@ const Index = () => {
     const newPixels = scaleContent(pixels, bounds, targetWidth, targetHeight);
     setPixels(newPixels);
     pushToHistory(newPixels);
-  }, [pixels, pushToHistory]);
+  }, [pixels, pushToHistory, findBoundingBox, scaleContent]);
 
   // Keyboard shortcuts
   useEffect(() => {
