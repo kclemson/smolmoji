@@ -31,84 +31,53 @@ serve(async (req) => {
         messages: [
           {
             role: "user",
-            content: `YOU ARE A PIXEL ART STICKER DESIGNER. You will create ONLY the sticker itself - nothing else exists on the canvas.
+            content: `YOU ARE A PIXEL ART STICKER DESIGNER. You will create ONLY the sticker itself.
 
-Create a pixel art emoji of: ${prompt}
+OUTPUT FORMAT:
+- PNG image with alpha transparency channel
+- Pixels you draw = fully opaque (alpha=255)
+- Pixels you don't draw = completely transparent (alpha=0)
+- NO partial transparency, NO anti-aliasing, NO gradual fade at edges
 
-CRITICAL UNDERSTANDING:
-- You are NOT drawing on a background
-- You are NOT filling a canvas
-- You are ONLY creating the emoji shape itself as a sticker
-- Imagine cutting out the emoji shape with scissors - you only draw what's inside that cutout
-- Everything outside the emoji shape DOES NOT EXIST - you literally draw nothing there
+CRITICAL - Draw ONLY The Emoji:
+- You are creating a sticker cutout - draw ONLY the emoji shape
+- Everything outside the emoji does NOT exist - draw nothing there
+- No background, no scattered pixels, no noise, no checkerboard patterns
 
-THE EMOJI SHAPE:
-- Draw ONLY the emoji pixels that form the actual design
-- The emoji should be 24-28 pixels wide and 24-28 pixels tall
-- Use solid, bold colors for the main structure (3-5 primary colors)
-- Add subtle shading only where it enhances the design
-- The emoji must have clean, defined edges
+SIZE & CANVAS:
+- Canvas: 32x32 pixels
+- Emoji: Fill most of the space (24-28 pixels in both width and height)
+- Margins: Keep small (2-4 pixels maximum on each side)
+- The emoji should be large and dominant, not floating in empty space
 
-WHAT EXISTS ON YOUR CANVAS:
-✓ The emoji pixels (eyes, mouth, body, features, etc.)
-✓ Clean edges defining the emoji boundary
-
-WHAT DOES NOT EXIST:
-✗ Background of any kind
-✗ Scattered pixels outside the emoji
-✗ Dots or noise to represent "empty space"
-✗ Checkerboard patterns
-✗ Any pixel that is not part of the emoji design itself
-
-SIZE REQUIREMENTS:
-- FILL MOST OF THE CANVAS - the emoji should be LARGE and dominant
-- Use at least 24-28 pixels in both width and height (out of 32x32)
-- Keep margins SMALL - maximum 2-4 pixels of empty space on each side
-- The emoji should NOT float in the center with lots of empty space
-- Think of it like this: if the canvas is a picture frame, the emoji should nearly fill that frame
-
-COLOR GUIDANCE:
-- Start with 3-5 PRIMARY bold, solid colors for the main structure and shapes
-- You MAY add subtle shade variations (lighter/darker tones) for visual effects like:
+COLOR DESIGN:
+- Use 3-5 PRIMARY bold, solid colors for main structure
+- Add subtle shade variations ONLY for visual effects:
   * Highlights and shadows for depth
   * Smooth gradients for dimensional effects
-  * Reflections or shine effects
-- Example: A tinfoil hat might use silver/gray as primary, then add lighter highlights and darker creases
-- Each color variation should serve a clear visual purpose
+  * Reflections or shine
+- Each color variation must serve a clear purpose
+- Total colors: 8-10 maximum (including shades)
 
 DESIGN PRINCIPLES:
-- Create large, simple geometric shapes for the base - NO tiny details
-- Strong contrast between primary colors
-- Shading should ENHANCE the design, not complicate it
-- The design must read clearly even without the subtle shading
-- Use standard emoji design principles (like Unicode emojis 😀🎉❤️🔥)
-- Design should be instantly recognizable when scaled down
-
-EDGE TREATMENT:
-- The emoji edge should be clean and intentional
-- If a pixel is drawn, it should be part of the emoji's deliberate shape
-- Do not let colors "bleed" or "scatter" beyond the emoji boundary
-- Think of the emoji as a sticker - it has a clear cutout shape, not frayed edges
+- Large, simple geometric shapes - NO tiny details
+- Strong contrast between colors
+- Design must be readable at small sizes
+- Follow standard emoji design (like Unicode emojis 😀🎉❤️)
+- Clean, intentional edges - no frayed or bleeding colors
 
 AVOID:
-- Overly complex patterns or intricate designs
-- Thin lines or tiny details that blur at small sizes
+- Complex patterns or intricate designs
+- Thin lines or tiny details
 - Realistic rendering with excessive texture
-- Random color variations without purpose
-- More than 8-10 total colors (including shade variations)
+- Random color variations
 
-Examples of good emoji design:
-- Simple smiley: circle + dots for eyes + curve for mouth (2-3 colors + shading), nothing else
-- Fire emoji: flame shape with red/orange/yellow gradient (3-5 colors), clean edges, empty space around it
-- Heart: solid shape with subtle highlight (2-3 colors), well-defined boundary
+EXAMPLES:
+- Smiley: circle + dots for eyes + curve (2-3 colors + shading)
+- Fire: flame shape with gradient (3-5 colors), clean edges
+- Heart: solid shape with highlight (2-3 colors)
 
-FINAL CHECK BEFORE SUBMISSION:
-✓ Is every single pixel you drew part of the actual emoji design? If not, DELETE IT.
-✓ Are there scattered pixels that aren't part of a coherent shape? DELETE THEM.
-✓ Does the emoji have clean edges, or is there pixel noise around it? CLEAN IT UP.
-✓ Is the background completely empty (transparent), with zero pixels drawn? VERIFY THIS.
-
-Your design should be as simple and clear as standard Unicode emojis, with purposeful shading for visual polish. Draw ONLY the emoji pixels that form the actual design - treat transparency as the complete absence of pixels, not something to represent visually.`,
+Create a pixel art emoji of: ${prompt}`,
           },
         ],
         modalities: ["image", "text"],
