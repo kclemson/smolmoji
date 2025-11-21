@@ -184,40 +184,76 @@ const Index = () => {
     pushToHistory(newPixels);
   }, [pixels, pushToHistory]);
 
-  const scaleEmoji = useCallback((direction: 'in' | 'out') => {
-    if (pixels.length === 0) return;
+  const findBoundingBox = useCallback((pixelData: string[][]) => {
+    let minX = 32, minY = 32, maxX = -1, maxY = -1;
+    
+    for (let y = 0; y < 32; y++) {
+      for (let x = 0; x < 32; x++) {
+        if (pixelData[y][x] !== 'transparent') {
+          minX = Math.min(minX, x);
+          minY = Math.min(minY, y);
+          maxX = Math.max(maxX, x);
+          maxY = Math.max(maxY, y);
+        }
+      }
+    }
+    
+    if (maxX === -1) return null;
+    return { minX, minY, maxX, maxY };
+  }, []);
+
+  const scaleContent = useCallback((
+    sourcePixels: string[][],
+    sourceBounds: { minX: number; minY: number; maxX: number; maxY: number },
+    targetWidth: number,
+    targetHeight: number
+  ) => {
+    const sourceWidth = sourceBounds.maxX - sourceBounds.minX + 1;
+    const sourceHeight = sourceBounds.maxY - sourceBounds.minY + 1;
     
     const newPixels: string[][] = Array(32).fill(null).map(() => 
       Array(32).fill('transparent')
     );
     
-    if (direction === 'in') {
-      // Zoom In: Crop outer 1px ring and shift inward
-      for (let y = 0; y < 31; y++) {
-        for (let x = 0; x < 31; x++) {
-          // Copy from (x+1, y+1) to (x, y)
-          if (y + 1 < pixels.length && x + 1 < pixels[y + 1].length) {
-            newPixels[y][x] = pixels[y + 1][x + 1];
-          }
-        }
+    const targetX = Math.floor((32 - targetWidth) / 2);
+    const targetY = Math.floor((32 - targetHeight) / 2);
+    
+    for (let y = 0; y < targetHeight; y++) {
+      for (let x = 0; x < targetWidth; x++) {
+        const sourceX = sourceBounds.minX + Math.floor(x * sourceWidth / targetWidth);
+        const sourceY = sourceBounds.minY + Math.floor(y * sourceHeight / targetHeight);
+        newPixels[targetY + y][targetX + x] = sourcePixels[sourceY][sourceX];
       }
-      // Right column and bottom row remain transparent
-    } else {
-      // Zoom Out: Add 1px border and shift outward
-      for (let y = 0; y < 32; y++) {
-        for (let x = 0; x < 32; x++) {
-          // Copy from (x, y) to (x+1, y+1)
-          if (y < pixels.length && x < pixels[y].length && y + 1 < 32 && x + 1 < 32) {
-            newPixels[y + 1][x + 1] = pixels[y][x];
-          }
-        }
-      }
-      // Outer 1px ring remains transparent (the border)
     }
     
+    return newPixels;
+  }, []);
+
+  const scaleEmoji = useCallback((direction: 'in' | 'out') => {
+    if (pixels.length === 0) return;
+    
+    const bounds = findBoundingBox(pixels);
+    if (!bounds) return;
+    
+    const currentWidth = bounds.maxX - bounds.minX + 1;
+    const currentHeight = bounds.maxY - bounds.minY + 1;
+    
+    let targetWidth, targetHeight;
+    
+    if (direction === 'in') {
+      const maxSize = 28;
+      const scale = Math.min(maxSize / currentWidth, maxSize / currentHeight);
+      targetWidth = Math.min(maxSize, Math.round(currentWidth * scale * 1.2));
+      targetHeight = Math.min(maxSize, Math.round(currentHeight * scale * 1.2));
+    } else {
+      targetWidth = Math.max(4, Math.round(currentWidth * 0.8));
+      targetHeight = Math.max(4, Math.round(currentHeight * 0.8));
+    }
+    
+    const newPixels = scaleContent(pixels, bounds, targetWidth, targetHeight);
     setPixels(newPixels);
     pushToHistory(newPixels);
-  }, [pixels, pushToHistory]);
+  }, [pixels, pushToHistory, findBoundingBox, scaleContent]);
 
   // Keyboard shortcuts
   useEffect(() => {
