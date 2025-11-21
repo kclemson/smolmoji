@@ -187,82 +187,73 @@ const Index = () => {
   const scaleEmoji = useCallback((direction: 'in' | 'out') => {
     if (pixels.length === 0) return;
     
-    // Find bounding box of content
-    let minX = 32, minY = 32, maxX = -1, maxY = -1;
+    // Create source canvas and draw current pixels
+    const sourceCanvas = document.createElement('canvas');
+    sourceCanvas.width = 32;
+    sourceCanvas.height = 32;
+    const sourceCtx = sourceCanvas.getContext('2d');
+    if (!sourceCtx) return;
+    
+    sourceCtx.imageSmoothingEnabled = false; // Nearest-neighbor for crisp pixels
+    
+    // Draw current pixels to source canvas
     pixels.forEach((row, y) => {
       row.forEach((color, x) => {
         if (color !== 'transparent') {
-          minX = Math.min(minX, x);
-          minY = Math.min(minY, y);
-          maxX = Math.max(maxX, x);
-          maxY = Math.max(maxY, y);
+          sourceCtx.fillStyle = color;
+          sourceCtx.fillRect(x, y, 1, 1);
         }
       });
     });
     
-    if (maxX === -1) return; // No content
+    // Create output canvas
+    const outputCanvas = document.createElement('canvas');
+    outputCanvas.width = 32;
+    outputCanvas.height = 32;
+    const outputCtx = outputCanvas.getContext('2d');
+    if (!outputCtx) return;
     
-    const contentWidth = maxX - minX + 1;
-    const contentHeight = maxY - minY + 1;
+    outputCtx.imageSmoothingEnabled = false; // Nearest-neighbor for crisp pixels
     
-    // Calculate new offset based on direction
-    let newOffsetX: number, newOffsetY: number;
-    let cropLeft = 0, cropRight = 0, cropTop = 0, cropBottom = 0;
-    
+    // Perform scaling operation
     if (direction === 'in') {
-      // Zoom in: Remove 1px transparent border on each side (crop)
-      cropLeft = 1;
-      cropRight = 1;
-      cropTop = 1;
-      cropBottom = 1;
-      
-      const newContentWidth = contentWidth + 2; // Growing by removing border
-      const newContentHeight = contentHeight + 2;
-      
-      // Check if there's actually transparent space to remove
-      if (minX < 1 || minY < 1 || maxX > 30 || maxY > 30) {
-        return; // Already at edges
-      }
-      
-      // Check if cropped content will fit
-      if (newContentWidth > 32 || newContentHeight > 32) return;
-      
-      // Center the larger content
-      newOffsetX = Math.round((32 - newContentWidth) / 2);
-      newOffsetY = Math.round((32 - newContentHeight) / 2);
-      
+      // Zoom in: crop 1px from each edge and scale to fill 32x32
+      outputCtx.drawImage(
+        sourceCanvas,
+        1, 1, 30, 30,    // source: 30x30 area (1px cropped from each edge)
+        0, 0, 32, 32     // destination: scale to fill entire 32x32 canvas
+      );
     } else {
-      // Zoom out: Add 1px transparent border on each side
-      const newContentWidth = contentWidth; // Keep same size, just add padding
-      const newContentHeight = contentHeight;
-      
-      // Check if content will still be visible with more padding
-      if (newContentWidth + 4 > 32 || newContentHeight + 4 > 32) return;
-      if (contentWidth < 4 || contentHeight < 4) return; // Too small already
-      
-      // Center with more padding
-      newOffsetX = Math.round((32 - newContentWidth) / 2) + 1;
-      newOffsetY = Math.round((32 - newContentHeight) / 2) + 1;
+      // Zoom out: scale entire 32x32 down to 30x30 centered (adds 1px border)
+      outputCtx.drawImage(
+        sourceCanvas,
+        0, 0, 32, 32,    // source: entire 32x32 canvas
+        1, 1, 30, 30     // destination: shrink to centered 30x30 area
+      );
     }
     
-    // Create new pixel array with adjusted content position
+    // Read scaled pixels back from output canvas
+    const imageData = outputCtx.getImageData(0, 0, 32, 32);
     const newPixels: string[][] = Array(32).fill(null).map(() => 
       Array(32).fill('transparent')
     );
     
-    // Copy pixels with new offset and cropping
-    for (let srcY = minY - cropTop; srcY <= maxY + cropBottom; srcY++) {
-      for (let srcX = minX - cropLeft; srcX <= maxX + cropRight; srcX++) {
-        if (srcX >= 0 && srcX < 32 && srcY >= 0 && srcY < 32) {
-          const color = pixels[srcY][srcX];
-          if (color !== 'transparent') {
-            const destX = newOffsetX + (srcX - minX + cropLeft);
-            const destY = newOffsetY + (srcY - minY + cropTop);
-            
-            if (destX >= 0 && destX < 32 && destY >= 0 && destY < 32) {
-              newPixels[destY][destX] = color;
-            }
-          }
+    // Convert RGBA data back to our pixel format
+    for (let y = 0; y < 32; y++) {
+      for (let x = 0; x < 32; x++) {
+        const index = (y * 32 + x) * 4;
+        const r = imageData.data[index];
+        const g = imageData.data[index + 1];
+        const b = imageData.data[index + 2];
+        const a = imageData.data[index + 3];
+        
+        // Only set pixel if it has sufficient opacity (avoid anti-aliasing artifacts)
+        if (a > 10) {
+          // Convert RGB to hex
+          const hex = '#' + [r, g, b].map(v => 
+            v.toString(16).padStart(2, '0')
+          ).join('');
+          newPixels[y][x] = hex;
         }
       }
     }
