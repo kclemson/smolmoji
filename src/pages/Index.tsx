@@ -7,7 +7,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PixelCanvas } from "@/components/PixelCanvas";
 import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, ZoomIn, ZoomOut } from "lucide-react";
+import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2 } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useDebouncedLocalStorage } from "@/hooks/useDebouncedLocalStorage";
 import { cn } from "@/lib/utils";
@@ -229,26 +229,19 @@ const Index = () => {
     return newPixels;
   }, []);
 
-  const scaleEmoji = useCallback((direction: 'in' | 'out') => {
+  const autoFitEmoji = useCallback(() => {
     if (pixels.length === 0) return;
     
     const bounds = findBoundingBox(pixels);
     if (!bounds) return;
     
-    const currentWidth = bounds.maxX - bounds.minX + 1;
-    const currentHeight = bounds.maxY - bounds.minY + 1;
+    const contentWidth = bounds.maxX - bounds.minX + 1;
+    const contentHeight = bounds.maxY - bounds.minY + 1;
     
-    let targetWidth, targetHeight;
-    
-    if (direction === 'in') {
-      const maxSize = 28;
-      const scale = Math.min(maxSize / currentWidth, maxSize / currentHeight);
-      targetWidth = Math.min(maxSize, Math.round(currentWidth * scale * 1.2));
-      targetHeight = Math.min(maxSize, Math.round(currentHeight * scale * 1.2));
-    } else {
-      targetWidth = Math.max(4, Math.round(currentWidth * 0.8));
-      targetHeight = Math.max(4, Math.round(currentHeight * 0.8));
-    }
+    const maxSize = 28;
+    const scale = Math.min(maxSize / contentWidth, maxSize / contentHeight);
+    const targetWidth = Math.round(contentWidth * scale);
+    const targetHeight = Math.round(contentHeight * scale);
     
     const newPixels = scaleContent(pixels, bounds, targetWidth, targetHeight);
     setPixels(newPixels);
@@ -472,27 +465,16 @@ const Index = () => {
               {/* Separator */}
               <div className="w-px h-8 bg-border" />
               
-              {/* Zoom Controls */}
+              {/* Auto-Fit Button */}
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => scaleEmoji('in')}
+                onClick={autoFitEmoji}
                 disabled={pixels.length === 0}
-                title="Zoom in (make emoji bigger)"
+                title="Auto-fit (remove padding and maximize emoji)"
                 className="w-8 h-8 p-0"
               >
-                <ZoomIn className="h-3.5 w-3.5" />
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => scaleEmoji('out')}
-                disabled={pixels.length === 0}
-                title="Zoom out (make emoji smaller)"
-                className="w-8 h-8 p-0"
-              >
-                <ZoomOut className="h-3.5 w-3.5" />
+                <Maximize2 className="h-3.5 w-3.5" />
               </Button>
               
               {/* Separator */}
