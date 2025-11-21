@@ -196,15 +196,11 @@ const Index = () => {
       for (let y = 0; y < 32; y++) {
         for (let x = 0; x < 32; x++) {
           // Map output coords to source (30x30 center area)
-          const sourceX = Math.floor(x * 29 / 31) + 1;
-          const sourceY = Math.floor(y * 29 / 31) + 1;
+          const sourceX = 1 + Math.floor(x * 30 / 32);
+          const sourceY = 1 + Math.floor(y * 30 / 32);
           
-          // Offset by 1 to skip the border we're cropping
-          const pixelX = sourceX + 1;
-          const pixelY = sourceY + 1;
-          
-          if (pixelY < pixels.length && pixelX < pixels[pixelY].length) {
-            newPixels[y][x] = pixels[pixelY][pixelX];
+          if (sourceY < pixels.length && sourceX < pixels[sourceY].length) {
+            newPixels[y][x] = pixels[sourceY][sourceX];
           }
         }
       }
