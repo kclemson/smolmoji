@@ -354,7 +354,6 @@ const Index = () => {
     
     const cleanedPixels = removeEdgeBackground(pixels);
     setPixels(cleanedPixels);
-    setOriginalPixels(cleanedPixels.map(row => [...row]));
     pushToHistory(cleanedPixels);
   }, [pixels, removeEdgeBackground, pushToHistory]);
 
