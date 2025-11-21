@@ -7,7 +7,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PixelCanvas } from "@/components/PixelCanvas";
 import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Trash2 } from "lucide-react";
+import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useDebouncedLocalStorage } from "@/hooks/useDebouncedLocalStorage";
 import { cn } from "@/lib/utils";
@@ -599,7 +599,7 @@ const Index = () => {
                 title="Remove background from edges"
                 className="w-8 h-8 p-0"
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <Scissors className="h-3.5 w-3.5" />
               </Button>
               
               {/* Separator */}
