@@ -202,76 +202,56 @@ const Index = () => {
     
     if (maxX === -1) return; // No content
     
+    // Extract the content
     const contentWidth = maxX - minX + 1;
     const contentHeight = maxY - minY + 1;
+    const content: string[][] = [];
+    for (let y = minY; y <= maxY; y++) {
+      content.push(pixels[y].slice(minX, maxX + 1));
+    }
     
-    let newPixels: string[][];
+    // Calculate current position
+    const currentOffsetX = minX;
+    const currentOffsetY = minY;
+    
+    let newOffsetX: number;
+    let newOffsetY: number;
     
     if (direction === 'in') {
-      // Zoom in: Double each pixel (2x2 expansion)
-      const expandedWidth = contentWidth * 2;
-      const expandedHeight = contentHeight * 2;
+      // Zoom in: reduce padding by 1 pixel on all sides
+      newOffsetX = currentOffsetX - 1;
+      newOffsetY = currentOffsetY - 1;
       
-      // Check if too large
-      if (expandedWidth > 32 || expandedHeight > 32) {
-        return; // Can't zoom in further
+      // Can't zoom in if content would overflow
+      if (newOffsetX < 0 || newOffsetY < 0 || 
+          newOffsetX + contentWidth > 32 || newOffsetY + contentHeight > 32) {
+        return;
       }
-      
-      // Expand each pixel to 2x2
-      const expanded: string[][] = [];
-      for (let y = minY; y <= maxY; y++) {
-        const row1: string[] = [];
-        const row2: string[] = [];
-        for (let x = minX; x <= maxX; x++) {
-          const color = pixels[y][x];
-          row1.push(color, color); // Duplicate horizontally
-          row2.push(color, color);
-        }
-        expanded.push(row1, row2); // Duplicate vertically
-      }
-      
-      // Center in 32x32
-      newPixels = Array(32).fill(null).map(() => Array(32).fill('transparent'));
-      const offsetX = Math.floor((32 - expandedWidth) / 2);
-      const offsetY = Math.floor((32 - expandedHeight) / 2);
-      
-      expanded.forEach((row, y) => {
-        row.forEach((color, x) => {
-          newPixels[offsetY + y][offsetX + x] = color;
-        });
-      });
-      
     } else {
-      // Zoom out: Sample every other pixel (0.5x downsampling)
-      const sampledWidth = Math.ceil(contentWidth / 2);
-      const sampledHeight = Math.ceil(contentHeight / 2);
+      // Zoom out: increase padding by 1 pixel on all sides
+      newOffsetX = currentOffsetX + 1;
+      newOffsetY = currentOffsetY + 1;
       
-      // Check if too small
-      if (sampledWidth < 4 || sampledHeight < 4) {
-        return; // Can't zoom out further
+      // Can't zoom out if content would overflow
+      if (newOffsetX + contentWidth > 32 || newOffsetY + contentHeight > 32) {
+        return;
       }
-      
-      // Sample every other pixel
-      const sampled: string[][] = [];
-      for (let y = minY; y <= maxY; y += 2) {
-        const row: string[] = [];
-        for (let x = minX; x <= maxX; x += 2) {
-          row.push(pixels[y][x]);
-        }
-        sampled.push(row);
-      }
-      
-      // Center in 32x32
-      newPixels = Array(32).fill(null).map(() => Array(32).fill('transparent'));
-      const offsetX = Math.floor((32 - sampledWidth) / 2);
-      const offsetY = Math.floor((32 - sampledHeight) / 2);
-      
-      sampled.forEach((row, y) => {
-        row.forEach((color, x) => {
-          newPixels[offsetY + y][offsetX + x] = color;
-        });
-      });
     }
+    
+    // Place content at new position
+    const newPixels: string[][] = Array(32).fill(null).map(() => 
+      Array(32).fill('transparent')
+    );
+    
+    content.forEach((row, y) => {
+      row.forEach((color, x) => {
+        const targetX = newOffsetX + x;
+        const targetY = newOffsetY + y;
+        if (targetX >= 0 && targetX < 32 && targetY >= 0 && targetY < 32) {
+          newPixels[targetY][targetX] = color;
+        }
+      });
+    });
     
     setPixels(newPixels);
     pushToHistory(newPixels);
