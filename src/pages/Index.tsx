@@ -295,8 +295,8 @@ const Index = () => {
   const handleDownload = () => {
     // Create a temporary canvas for the final image
     const tempCanvas = document.createElement("canvas");
-    tempCanvas.width = 128; // Discord emoji size
-    tempCanvas.height = 128;
+    tempCanvas.width = 512;
+    tempCanvas.height = 512;
     const ctx = tempCanvas.getContext("2d");
     if (!ctx) return;
 
@@ -305,14 +305,14 @@ const Index = () => {
     // Fill background based on selection
     if (backgroundColor === "white") {
       ctx.fillStyle = "#FFFFFF";
-      ctx.fillRect(0, 0, 128, 128);
+      ctx.fillRect(0, 0, 512, 512);
     } else if (backgroundColor === "black") {
       ctx.fillStyle = "#000000";
-      ctx.fillRect(0, 0, 128, 128);
+      ctx.fillRect(0, 0, 512, 512);
     }
 
     // Render pixels
-    const pixelSize = 128 / 32;
+    const pixelSize = 512 / 32;
     
     pixels.forEach((row, y) => {
       row.forEach((color, x) => {
