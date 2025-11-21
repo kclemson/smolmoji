@@ -28,6 +28,7 @@ const Index = () => {
   // Undo/Redo state
   const [historyStack, setHistoryStack] = useLocalStorage<string[][][]>("emoji-historyStack", []);
   const [historyIndex, setHistoryIndex] = useLocalStorage("emoji-historyIndex", -1);
+  const historyIndexRef = useRef(historyIndex);
   const MAX_HISTORY = 50;
 
   const handleGenerate = async () => {
@@ -117,15 +118,21 @@ const Index = () => {
     updatePreviews();
   }, [pixels, backgroundColor]);
 
+  // Sync ref with historyIndex state
+  useEffect(() => {
+    historyIndexRef.current = historyIndex;
+  }, [historyIndex]);
+
   // Undo/Redo functions
   const pushToHistory = useCallback((newPixels: string[][]) => {
+    const currentIndex = historyIndexRef.current;
     setHistoryStack(prev => {
-      const truncated = prev.slice(0, historyIndex + 1);
+      const truncated = prev.slice(0, currentIndex + 1);
       const newStack = [...truncated, structuredClone(newPixels)];
       return newStack.slice(-MAX_HISTORY);
     });
-    setHistoryIndex(prev => Math.min(prev + 1, MAX_HISTORY - 1));
-  }, [historyIndex]);
+    setHistoryIndex(Math.min(currentIndex + 1, MAX_HISTORY - 1));
+  }, []);
 
   const undo = useCallback(() => {
     if (historyIndex <= 0) return;
