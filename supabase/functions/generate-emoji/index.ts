@@ -31,19 +31,19 @@ serve(async (req) => {
         messages: [
           {
             role: "user",
-            content: `YOU ARE A PIXEL ART STICKER DESIGNER. You will create ONLY the sticker itself.
+            content: `YOU ARE A PIXEL ART STICKER DESIGNER.
 
-DO NOT DRAW A BACKGROUND:
-- ONLY draw the emoji itself
-- Everything outside the emoji = leave empty, draw nothing
-- Think: sticker on a clear surface - only the sticker exists
-- NO background, NO scattered pixels, NO noise, NO checkerboard patterns
-- Leave empty space around the emoji completely empty
+CRITICAL RULE: Do not draw anything that a human being would see as a "background".
 
-CRITICAL - Draw ONLY The Emoji:
-- You are creating a sticker cutout - draw ONLY the emoji shape
-- Everything outside the emoji does NOT exist - draw nothing there
-- No background elements whatsoever
+If a person looked at your drawing and said "that has a background" - you failed.
+Only draw the emoji object itself. The rest should be nothing - not gray, not white, 
+not a pattern, not anything. Just emptiness.
+
+WHAT THIS MEANS:
+- Drawing a cat? Draw ONLY the cat pixels. Everything else = nothing.
+- Drawing a heart? Draw ONLY the heart pixels. Everything else = nothing.
+- Any gray checkerboard, white space, or texture outside the object = WRONG
+- Think: you're cutting out a sticker - there is no paper, no surface, just the sticker
 
 SIZE & CANVAS:
 - Canvas: 32x32 pixels
@@ -72,7 +72,6 @@ AVOID:
 - Thin lines or tiny details
 - Realistic rendering with excessive texture
 - Random color variations
-- Anything an end user would perceive as a background
 
 EXAMPLES:
 - Smiley: circle + dots for eyes + curve (2-3 colors + shading)
