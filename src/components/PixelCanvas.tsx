@@ -87,10 +87,9 @@ export const PixelCanvas = ({
           }
         }
         
-      // Remove edge-connected background pixels
-      const cleanedPixels = removeEdgeBackground(newPixels, gridSize);
-      setOriginalPixels(cleanedPixels.map(row => [...row]));
-      setPixels(cleanedPixels);
+      // Set pixels without automatic processing
+      setOriginalPixels(newPixels.map(row => [...row]));
+      setPixels(newPixels);
       };
       img.src = imageData;
     }
@@ -167,116 +166,6 @@ export const PixelCanvas = ({
     }
   }, [pixels, gridSize, pixelSize, selectionStart, selectionEnd, backgroundColor, isRightClickDrag]);
 
-  const colorDistance = (color1: string, color2: string): number => {
-    // Parse rgba colors
-    const rgba1 = color1.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-    const rgba2 = color2.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-    
-    if (!rgba1 || !rgba2) return Infinity;
-    
-    const r1 = parseInt(rgba1[1]), g1 = parseInt(rgba1[2]), b1 = parseInt(rgba1[3]);
-    const r2 = parseInt(rgba2[1]), g2 = parseInt(rgba2[2]), b2 = parseInt(rgba2[3]);
-    
-    // Euclidean distance in RGB space
-    return Math.sqrt(Math.pow(r1 - r2, 2) + Math.pow(g1 - g2, 2) + Math.pow(b1 - b2, 2));
-  };
-
-  const removeEdgeBackground = (pixels: string[][], gridSize: number): string[][] => {
-    const COLOR_THRESHOLD = 1; // Colors within this distance are considered similar
-    
-    // Step 1: Sample edge pixels and group similar colors
-    const edgeColorGroups = new Map<string, { count: number, colors: Set<string> }>();
-    
-    const addToGroup = (color: string) => {
-      if (color === "transparent") return;
-      
-      // Find existing group this color belongs to
-      let foundGroup = false;
-      for (const [representative, group] of edgeColorGroups.entries()) {
-        if (colorDistance(color, representative) <= COLOR_THRESHOLD) {
-          group.count++;
-          group.colors.add(color);
-          foundGroup = true;
-          break;
-        }
-      }
-      
-      // Create new group if no match found
-      if (!foundGroup) {
-        edgeColorGroups.set(color, { count: 1, colors: new Set([color]) });
-      }
-    };
-    
-    // Sample edges
-    for (let x = 0; x < gridSize; x++) {
-      addToGroup(pixels[0][x]);
-      addToGroup(pixels[gridSize-1][x]);
-    }
-    for (let y = 0; y < gridSize; y++) {
-      addToGroup(pixels[y][0]);
-      addToGroup(pixels[y][gridSize-1]);
-    }
-    
-    // Find most common color group
-    if (edgeColorGroups.size === 0) return pixels;
-    
-    let bgColorGroup: Set<string> | null = null;
-    let maxCount = 0;
-    edgeColorGroups.forEach((group) => {
-      if (group.count > maxCount) {
-        maxCount = group.count;
-        bgColorGroup = group.colors;
-      }
-    });
-    
-    if (!bgColorGroup) return pixels;
-    
-    // Step 2: Flood fill from all edges matching background color group
-    const visited = Array(gridSize).fill(null).map(() => Array(gridSize).fill(false));
-    const queue: [number, number][] = [];
-    
-    const isSimilarToBackground = (color: string): boolean => {
-      if (color === "transparent") return false;
-      for (const bgColor of bgColorGroup!) {
-        if (colorDistance(color, bgColor) <= COLOR_THRESHOLD) {
-          return true;
-        }
-      }
-      return false;
-    };
-    
-    // Add all edge pixels matching background color group to queue
-    for (let x = 0; x < gridSize; x++) {
-      if (isSimilarToBackground(pixels[0][x])) queue.push([0, x]);
-      if (isSimilarToBackground(pixels[gridSize-1][x])) queue.push([gridSize-1, x]);
-    }
-    for (let y = 0; y < gridSize; y++) {
-      if (isSimilarToBackground(pixels[y][0])) queue.push([y, 0]);
-      if (isSimilarToBackground(pixels[y][gridSize-1])) queue.push([y, gridSize-1]);
-    }
-    
-    // Flood fill with color similarity
-    const result = pixels.map(row => [...row]);
-    
-    while (queue.length > 0) {
-      const [y, x] = queue.shift()!;
-      
-      if (visited[y][x]) continue;
-      visited[y][x] = true;
-      
-      if (isSimilarToBackground(pixels[y][x])) {
-        result[y][x] = "transparent";
-        
-        // Add neighbors to queue
-        if (y > 0 && !visited[y-1][x]) queue.push([y-1, x]);
-        if (y < gridSize-1 && !visited[y+1][x]) queue.push([y+1, x]);
-        if (x > 0 && !visited[y][x-1]) queue.push([y, x-1]);
-        if (x < gridSize-1 && !visited[y][x+1]) queue.push([y, x+1]);
-      }
-    }
-    
-    return result;
-  };
 
   const getPixelCoords = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
