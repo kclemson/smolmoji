@@ -87,10 +87,12 @@ export const PixelCanvas = ({
           }
         }
         
-        // Remove edge-connected background pixels
-        const cleanedPixels = removeEdgeBackground(newPixels, gridSize);
-        setOriginalPixels(cleanedPixels.map(row => [...row]));
-        setPixels(cleanedPixels);
+      // Remove edge-connected background pixels
+      // const cleanedPixels = removeEdgeBackground(newPixels, gridSize);
+      // setOriginalPixels(cleanedPixels.map(row => [...row]));
+      // setPixels(cleanedPixels);
+      setOriginalPixels(newPixels.map(row => [...row]));
+      setPixels(newPixels);
       };
       img.src = imageData;
     }
@@ -182,7 +184,7 @@ export const PixelCanvas = ({
   };
 
   const removeEdgeBackground = (pixels: string[][], gridSize: number): string[][] => {
-    const COLOR_THRESHOLD = 0; // Colors within this distance are considered similar
+    const COLOR_THRESHOLD = 1; // Colors within this distance are considered similar
     
     // Step 1: Sample edge pixels and group similar colors
     const edgeColorGroups = new Map<string, { count: number, colors: Set<string> }>();
