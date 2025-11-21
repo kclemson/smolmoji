@@ -187,7 +187,7 @@ const Index = () => {
   const scaleEmoji = useCallback((direction: 'in' | 'out') => {
     if (pixels.length === 0) return;
     
-    // Find bounding box of non-transparent pixels
+    // Step 1: Find bounding box of emoji content
     let minX = 32, minY = 32, maxX = -1, maxY = -1;
     pixels.forEach((row, y) => {
       row.forEach((color, x) => {
@@ -202,62 +202,112 @@ const Index = () => {
     
     if (maxX === -1) return; // No content
     
-    // Extract the content
     const contentWidth = maxX - minX + 1;
     const contentHeight = maxY - minY + 1;
-    const content: string[][] = [];
-    for (let y = minY; y <= maxY; y++) {
-      content.push(pixels[y].slice(minX, maxX + 1));
-    }
     
-    // Calculate current padding (how much transparent space on each side)
-    const currentPaddingX = minX;  // left padding
-    const currentPaddingY = minY;  // top padding
+    // Step 2: Create temporary canvas and draw current pixels to it
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = 32;
+    tempCanvas.height = 32;
+    const ctx = tempCanvas.getContext('2d');
+    if (!ctx) return;
     
-    let newPaddingX: number;
-    let newPaddingY: number;
+    ctx.imageSmoothingEnabled = true; // Enable interpolation
+    ctx.imageSmoothingQuality = 'high'; // Use best quality
+    
+    // Draw current pixel grid to canvas
+    pixels.forEach((row, y) => {
+      row.forEach((color, x) => {
+        if (color !== 'transparent') {
+          ctx.fillStyle = color;
+          ctx.fillRect(x, y, 1, 1);
+        }
+      });
+    });
+    
+    // Step 3: Calculate scaling parameters
+    let sourceX: number, sourceY: number, sourceWidth: number, sourceHeight: number;
+    let destX: number, destY: number, destWidth: number, destHeight: number;
     
     if (direction === 'in') {
-      // Zoom in: reduce padding by 1 pixel on each side (removes transparent border)
-      newPaddingX = currentPaddingX - 1;
-      newPaddingY = currentPaddingY - 1;
+      // Zoom In: Crop to content bounds, then scale up to fill more space
+      sourceX = minX;
+      sourceY = minY;
+      sourceWidth = contentWidth;
+      sourceHeight = contentHeight;
       
-      // Check bounds - need non-negative padding and content must fit
-      if (newPaddingX < 0 || newPaddingY < 0 ||
-          newPaddingX + contentWidth + newPaddingX > 32 ||
-          newPaddingY + contentHeight + newPaddingY > 32) {
-        return;
-      }
+      // Scale up by ~10% (make destination slightly larger than source)
+      const scaleFactor = 1.1;
+      destWidth = Math.min(32, Math.round(contentWidth * scaleFactor));
+      destHeight = Math.min(32, Math.round(contentHeight * scaleFactor));
+      
+      // Center the scaled result
+      destX = Math.round((32 - destWidth) / 2);
+      destY = Math.round((32 - destHeight) / 2);
+      
+      // Prevent zooming in too much
+      if (destWidth >= 32 || destHeight >= 32) return;
+      
     } else {
-      // Zoom out: increase padding by 1 pixel on each side (adds transparent border)
-      newPaddingX = currentPaddingX + 1;
-      newPaddingY = currentPaddingY + 1;
+      // Zoom Out: Take whole content, scale down, add transparent padding
+      sourceX = minX;
+      sourceY = minY;
+      sourceWidth = contentWidth;
+      sourceHeight = contentHeight;
       
-      // Check bounds - content + padding on both sides must fit in 32x32
-      if (newPaddingX * 2 + contentWidth > 32 ||
-          newPaddingY * 2 + contentHeight > 32) {
-        return;
-      }
+      // Scale down by ~10% (make destination smaller than source)
+      const scaleFactor = 0.9;
+      destWidth = Math.max(1, Math.round(contentWidth * scaleFactor));
+      destHeight = Math.max(1, Math.round(contentHeight * scaleFactor));
+      
+      // Center the scaled result
+      destX = Math.round((32 - destWidth) / 2);
+      destY = Math.round((32 - destHeight) / 2);
+      
+      // Prevent zooming out too much
+      if (destWidth < 4 || destHeight < 4) return;
     }
     
-    // Place content centered with new padding
-    const newOffsetX = newPaddingX;
-    const newOffsetY = newPaddingY;
+    // Step 4: Create output canvas and scale the image
+    const outputCanvas = document.createElement('canvas');
+    outputCanvas.width = 32;
+    outputCanvas.height = 32;
+    const outputCtx = outputCanvas.getContext('2d');
+    if (!outputCtx) return;
     
-    // Place content at new position
+    outputCtx.imageSmoothingEnabled = true;
+    outputCtx.imageSmoothingQuality = 'high';
+    
+    // Draw the scaled region
+    outputCtx.drawImage(
+      tempCanvas,
+      sourceX, sourceY, sourceWidth, sourceHeight,  // source rectangle
+      destX, destY, destWidth, destHeight            // destination rectangle
+    );
+    
+    // Step 5: Read pixel data back from canvas
+    const imageData = outputCtx.getImageData(0, 0, 32, 32);
+    const data = imageData.data;
     const newPixels: string[][] = Array(32).fill(null).map(() => 
       Array(32).fill('transparent')
     );
     
-    content.forEach((row, y) => {
-      row.forEach((color, x) => {
-        const targetX = newOffsetX + x;
-        const targetY = newOffsetY + y;
-        if (targetX >= 0 && targetX < 32 && targetY >= 0 && targetY < 32) {
-          newPixels[targetY][targetX] = color;
+    // Convert RGBA data back to our pixel array
+    for (let y = 0; y < 32; y++) {
+      for (let x = 0; x < 32; x++) {
+        const i = (y * 32 + x) * 4;
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const a = data[i + 3];
+        
+        // If pixel has any opacity, convert to hex color
+        if (a > 0) {
+          const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+          newPixels[y][x] = hex;
         }
-      });
-    });
+      }
+    }
     
     setPixels(newPixels);
     pushToHistory(newPixels);
