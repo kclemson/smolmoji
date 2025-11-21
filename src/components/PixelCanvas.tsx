@@ -89,10 +89,10 @@ export const PixelCanvas = ({
         }
         
         // Remove edge-connected background pixels
-        const cleanedPixels = removeEdgeBackground(newPixels, gridSize);
+        // const cleanedPixels = removeEdgeBackground(newPixels, gridSize);
         
         // Auto-fit by default
-        const fittedPixels = autoFitPixels(cleanedPixels);
+        const fittedPixels = autoFitPixels(newPixels);
         
         setOriginalPixels(fittedPixels.map(row => [...row]));
         setPixels(fittedPixels);
