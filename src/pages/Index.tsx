@@ -210,33 +210,39 @@ const Index = () => {
       content.push(pixels[y].slice(minX, maxX + 1));
     }
     
-    // Calculate current position
-    const currentOffsetX = minX;
-    const currentOffsetY = minY;
+    // Calculate current padding (how much transparent space on each side)
+    const currentPaddingX = minX;  // left padding
+    const currentPaddingY = minY;  // top padding
     
-    let newOffsetX: number;
-    let newOffsetY: number;
+    let newPaddingX: number;
+    let newPaddingY: number;
     
     if (direction === 'in') {
-      // Zoom in: reduce padding by 1 pixel on all sides
-      newOffsetX = currentOffsetX - 1;
-      newOffsetY = currentOffsetY - 1;
+      // Zoom in: reduce padding by 1 pixel on each side (removes transparent border)
+      newPaddingX = currentPaddingX - 1;
+      newPaddingY = currentPaddingY - 1;
       
-      // Can't zoom in if content would overflow
-      if (newOffsetX < 0 || newOffsetY < 0 || 
-          newOffsetX + contentWidth > 32 || newOffsetY + contentHeight > 32) {
+      // Check bounds - need non-negative padding and content must fit
+      if (newPaddingX < 0 || newPaddingY < 0 ||
+          newPaddingX + contentWidth + newPaddingX > 32 ||
+          newPaddingY + contentHeight + newPaddingY > 32) {
         return;
       }
     } else {
-      // Zoom out: increase padding by 1 pixel on all sides
-      newOffsetX = currentOffsetX + 1;
-      newOffsetY = currentOffsetY + 1;
+      // Zoom out: increase padding by 1 pixel on each side (adds transparent border)
+      newPaddingX = currentPaddingX + 1;
+      newPaddingY = currentPaddingY + 1;
       
-      // Can't zoom out if content would overflow
-      if (newOffsetX + contentWidth > 32 || newOffsetY + contentHeight > 32) {
+      // Check bounds - content + padding on both sides must fit in 32x32
+      if (newPaddingX * 2 + contentWidth > 32 ||
+          newPaddingY * 2 + contentHeight > 32) {
         return;
       }
     }
+    
+    // Place content centered with new padding
+    const newOffsetX = newPaddingX;
+    const newOffsetY = newPaddingY;
     
     // Place content at new position
     const newPixels: string[][] = Array(32).fill(null).map(() => 
