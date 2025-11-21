@@ -261,7 +261,7 @@ const Index = () => {
   };
 
   const removeEdgeBackground = useCallback((pixelData: string[][]): string[][] => {
-    const COLOR_THRESHOLD = 1;
+    const COLOR_THRESHOLD = 5;
     const gridSize = 32;
     
     const edgeColorGroups = new Map<string, { count: number, colors: Set<string> }>();
