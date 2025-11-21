@@ -88,11 +88,9 @@ export const PixelCanvas = ({
         }
         
       // Remove edge-connected background pixels
-      // const cleanedPixels = removeEdgeBackground(newPixels, gridSize);
-      // setOriginalPixels(cleanedPixels.map(row => [...row]));
-      // setPixels(cleanedPixels);
-      setOriginalPixels(newPixels.map(row => [...row]));
-      setPixels(newPixels);
+      const cleanedPixels = removeEdgeBackground(newPixels, gridSize);
+      setOriginalPixels(cleanedPixels.map(row => [...row]));
+      setPixels(cleanedPixels);
       };
       img.src = imageData;
     }
