@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { autoFitPixels } from "@/lib/pixelUtils";
 
 interface PixelCanvasProps {
   imageData: string | null;
@@ -89,8 +90,12 @@ export const PixelCanvas = ({
         
         // Remove edge-connected background pixels
         const cleanedPixels = removeEdgeBackground(newPixels, gridSize);
-        setOriginalPixels(cleanedPixels.map(row => [...row]));
-        setPixels(cleanedPixels);
+        
+        // Auto-fit by default
+        const fittedPixels = autoFitPixels(cleanedPixels);
+        
+        setOriginalPixels(fittedPixels.map(row => [...row]));
+        setPixels(fittedPixels);
       };
       img.src = imageData;
     }
