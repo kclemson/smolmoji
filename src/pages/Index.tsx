@@ -238,7 +238,7 @@ const Index = () => {
     const contentWidth = bounds.maxX - bounds.minX + 1;
     const contentHeight = bounds.maxY - bounds.minY + 1;
     
-    const maxSize = 28;
+    const maxSize = 30; // 32 - 2px margin (1px per side)
     const scale = Math.min(maxSize / contentWidth, maxSize / contentHeight);
     const targetWidth = Math.round(contentWidth * scale);
     const targetHeight = Math.round(contentHeight * scale);
