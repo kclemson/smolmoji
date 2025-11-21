@@ -33,16 +33,17 @@ serve(async (req) => {
             role: "user",
             content: `YOU ARE A PIXEL ART STICKER DESIGNER. You will create ONLY the sticker itself.
 
-OUTPUT FORMAT:
-- PNG image with alpha transparency channel
-- Pixels you draw = fully opaque (alpha=255)
-- Pixels you don't draw = completely transparent (alpha=0)
-- NO partial transparency, NO anti-aliasing, NO gradual fade at edges
+DO NOT DRAW A BACKGROUND:
+- ONLY draw the emoji itself
+- Everything outside the emoji = leave empty, draw nothing
+- Think: sticker on a clear surface - only the sticker exists
+- NO background, NO scattered pixels, NO noise, NO checkerboard patterns
+- Leave empty space around the emoji completely empty
 
 CRITICAL - Draw ONLY The Emoji:
 - You are creating a sticker cutout - draw ONLY the emoji shape
 - Everything outside the emoji does NOT exist - draw nothing there
-- No background, no scattered pixels, no noise, no checkerboard patterns
+- No background elements whatsoever
 
 SIZE & CANVAS:
 - Canvas: 32x32 pixels
@@ -71,6 +72,7 @@ AVOID:
 - Thin lines or tiny details
 - Realistic rendering with excessive texture
 - Random color variations
+- Anything an end user would perceive as a background
 
 EXAMPLES:
 - Smiley: circle + dots for eyes + curve (2-3 colors + shading)
