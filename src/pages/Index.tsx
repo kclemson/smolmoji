@@ -7,7 +7,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PixelCanvas } from "@/components/PixelCanvas";
 import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2 } from "lucide-react";
+import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Trash2 } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { useDebouncedLocalStorage } from "@/hooks/useDebouncedLocalStorage";
 import { cn } from "@/lib/utils";
@@ -248,6 +248,116 @@ const Index = () => {
     pushToHistory(newPixels);
   }, [pixels, pushToHistory, findBoundingBox, scaleContent]);
 
+  const colorDistance = (color1: string, color2: string): number => {
+    const rgba1 = color1.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+    const rgba2 = color2.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+    
+    if (!rgba1 || !rgba2) return Infinity;
+    
+    const r1 = parseInt(rgba1[1]), g1 = parseInt(rgba1[2]), b1 = parseInt(rgba1[3]);
+    const r2 = parseInt(rgba2[1]), g2 = parseInt(rgba2[2]), b2 = parseInt(rgba2[3]);
+    
+    return Math.sqrt(Math.pow(r1 - r2, 2) + Math.pow(g1 - g2, 2) + Math.pow(b1 - b2, 2));
+  };
+
+  const removeEdgeBackground = useCallback((pixelData: string[][]): string[][] => {
+    const COLOR_THRESHOLD = 1;
+    const gridSize = 32;
+    
+    const edgeColorGroups = new Map<string, { count: number, colors: Set<string> }>();
+    
+    const addToGroup = (color: string) => {
+      if (color === "transparent") return;
+      
+      let foundGroup = false;
+      for (const [representative, group] of edgeColorGroups.entries()) {
+        if (colorDistance(color, representative) <= COLOR_THRESHOLD) {
+          group.count++;
+          group.colors.add(color);
+          foundGroup = true;
+          break;
+        }
+      }
+      
+      if (!foundGroup) {
+        edgeColorGroups.set(color, { count: 1, colors: new Set([color]) });
+      }
+    };
+    
+    for (let x = 0; x < gridSize; x++) {
+      addToGroup(pixelData[0][x]);
+      addToGroup(pixelData[gridSize-1][x]);
+    }
+    for (let y = 0; y < gridSize; y++) {
+      addToGroup(pixelData[y][0]);
+      addToGroup(pixelData[y][gridSize-1]);
+    }
+    
+    if (edgeColorGroups.size === 0) return pixelData;
+    
+    let bgColorGroup: Set<string> | null = null;
+    let maxCount = 0;
+    edgeColorGroups.forEach((group) => {
+      if (group.count > maxCount) {
+        maxCount = group.count;
+        bgColorGroup = group.colors;
+      }
+    });
+    
+    if (!bgColorGroup) return pixelData;
+    
+    const visited = Array(gridSize).fill(null).map(() => Array(gridSize).fill(false));
+    const queue: [number, number][] = [];
+    
+    const isSimilarToBackground = (color: string): boolean => {
+      if (color === "transparent") return false;
+      for (const bgColor of bgColorGroup!) {
+        if (colorDistance(color, bgColor) <= COLOR_THRESHOLD) {
+          return true;
+        }
+      }
+      return false;
+    };
+    
+    for (let x = 0; x < gridSize; x++) {
+      if (isSimilarToBackground(pixelData[0][x])) queue.push([0, x]);
+      if (isSimilarToBackground(pixelData[gridSize-1][x])) queue.push([gridSize-1, x]);
+    }
+    for (let y = 0; y < gridSize; y++) {
+      if (isSimilarToBackground(pixelData[y][0])) queue.push([y, 0]);
+      if (isSimilarToBackground(pixelData[y][gridSize-1])) queue.push([y, gridSize-1]);
+    }
+    
+    const result = pixelData.map(row => [...row]);
+    
+    while (queue.length > 0) {
+      const [y, x] = queue.shift()!;
+      
+      if (visited[y][x]) continue;
+      visited[y][x] = true;
+      
+      if (isSimilarToBackground(pixelData[y][x])) {
+        result[y][x] = "transparent";
+        
+        if (y > 0 && !visited[y-1][x]) queue.push([y-1, x]);
+        if (y < gridSize-1 && !visited[y+1][x]) queue.push([y+1, x]);
+        if (x > 0 && !visited[y][x-1]) queue.push([y, x-1]);
+        if (x < gridSize-1 && !visited[y][x+1]) queue.push([y, x+1]);
+      }
+    }
+    
+    return result;
+  }, []);
+
+  const handleRemoveBackground = useCallback(() => {
+    if (pixels.length === 0) return;
+    
+    const cleanedPixels = removeEdgeBackground(pixels);
+    setPixels(cleanedPixels);
+    setOriginalPixels(cleanedPixels.map(row => [...row]));
+    pushToHistory(cleanedPixels);
+  }, [pixels, removeEdgeBackground, pushToHistory]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -475,6 +585,21 @@ const Index = () => {
                 className="w-8 h-8 p-0"
               >
                 <Maximize2 className="h-3.5 w-3.5" />
+              </Button>
+              
+              {/* Separator */}
+              <div className="w-px h-8 bg-border" />
+              
+              {/* Remove Background Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRemoveBackground}
+                disabled={pixels.length === 0}
+                title="Remove background from edges"
+                className="w-8 h-8 p-0"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
               </Button>
               
               {/* Separator */}
