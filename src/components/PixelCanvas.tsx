@@ -42,6 +42,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
   const [selectionStart, setSelectionStart] = useState<{x: number, y: number} | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<{x: number, y: number} | null>(null);
   const [isRightClickDrag, setIsRightClickDrag] = useState(false);
+  const buttonRef = useRef<number>(0); // Track which mouse button was used
   const cleanupRef = useRef<(() => void) | null>(null);
   const pixelSize = 320 / gridSize;
 
@@ -480,6 +481,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
     
     // Detect which mouse button was pressed
     const isRightClick = e.button === 2;
+    buttonRef.current = e.button; // Store which button was pressed
     
     setIsDrawing(true);
     setIsRightClickDrag(isRightClick);
@@ -546,6 +548,14 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
         if (pickedColor !== "transparent") {
           onColorPick(pickedColor);
         }
+        setSelectionStart(null);
+        setSelectionEnd(null);
+        return;
+      }
+      
+      // Skip history for single right-clicks - already handled by handleContextMenu
+      const button = buttonRef.current;
+      if (!isDrag && button === 2) {
         setSelectionStart(null);
         setSelectionEnd(null);
         return;
