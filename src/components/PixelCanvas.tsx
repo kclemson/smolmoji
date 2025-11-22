@@ -105,7 +105,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
   };
 
   const removeEdgeBackground = (pixelData: string[][]): string[][] => {
-    const COLOR_THRESHOLD = 5;
+    const COLOR_THRESHOLD = 20;
     const gridSize = 32;
     
     const edgeColorGroups = new Map<string, { count: number, colors: Set<string> }>();
