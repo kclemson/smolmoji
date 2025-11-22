@@ -603,6 +603,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
     <div 
       className={cn(
         "relative p-4",
+        "border-2 border-red-500",
         isEyedropperActive ? "cursor-crosshair" : "cursor-cell"
       )}
       onMouseDown={handleMouseDown}
