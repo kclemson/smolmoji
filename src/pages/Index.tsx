@@ -526,61 +526,65 @@ const Index = () => {
           </div>
         </div>
             
-            {/* Compact Tools Row: Undo, Redo, Separator, Auto-fit, Remove Background, Shift Controls */}
-            <div className="flex justify-center gap-2 items-center">
-              {/* Undo */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={undo}
-                disabled={historyIndex <= 0 || isVirginState}
-                className="w-10 h-10 p-0"
-                title="Undo (Ctrl+Z)"
-              >
-                <Undo2 className="h-5 w-5" />
-              </Button>
-              
-              {/* Redo */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={redo}
-                disabled={historyIndex >= historyStack.length - 1 || isVirginState}
-                className="w-10 h-10 p-0"
-                title="Redo (Ctrl+Y)"
-              >
-              <Redo2 className="h-5 w-5" />
-              </Button>
-              
-              {/* Visual separator */}
-              <Separator orientation="vertical" className="h-10" />
-              
-              {/* Remove Background Button */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRemoveBackground}
-                disabled={!pixelCanvasRef.current?.getPixels().length || backgroundRemoved || isVirginState}
-                title="Remove background from edges"
-                className="w-10 h-10 p-0"
-              >
-                <Scissors className="h-5 w-5" />
-              </Button>
-              
-              {/* Auto-Fit Button */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={autoFitEmoji}
-                disabled={!pixelCanvasRef.current?.getPixels().length || !backgroundRemoved || isVirginState}
-                title="Auto-fit (remove padding and maximize emoji)"
-                className="w-10 h-10 p-0"
-              >
-                <Maximize2 className="h-5 w-5" />
-              </Button>
-              
-              {/* D-Pad Shift Controls */}
-              <div className="grid grid-cols-3 grid-rows-3 gap-0 w-fit">
+            {/* Compact Tools Row: Undo, Redo, Auto-fit, Remove Background, Shift Controls */}
+            <div className="flex justify-between items-center w-full">
+              {/* Left Section: Undo/Redo */}
+              <div className="flex gap-2 items-center">
+                {/* Undo */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={undo}
+                  disabled={historyIndex <= 0 || isVirginState}
+                  className="w-10 h-10 p-0"
+                  title="Undo (Ctrl+Z)"
+                >
+                  <Undo2 className="h-5 w-5" />
+                </Button>
+                
+                {/* Redo */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={redo}
+                  disabled={historyIndex >= historyStack.length - 1 || isVirginState}
+                  className="w-10 h-10 p-0"
+                  title="Redo (Ctrl+Y)"
+                >
+                  <Redo2 className="h-5 w-5" />
+                </Button>
+              </div>
+
+              {/* Center Section: Scissors/Autofit */}
+              <div className="flex gap-2 items-center">
+                {/* Remove Background Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRemoveBackground}
+                  disabled={!pixelCanvasRef.current?.getPixels().length || backgroundRemoved || isVirginState}
+                  title="Remove background from edges"
+                  className="w-10 h-10 p-0"
+                >
+                  <Scissors className="h-5 w-5" />
+                </Button>
+                
+                {/* Auto-Fit Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={autoFitEmoji}
+                  disabled={!pixelCanvasRef.current?.getPixels().length || !backgroundRemoved || isVirginState}
+                  title="Auto-fit (remove padding and maximize emoji)"
+                  className="w-10 h-10 p-0"
+                >
+                  <Maximize2 className="h-5 w-5" />
+                </Button>
+              </div>
+
+              {/* Right Section: D-Pad Shift Controls */}
+              <div className="flex items-center">
+                <div className="grid grid-cols-3 grid-rows-3 gap-0 w-fit">
                 {/* Up button - centered in top row */}
                 <div className="col-start-2 row-start-1">
                   <Button
@@ -635,6 +639,7 @@ const Index = () => {
                   >
                     <ArrowRight className="h-3 w-3" />
                   </Button>
+                </div>
                 </div>
               </div>
             </div>
