@@ -340,7 +340,7 @@ const Index = () => {
   };
 
 
-  const refreshPreview = (pixelsOverride?: string[][]) => {
+  const refreshPreview = (pixelsOverride?: string[][], backgroundOverride?: "transparent" | "white" | "black") => {
     const preview32 = preview32Ref.current;
     if (!preview32) return;
 
@@ -354,10 +354,11 @@ const Index = () => {
     ctx.clearRect(0, 0, 32, 32);
     
     // Fill background based on selection
-    if (backgroundColor === "white") {
+    const bg = backgroundOverride ?? backgroundColor;
+    if (bg === "white") {
       ctx.fillStyle = "#FFFFFF";
       ctx.fillRect(0, 0, 32, 32);
-    } else if (backgroundColor === "black") {
+    } else if (bg === "black") {
       ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, 32, 32);
     }
@@ -1036,7 +1037,7 @@ const Index = () => {
                         onValueChange={(value) => {
                           const newBg = value as "transparent" | "white" | "black";
                           setBackgroundColor(newBg);
-                          refreshPreview();
+                          refreshPreview(undefined, newBg);
                         }}
                         className="flex flex-col gap-1.5"
                       >
