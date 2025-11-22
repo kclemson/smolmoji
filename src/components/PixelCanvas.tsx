@@ -19,6 +19,7 @@ interface PixelCanvasProps {
   onColorPick?: (color: string) => void;
   onPixelsUpdated?: (pixels: string[][], isInitialLoad: boolean) => void;
   backgroundColor?: "transparent" | "white" | "black";
+  onReady?: () => void;
 }
 
 export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({ 
@@ -29,6 +30,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
   onColorPick,
   onPixelsUpdated,
   backgroundColor = "transparent",
+  onReady,
 }, ref) => {
   const internalCanvasRef = useRef<HTMLCanvasElement>(null);
   const canvasRef = externalCanvasRef || internalCanvasRef;
@@ -374,7 +376,10 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
     );
     setPixels(emptyGrid);
     setOriginalPixels([]);
-  }, [gridSize]);
+    
+    // Notify parent that canvas is ready for loading saved pixels
+    onReady?.();
+  }, [gridSize, onReady]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
