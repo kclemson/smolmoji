@@ -20,6 +20,9 @@ interface PixelCanvasProps {
   onPixelsUpdated?: (pixels: string[][], isInitialLoad: boolean) => void;
   backgroundColor?: "transparent" | "white" | "black";
   onReady?: () => void;
+  isMagicWandActive?: boolean;
+  onMagicWandClick?: (x: number, y: number) => void;
+  selectedPixels?: Set<string>;
 }
 
 export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({ 
@@ -31,6 +34,9 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
   onPixelsUpdated,
   backgroundColor = "transparent",
   onReady,
+  isMagicWandActive = false,
+  onMagicWandClick,
+  selectedPixels = new Set(),
 }, ref) => {
   const internalCanvasRef = useRef<HTMLCanvasElement>(null);
   const canvasRef = externalCanvasRef || internalCanvasRef;
@@ -450,7 +456,23 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
         (maxY - minY + 1) * pixelSize
       );
     }
-  }, [pixels, gridSize, pixelSize, selectionStart, selectionEnd, backgroundColor, isRightClickDrag]);
+
+    // Draw selection overlay for magic wand
+    if (selectedPixels.size > 0) {
+      selectedPixels.forEach(key => {
+        const [x, y] = key.split(',').map(Number);
+        
+        // Semi-transparent blue fill
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.35)';
+        ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+        
+        // Border around selected pixel
+        ctx.strokeStyle = 'rgba(59, 130, 246, 0.8)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+      });
+    }
+  }, [pixels, gridSize, pixelSize, selectionStart, selectionEnd, backgroundColor, isRightClickDrag, selectedPixels]);
 
 
   const getPixelCoords = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -480,6 +502,12 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
     const x = Math.max(0, Math.min(gridSize - 1, rawX));
     const y = Math.max(0, Math.min(gridSize - 1, rawY));
     const coords = { x, y };
+
+    // Magic wand mode - select pixels, don't draw
+    if (isMagicWandActive && onMagicWandClick) {
+      onMagicWandClick(x, y);
+      return; // Exit early, don't start drawing
+    }
 
     // Reset any previous drag state first
     setIsRightClickDrag(false);
