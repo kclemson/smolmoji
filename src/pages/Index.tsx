@@ -566,57 +566,59 @@ const Index = () => {
         style={{ maxWidth: '448px', width: '100%' }}
       >
         {/* Header */}
-        <div className="w-full flex items-center justify-between">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 via-blue-300 to-cyan-400 bg-clip-text text-transparent">
+        <div className="w-full flex items-center justify-center relative">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-cyan-400 to-teal-300 bg-clip-text text-transparent">
             smolmoji.com
           </h1>
           
           {!isVirginState && (
-            <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground">
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Settings</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-6 py-4">
-                  {/* Magic Wand Tolerance */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium">Magic Wand Tolerance: {magicWandTolerance}</Label>
+            <div className="absolute right-0">
+              <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Settings</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-6 py-4">
+                    {/* Magic Wand Tolerance */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-medium">Magic Wand Tolerance: {magicWandTolerance}</Label>
+                      </div>
+                      <Slider
+                        min={10}
+                        max={50}
+                        step={5}
+                        value={[magicWandTolerance]}
+                        onValueChange={(value) => setMagicWandTolerance(value[0])}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-muted-foreground">Lower = more selective</p>
                     </div>
-                    <Slider
-                      min={10}
-                      max={50}
-                      step={5}
-                      value={[magicWandTolerance]}
-                      onValueChange={(value) => setMagicWandTolerance(value[0])}
-                      className="w-full"
-                    />
-                    <p className="text-xs text-muted-foreground">Lower = more selective</p>
-                  </div>
-                  
-                  {/* Background Removal Tolerance */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium">Background Removal Tolerance: {backgroundRemovalTolerance}</Label>
+                    
+                    {/* Background Removal Tolerance */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-medium">Background Removal Tolerance: {backgroundRemovalTolerance}</Label>
+                      </div>
+                      <Slider
+                        min={5}
+                        max={40}
+                        step={5}
+                        value={[backgroundRemovalTolerance]}
+                        onValueChange={(value) => setBackgroundRemovalTolerance(value[0])}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-muted-foreground">Higher = more aggressive</p>
                     </div>
-                    <Slider
-                      min={5}
-                      max={40}
-                      step={5}
-                      value={[backgroundRemovalTolerance]}
-                      onValueChange={(value) => setBackgroundRemovalTolerance(value[0])}
-                      className="w-full"
-                    />
-                    <p className="text-xs text-muted-foreground">Higher = more aggressive</p>
                   </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+                </DialogContent>
+              </Dialog>
+            </div>
           )}
         </div>
 
