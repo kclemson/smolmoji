@@ -78,7 +78,7 @@ const Index = () => {
       visited.add(key);
       
       const pixelColor = pixels[y]?.[x] || 'transparent';
-      if (pixelColor !== targetColor) continue;
+      if (!colorsAreSimilar(pixelColor, targetColor, 20)) continue;
       
       selected.add(key);
       
@@ -127,6 +127,26 @@ const Index = () => {
       g: parseInt(result[2], 16),
       b: parseInt(result[3], 16)
     } : null;
+  };
+
+  const colorDistance = (color1: string, color2: string): number => {
+    const rgb1 = hexToRgb(color1);
+    const rgb2 = hexToRgb(color2);
+    
+    if (!rgb1 || !rgb2) return Infinity;
+    
+    // Euclidean distance in RGB space
+    return Math.sqrt(
+      Math.pow(rgb1.r - rgb2.r, 2) +
+      Math.pow(rgb1.g - rgb2.g, 2) +
+      Math.pow(rgb1.b - rgb2.b, 2)
+    );
+  };
+
+  const colorsAreSimilar = (color1: string, color2: string, threshold: number = 20): boolean => {
+    if (color1 === color2) return true;
+    if (color1 === 'transparent' || color2 === 'transparent') return color1 === color2;
+    return colorDistance(color1, color2) <= threshold;
   };
 
   const extractColorsFromImage = useCallback((imageUrl: string): Promise<string[]> => {
