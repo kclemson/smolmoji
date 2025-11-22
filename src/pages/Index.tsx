@@ -50,6 +50,9 @@ const Index = () => {
         }
       }
       
+      // Clear pixel grid canvas IMMEDIATELY
+      pixelCanvasRef.current?.setPixels([]);
+      
       setImageData(null);
       setCustomColors(DEFAULT_CUSTOM_COLORS);
       setSelectedColor("#000000");
