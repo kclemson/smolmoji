@@ -380,39 +380,8 @@ const Index = () => {
                 />
               </div>
             
-            {/* Compact Tools Row: Eyedropper, Eraser, Undo, Redo, Separator, Shift Controls */}
+            {/* Compact Tools Row: Undo, Redo, Separator, Auto-fit, Remove Background, Shift Controls */}
             <div className="flex justify-center gap-2 items-center">
-              {/* Eyedropper */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleEyedropperToggle}
-                className={cn(
-                  "w-8 h-8 p-0",
-                  isEyedropperActive && "ring-2 ring-primary bg-primary/10"
-                )}
-                title="Eyedropper (pick color from canvas)"
-              >
-                <Pipette className="h-3.5 w-3.5" />
-              </Button>
-              
-              {/* Eraser */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setSelectedColor("transparent");
-                  setIsEyedropperActive(false);
-                }}
-                className={cn(
-                  "w-8 h-8 p-0",
-                  selectedColor === "transparent" && "ring-2 ring-primary"
-                )}
-                title="Eraser"
-              >
-                <Eraser className="h-3.5 w-3.5" />
-              </Button>
-              
               {/* Undo */}
               <Button
                 variant="outline"
@@ -564,12 +533,19 @@ const Index = () => {
             
         {/* Color Palette */}
         <div className="flex justify-center">
-          <ColorPicker
-            selectedColor={selectedColor}
-            onColorChange={setSelectedColor}
-            customColors={customColors}
-            onCustomColorsChange={setCustomColors}
-          />
+            <ColorPicker
+              selectedColor={selectedColor}
+              onColorChange={setSelectedColor}
+              customColors={customColors}
+              onCustomColorsChange={setCustomColors}
+              isEyedropperActive={isEyedropperActive}
+              onEyedropperToggle={handleEyedropperToggle}
+              isEraserActive={selectedColor === "transparent"}
+              onEraserToggle={() => {
+                setSelectedColor("transparent");
+                setIsEyedropperActive(false);
+              }}
+            />
         </div>
 
         {/* Instructions */}
