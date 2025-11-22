@@ -560,14 +560,14 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col p-4">
       <div 
         className="w-full flex flex-col items-center gap-2 sm:gap-3" 
         style={{ maxWidth: '448px', width: '100%' }}
       >
         {/* Header */}
         <div className="w-full flex items-center justify-between">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 via-blue-300 to-cyan-400 bg-clip-text text-transparent">
             smolmoji.com
           </h1>
           
