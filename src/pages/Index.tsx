@@ -852,8 +852,8 @@ const Index = () => {
                 </Button>
               </div>
 
-              {/* Center Section: Scissors, Autofit */}
-              <div className="flex gap-2 items-center">
+              {/* Right Section: Scissors, Autofit, and Collapsible D-Pad */}
+              <div className="relative flex gap-2 items-center">
                 <Button
                   variant="outline"
                   size="sm"
@@ -875,10 +875,7 @@ const Index = () => {
                 >
                   <Maximize2 className="h-5 w-5" />
                 </Button>
-              </div>
 
-              {/* Right Section: Collapsible D-Pad */}
-              <div className="relative">
                 <Collapsible open={isDpadExpanded} onOpenChange={setIsDpadExpanded}>
                   <CollapsibleTrigger asChild>
                     <Button
