@@ -8,44 +8,26 @@ import { PixelCanvas } from "@/components/PixelCanvas";
 import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors } from "lucide-react";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { useDebouncedLocalStorage } from "@/hooks/useDebouncedLocalStorage";
 import { cn } from "@/lib/utils";
 
 const Index = () => {
   const [prompt, setPrompt] = useState("");
-  const [imageData, setImageData] = useLocalStorage<string | null>("emoji-imageData", null);
-  const [selectedColor, setSelectedColor] = useLocalStorage("emoji-selectedColor", "#000000");
-  const [customColors, setCustomColors] = useLocalStorage<string[]>("emoji-customColors", DEFAULT_CUSTOM_COLORS);
+  const [imageData, setImageData] = useState<string | null>(null);
+  const [selectedColor, setSelectedColor] = useState("#000000");
+  const [customColors, setCustomColors] = useState<string[]>(DEFAULT_CUSTOM_COLORS);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEyedropperActive, setIsEyedropperActive] = useState(false);
-  const [pixels, setPixels] = useDebouncedLocalStorage<string[][]>("emoji-pixels", []);
-  const [originalPixels, setOriginalPixels] = useLocalStorage<string[][]>("emoji-originalPixels", []);
-  const [backgroundColor, setBackgroundColor] = useLocalStorage<"transparent" | "white" | "black">("emoji-backgroundColor", "transparent");
+  const [pixels, setPixels] = useState<string[][]>([]);
+  const [originalPixels, setOriginalPixels] = useState<string[][]>([]);
+  const [backgroundColor, setBackgroundColor] = useState<"transparent" | "white" | "black">("transparent");
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
   const preview32Ref = useRef<HTMLCanvasElement>(null);
   
   // Undo/Redo state
-  const [historyStack, setHistoryStack] = useLocalStorage<string[][][]>("emoji-historyStack", []);
-  const [historyIndex, setHistoryIndex] = useLocalStorage("emoji-historyIndex", -1);
+  const [historyStack, setHistoryStack] = useState<string[][][]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
   const historyIndexRef = useRef(historyIndex);
   const MAX_HISTORY = 50;
-
-  // Utility to clear all emoji-related localStorage
-  const clearAllEmojiState = () => {
-    const keysToRemove = [
-      'emoji-imageData',
-      'emoji-selectedColor',
-      'emoji-customColors',
-      'emoji-pixels',
-      'emoji-originalPixels',
-      'emoji-backgroundColor',
-      'emoji-historyStack',
-      'emoji-historyIndex'
-    ];
-    
-    keysToRemove.forEach(key => localStorage.removeItem(key));
-  };
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -55,11 +37,8 @@ const Index = () => {
     // Check if regenerating (there's existing work)
     const isRegenerating = pixels.length > 0 || imageData !== null;
     
-    // NUCLEAR OPTION: Wipe ALL localStorage on regenerate
+    // Clear all state on regenerate
     if (isRegenerating) {
-      clearAllEmojiState();
-      
-      // Reset all in-memory state to initial values
       setImageData(null);
       setPixels([]);
       setOriginalPixels([]);
