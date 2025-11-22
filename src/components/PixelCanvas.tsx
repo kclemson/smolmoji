@@ -7,6 +7,7 @@ export interface PixelCanvasRef {
   shift: (direction: 'up' | 'down' | 'left' | 'right') => void;
   autoFit: () => void;
   removeBackground: () => void;
+  animateDissolve: () => Promise<void>;
 }
 
 interface PixelCanvasProps {
@@ -262,6 +263,65 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
         const cleanedPixels = removeEdgeBackground(prevPixels);
         onPixelsUpdated?.(cleanedPixels, false);
         return cleanedPixels;
+      });
+    },
+    animateDissolve: () => {
+      return new Promise<void>((resolve) => {
+        setPixels(currentPixels => {
+          // Collect all non-transparent pixel coordinates
+          const pixelCoords: { x: number, y: number }[] = [];
+          currentPixels.forEach((row, y) => {
+            row.forEach((color, x) => {
+              if (color !== 'transparent') {
+                pixelCoords.push({ x, y });
+              }
+            });
+          });
+          
+          // Shuffle pixels randomly
+          for (let i = pixelCoords.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pixelCoords[i], pixelCoords[j]] = [pixelCoords[j], pixelCoords[i]];
+          }
+          
+          // Calculate timing
+          const totalDuration = 350; // ms
+          const pixelsPerFrame = Math.max(1, Math.ceil(pixelCoords.length / 20));
+          const frameDelay = pixelCoords.length > 0 ? totalDuration / Math.ceil(pixelCoords.length / pixelsPerFrame) : 0;
+          
+          let workingPixels = currentPixels.map(row => [...row]);
+          let currentIndex = 0;
+          
+          const dissolveFrame = () => {
+            // Remove batch of pixels
+            const endIndex = Math.min(currentIndex + pixelsPerFrame, pixelCoords.length);
+            for (let i = currentIndex; i < endIndex; i++) {
+              const { x, y } = pixelCoords[i];
+              workingPixels[y][x] = 'transparent';
+            }
+            currentIndex = endIndex;
+            
+            // Update state
+            setPixels([...workingPixels.map(row => [...row])]);
+            
+            if (currentIndex < pixelCoords.length) {
+              requestAnimationFrame(() => {
+                setTimeout(dissolveFrame, frameDelay);
+              });
+            } else {
+              // Animation complete
+              resolve();
+            }
+          };
+          
+          if (pixelCoords.length > 0) {
+            dissolveFrame();
+          } else {
+            resolve();
+          }
+          
+          return currentPixels;
+        });
       });
     }
   }), [pixels, onPixelsUpdated]);
