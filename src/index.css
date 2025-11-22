@@ -110,4 +110,10 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Prevent text selection on rapid button clicks */
+  button, .no-select {
+    user-select: none;
+    -webkit-user-select: none;
+  }
 }
