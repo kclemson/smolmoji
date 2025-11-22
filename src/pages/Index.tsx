@@ -509,7 +509,12 @@ const Index = () => {
                   onReady={handleCanvasReady}
                 />
               </div>
-            
+
+              {/* Instructions */}
+              <p className="text-xs text-muted-foreground/60 italic text-center mt-2">
+                right click to revert - click and drag to create a rectangle
+              </p>
+
         {/* Color Palette */}
         <div className="flex justify-center">
           <div className={cn(isVirginState && "opacity-50 pointer-events-none")}>
@@ -680,11 +685,6 @@ const Index = () => {
                 </div>
               </div>
             )}
-
-            {/* Instructions */}
-        <p className="text-xs text-muted-foreground/60 italic text-center">
-          left click to color, right click to revert. click and drag to create a rectangle.
-        </p>
         </div>
       </div>
     </div>
