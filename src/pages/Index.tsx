@@ -37,8 +37,8 @@ const Index = () => {
   const MAX_HISTORY = 50;
   const hasLoadedPixels = useRef(false);
 
-  // Computed state: are we in "virgin" state (no prompt, no pixels)?
-  const isVirginState = !prompt.trim() && !pixelCanvasRef.current?.getPixels().length;
+  // Computed state: are we in "virgin" state (generating or no pixels)?
+  const isVirginState = isGenerating || !pixelCanvasRef.current?.getPixels().length;
 
   // Load persisted pixels when canvas is ready (ref callback pattern - no useEffect!)
   const handleCanvasReady = useCallback(() => {
