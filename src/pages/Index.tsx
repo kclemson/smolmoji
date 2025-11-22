@@ -436,7 +436,7 @@ const Index = () => {
                   setErrorMessage(null);
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
+                  if (e.key === "Enter" && prompt.trim()) {
                     e.preventDefault();
                     handleGenerate();
                   }
@@ -449,7 +449,7 @@ const Index = () => {
               <div className="flex justify-center">
                 <Button 
                   onClick={handleGenerate} 
-                  disabled={isGenerating}
+                  disabled={isGenerating || !prompt.trim()}
                   size="sm"
                   className="gap-2"
                 >
