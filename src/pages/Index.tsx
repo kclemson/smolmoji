@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
@@ -16,12 +17,12 @@ const Index = () => {
   
   const [prompt, setPrompt] = useState("");
   const [imageData, setImageData] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState("#000000");
-  const [customColors, setCustomColors] = useState<string[]>(DEFAULT_CUSTOM_COLORS);
+  const [selectedColor, setSelectedColor] = useLocalStorage<string>("emoji-selectedColor", "#000000");
+  const [customColors, setCustomColors] = useLocalStorage<string[]>("emoji-customColors", DEFAULT_CUSTOM_COLORS);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEyedropperActive, setIsEyedropperActive] = useState(false);
-  const [backgroundColor, setBackgroundColor] = useState<"transparent" | "white" | "black">("transparent");
-  const [backgroundRemoved, setBackgroundRemoved] = useState(false);
+  const [backgroundColor, setBackgroundColor] = useLocalStorage<"transparent" | "white" | "black">("emoji-backgroundColor", "transparent");
+  const [backgroundRemoved, setBackgroundRemoved] = useLocalStorage<boolean>("emoji-backgroundRemoved", false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   // Refs for canvases
@@ -34,6 +35,25 @@ const Index = () => {
   const [historyIndex, setHistoryIndex] = useState(-1);
   const historyIndexRef = useRef(historyIndex);
   const MAX_HISTORY = 50;
+  const hasLoadedPixels = useRef(false);
+
+  // Load persisted pixels when canvas is ready (ref callback pattern - no useEffect!)
+  const handleCanvasReady = useCallback(() => {
+    if (!hasLoadedPixels.current && pixelCanvasRef.current) {
+      try {
+        const savedPixels = localStorage.getItem("emoji-pixels");
+        if (savedPixels) {
+          const pixels = JSON.parse(savedPixels);
+          pixelCanvasRef.current.setPixels(pixels);
+          console.log("Loaded persisted pixels from localStorage");
+        }
+        hasLoadedPixels.current = true;
+      } catch (error) {
+        console.error("Error loading pixels from localStorage:", error);
+        hasLoadedPixels.current = true; // Prevent retry on error
+      }
+    }
+  }, []);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -70,6 +90,16 @@ const Index = () => {
       setHistoryStack([]);
       setHistoryIndex(-1);
       historyIndexRef.current = -1;
+      
+      // Clear persisted pixels from localStorage
+      try {
+        localStorage.removeItem("emoji-pixels");
+      } catch (error) {
+        console.error("Error clearing pixels from localStorage:", error);
+      }
+      
+      // Reset the loaded flag so new emoji can be persisted
+      hasLoadedPixels.current = false;
     }
 
     setIsGenerating(true);
@@ -139,6 +169,13 @@ const Index = () => {
       setHistoryStack([structuredClone(newPixels)]);
       setHistoryIndex(0);
       historyIndexRef.current = 0;
+    }
+    
+    // Save pixels to localStorage synchronously (no useEffect!)
+    try {
+      localStorage.setItem("emoji-pixels", JSON.stringify(newPixels));
+    } catch (error) {
+      console.error("Error saving pixels to localStorage:", error);
     }
   }, []);
 
@@ -378,6 +415,7 @@ const Index = () => {
                   onColorPick={handleColorPick}
                   onPixelsUpdated={handlePixelsUpdated}
                   backgroundColor={backgroundColor}
+                  onReady={handleCanvasReady}
                 />
               </div>
             
