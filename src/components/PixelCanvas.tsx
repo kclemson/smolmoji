@@ -1,45 +1,270 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useImperativeHandle, forwardRef } from "react";
 import { cn } from "@/lib/utils";
+
+export interface PixelCanvasRef {
+  getPixels: () => string[][];
+  setPixels: (newPixels: string[][]) => void;
+  shift: (direction: 'up' | 'down' | 'left' | 'right') => void;
+  autoFit: () => void;
+  removeBackground: () => void;
+}
 
 interface PixelCanvasProps {
   imageData: string | null;
-  onPixelChange: (newPixels: string[][]) => void;
   selectedColor: string;
   gridSize?: number;
   canvasRef?: React.RefObject<HTMLCanvasElement>;
   isEyedropperActive?: boolean;
   onColorPick?: (color: string) => void;
-  pixels: string[][];
-  setPixels: React.Dispatch<React.SetStateAction<string[][]>>;
-  onEditComplete?: (pixels: string[][]) => void;
+  onPixelsUpdated?: (pixels: string[][], isInitialLoad: boolean) => void;
   backgroundColor?: "transparent" | "white" | "black";
-  originalPixels: string[][];
-  setOriginalPixels: (pixels: string[][]) => void;
 }
 
-export const PixelCanvas = ({ 
+export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({ 
   imageData, 
-  onPixelChange, 
   selectedColor,
   gridSize = 32,
   canvasRef: externalCanvasRef,
   isEyedropperActive = false,
   onColorPick,
-  pixels,
-  setPixels,
-  onEditComplete,
+  onPixelsUpdated,
   backgroundColor = "transparent",
-  originalPixels,
-  setOriginalPixels
-}: PixelCanvasProps) => {
+}, ref) => {
   const internalCanvasRef = useRef<HTMLCanvasElement>(null);
   const canvasRef = externalCanvasRef || internalCanvasRef;
+  
+  // Internal state - PixelCanvas now owns pixel data
+  const [pixels, setPixels] = useState<string[][]>([]);
+  const [originalPixels, setOriginalPixels] = useState<string[][]>([]);
+  
   const [isDrawing, setIsDrawing] = useState(false);
   const [selectionStart, setSelectionStart] = useState<{x: number, y: number} | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<{x: number, y: number} | null>(null);
   const [isRightClickDrag, setIsRightClickDrag] = useState(false);
   const cleanupRef = useRef<(() => void) | null>(null);
   const pixelSize = 320 / gridSize;
+
+  // Helper functions for external operations
+  const colorDistance = (color1: string, color2: string): number => {
+    const rgba1 = color1.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+    const rgba2 = color2.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+    
+    if (!rgba1 || !rgba2) return Infinity;
+    
+    const r1 = parseInt(rgba1[1]), g1 = parseInt(rgba1[2]), b1 = parseInt(rgba1[3]);
+    const r2 = parseInt(rgba2[1]), g2 = parseInt(rgba2[2]), b2 = parseInt(rgba2[3]);
+    
+    return Math.sqrt(Math.pow(r1 - r2, 2) + Math.pow(g1 - g2, 2) + Math.pow(b1 - b2, 2));
+  };
+
+  const findBoundingBox = (pixelData: string[][]) => {
+    let minX = 32, minY = 32, maxX = -1, maxY = -1;
+    
+    for (let y = 0; y < 32; y++) {
+      for (let x = 0; x < 32; x++) {
+        if (pixelData[y][x] !== 'transparent') {
+          minX = Math.min(minX, x);
+          minY = Math.min(minY, y);
+          maxX = Math.max(maxX, x);
+          maxY = Math.max(maxY, y);
+        }
+      }
+    }
+    
+    if (maxX === -1) return null;
+    return { minX, minY, maxX, maxY };
+  };
+
+  const scaleContent = (
+    sourcePixels: string[][],
+    sourceBounds: { minX: number; minY: number; maxX: number; maxY: number },
+    targetWidth: number,
+    targetHeight: number
+  ) => {
+    const sourceWidth = sourceBounds.maxX - sourceBounds.minX + 1;
+    const sourceHeight = sourceBounds.maxY - sourceBounds.minY + 1;
+    
+    const newPixels: string[][] = Array(32).fill(null).map(() => 
+      Array(32).fill('transparent')
+    );
+    
+    const targetX = Math.floor((32 - targetWidth) / 2);
+    const targetY = Math.floor((32 - targetHeight) / 2);
+    
+    for (let y = 0; y < targetHeight; y++) {
+      for (let x = 0; x < targetWidth; x++) {
+        const sourceX = sourceBounds.minX + Math.floor(x * sourceWidth / targetWidth);
+        const sourceY = sourceBounds.minY + Math.floor(y * sourceHeight / targetHeight);
+        newPixels[targetY + y][targetX + x] = sourcePixels[sourceY][sourceX];
+      }
+    }
+    
+    return newPixels;
+  };
+
+  const removeEdgeBackground = (pixelData: string[][]): string[][] => {
+    const COLOR_THRESHOLD = 5;
+    const gridSize = 32;
+    
+    const edgeColorGroups = new Map<string, { count: number, colors: Set<string> }>();
+    
+    const addToGroup = (color: string) => {
+      if (color === "transparent") return;
+      
+      let foundGroup = false;
+      for (const [representative, group] of edgeColorGroups.entries()) {
+        if (colorDistance(color, representative) <= COLOR_THRESHOLD) {
+          group.count++;
+          group.colors.add(color);
+          foundGroup = true;
+          break;
+        }
+      }
+      
+      if (!foundGroup) {
+        edgeColorGroups.set(color, { count: 1, colors: new Set([color]) });
+      }
+    };
+    
+    for (let x = 0; x < gridSize; x++) {
+      addToGroup(pixelData[0][x]);
+      addToGroup(pixelData[gridSize-1][x]);
+    }
+    for (let y = 0; y < gridSize; y++) {
+      addToGroup(pixelData[y][0]);
+      addToGroup(pixelData[y][gridSize-1]);
+    }
+    
+    if (edgeColorGroups.size === 0) return pixelData;
+    
+    let bgColorGroup: Set<string> | null = null;
+    let maxCount = 0;
+    edgeColorGroups.forEach((group) => {
+      if (group.count > maxCount) {
+        maxCount = group.count;
+        bgColorGroup = group.colors;
+      }
+    });
+    
+    if (!bgColorGroup) return pixelData;
+    
+    const visited = Array(gridSize).fill(null).map(() => Array(gridSize).fill(false));
+    const queue: [number, number][] = [];
+    
+    const isSimilarToBackground = (color: string): boolean => {
+      if (color === "transparent") return false;
+      for (const bgColor of bgColorGroup!) {
+        if (colorDistance(color, bgColor) <= COLOR_THRESHOLD) {
+          return true;
+        }
+      }
+      return false;
+    };
+    
+    for (let x = 0; x < gridSize; x++) {
+      if (isSimilarToBackground(pixelData[0][x])) queue.push([0, x]);
+      if (isSimilarToBackground(pixelData[gridSize-1][x])) queue.push([gridSize-1, x]);
+    }
+    for (let y = 0; y < gridSize; y++) {
+      if (isSimilarToBackground(pixelData[y][0])) queue.push([y, 0]);
+      if (isSimilarToBackground(pixelData[y][gridSize-1])) queue.push([y, gridSize-1]);
+    }
+    
+    const result = pixelData.map(row => [...row]);
+    
+    while (queue.length > 0) {
+      const [y, x] = queue.shift()!;
+      
+      if (visited[y][x]) continue;
+      visited[y][x] = true;
+      
+      if (isSimilarToBackground(pixelData[y][x])) {
+        result[y][x] = "transparent";
+        
+        if (y > 0 && !visited[y-1][x]) queue.push([y-1, x]);
+        if (y < gridSize-1 && !visited[y+1][x]) queue.push([y+1, x]);
+        if (x > 0 && !visited[y][x-1]) queue.push([y, x-1]);
+        if (x < gridSize-1 && !visited[y][x+1]) queue.push([y, x+1]);
+      }
+    }
+    
+    return result;
+  };
+
+  // Expose methods via ref
+  useImperativeHandle(ref, () => ({
+    getPixels: () => pixels,
+    setPixels: (newPixels: string[][]) => {
+      setPixels(newPixels);
+    },
+    shift: (direction: 'up' | 'down' | 'left' | 'right') => {
+      setPixels(prevPixels => {
+        if (prevPixels.length === 0) return prevPixels;
+        
+        const newPixels: string[][] = Array(32).fill(null).map(() => Array(32).fill('transparent'));
+        
+        prevPixels.forEach((row, y) => {
+          row.forEach((color, x) => {
+            if (color === 'transparent') return;
+            
+            let newX = x;
+            let newY = y;
+            
+            switch (direction) {
+              case 'up':
+                newY = y - 1;
+                break;
+              case 'down':
+                newY = y + 1;
+                break;
+              case 'left':
+                newX = x - 1;
+                break;
+              case 'right':
+                newX = x + 1;
+                break;
+            }
+            
+            if (newX >= 0 && newX < 32 && newY >= 0 && newY < 32) {
+              newPixels[newY][newX] = color;
+            }
+          });
+        });
+        
+        onPixelsUpdated?.(newPixels, false);
+        return newPixels;
+      });
+    },
+    autoFit: () => {
+      setPixels(prevPixels => {
+        if (prevPixels.length === 0) return prevPixels;
+        
+        const bounds = findBoundingBox(prevPixels);
+        if (!bounds) return prevPixels;
+        
+        const contentWidth = bounds.maxX - bounds.minX + 1;
+        const contentHeight = bounds.maxY - bounds.minY + 1;
+        
+        const maxSize = 30;
+        const scale = Math.min(maxSize / contentWidth, maxSize / contentHeight);
+        const targetWidth = Math.round(contentWidth * scale);
+        const targetHeight = Math.round(contentHeight * scale);
+        
+        const newPixels = scaleContent(prevPixels, bounds, targetWidth, targetHeight);
+        onPixelsUpdated?.(newPixels, false);
+        return newPixels;
+      });
+    },
+    removeBackground: () => {
+      setPixels(prevPixels => {
+        if (prevPixels.length === 0) return prevPixels;
+        
+        const cleanedPixels = removeEdgeBackground(prevPixels);
+        onPixelsUpdated?.(cleanedPixels, false);
+        return cleanedPixels;
+      });
+    }
+  }), [pixels, onPixelsUpdated]);
 
   useEffect(() => {
     // Initialize empty grid
@@ -87,10 +312,10 @@ export const PixelCanvas = ({
           }
         }
         
-      // Set pixels without automatic processing - use functional pattern to avoid race conditions
+      // Set pixels and notify parent
       setOriginalPixels(newPixels.map(row => [...row]));
-      setPixels(() => newPixels); // Functional pattern ensures this replaces any stale state
-      onEditComplete?.(newPixels); // Save initial AI state to history
+      setPixels(() => newPixels);
+      onPixelsUpdated?.(newPixels, true); // Signal initial load
       };
       img.src = imageData;
     }
@@ -202,8 +427,7 @@ export const PixelCanvas = ({
     setPixels(prevPixels => {
       const newPixels = prevPixels.map(row => [...row]);
       newPixels[coords.y][coords.x] = selectedColor === "transparent" ? "transparent" : selectedColor;
-      onPixelChange(newPixels);
-      onEditComplete?.(newPixels);
+      onPixelsUpdated?.(newPixels, false);
       return newPixels;
     });
   };
@@ -303,7 +527,7 @@ export const PixelCanvas = ({
               }
             }
           } else {
-            // Paint rectangle with selected color (existing behavior)
+            // Paint rectangle with selected color
             for (let y = minY; y <= maxY; y++) {
               for (let x = minX; x <= maxX; x++) {
                 newPixels[y][x] = selectedColor === "transparent" ? "transparent" : selectedColor;
@@ -311,8 +535,7 @@ export const PixelCanvas = ({
             }
           }
           
-          onPixelChange(newPixels);
-          onEditComplete?.(newPixels);
+          onPixelsUpdated?.(newPixels, false);
           return newPixels;
         });
       }
@@ -336,8 +559,7 @@ export const PixelCanvas = ({
       setPixels(prevPixels => {
         const newPixels = prevPixels.map(row => [...row]);
         newPixels[coords.y][coords.x] = originalColor;
-        onPixelChange(newPixels);
-        onEditComplete?.(newPixels);
+        onPixelsUpdated?.(newPixels, false);
         return newPixels;
       });
     }
@@ -363,4 +585,6 @@ export const PixelCanvas = ({
       />
     </div>
   );
-};
+});
+
+PixelCanvas.displayName = "PixelCanvas";
