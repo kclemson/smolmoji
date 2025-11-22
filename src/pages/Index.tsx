@@ -693,7 +693,7 @@ const Index = () => {
               </div>
               
               {/* Main Canvas - Centered */}
-              <div className="flex justify-center">
+              <div className={`flex justify-center ${isGenerating ? 'pointer-events-none opacity-50' : ''}`}>
                 <PixelCanvas
                   ref={pixelCanvasRef}
                   selectedColor={selectedColor}
