@@ -105,12 +105,12 @@ export const ColorPicker = ({
                   key={`custom-${index}`}
                   onClick={() => color && onColorChange(color)}
                   className={cn(
-                    "w-8 h-8 rounded-md border-2 transition-all",
+                    "w-8 h-8 rounded-md transition-all",
+                    color && "border-2",
                     color ? "hover:scale-110 cursor-pointer" : "cursor-default",
                     color && selectedColor === color 
                       ? "border-border ring-2 ring-primary ring-offset-2 ring-offset-background" 
-                      : "border-border",
-                    !color && "bg-muted/20"
+                      : color && "border-border"
                   )}
                   style={color ? { backgroundColor: color } : {}}
                   disabled={!color}
