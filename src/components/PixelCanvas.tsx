@@ -606,6 +606,12 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
   const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
     e.preventDefault();
     
+    // Skip if this was a drag operation - handleMouseUp already handled it
+    if (selectionStart && selectionEnd && 
+        (selectionStart.x !== selectionEnd.x || selectionStart.y !== selectionEnd.y)) {
+      return;
+    }
+    
     const coords = getPixelCoords(e);
     if (!coords) return;
     
