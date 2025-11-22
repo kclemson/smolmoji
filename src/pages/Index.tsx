@@ -53,7 +53,7 @@ const Index = () => {
   const hasLoadedPixels = useRef(false);
 
   // Computed state: are we in "virgin" state (generating or no pixels)?
-  const isVirginState = isGenerating || !pixelCanvasRef.current?.getPixels().length;
+  const isVirginState = isGenerating || !localStorage.getItem("emoji-pixels");
 
   // Load persisted pixels when canvas is ready (ref callback pattern - no useEffect!)
   const handleCanvasReady = useCallback(() => {
