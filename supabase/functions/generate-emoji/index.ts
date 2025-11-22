@@ -104,9 +104,17 @@ Create a pixel art emoji of: ${prompt}`,
     }
 
     const data = await response.json();
+    console.log("AI Response:", JSON.stringify(data, null, 2));
+    
     const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    const textContent = data.choices?.[0]?.message?.content;
 
     if (!imageUrl) {
+      // Check if there's a text response explaining why image wasn't generated
+      if (textContent) {
+        console.error("AI refused to generate image:", textContent);
+        throw new Error("Content blocked: The AI couldn't generate this image. Try a different prompt.");
+      }
       throw new Error("No image generated");
     }
 
