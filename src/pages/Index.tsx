@@ -555,31 +555,63 @@ const Index = () => {
                 </Button>
               </div>
 
-              {/* Center Section: Scissors/Autofit */}
-              <div className="flex gap-2 items-center">
-                {/* Remove Background Button */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRemoveBackground}
-                  disabled={!pixelCanvasRef.current?.getPixels().length || backgroundRemoved || isVirginState}
-                  title="Remove background from edges"
-                  className="w-10 h-10 p-0"
-                >
-                  <Scissors className="h-5 w-5" />
-                </Button>
+              {/* Center Section: Scissors/Autofit - with background controls below scissors */}
+              <div className="flex flex-col gap-2 items-center">
+                <div className="flex gap-2 items-center">
+                  {/* Remove Background Button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRemoveBackground}
+                    disabled={!pixelCanvasRef.current?.getPixels().length || backgroundRemoved || isVirginState}
+                    title="Remove background from edges"
+                    className="w-10 h-10 p-0"
+                  >
+                    <Scissors className="h-5 w-5" />
+                  </Button>
+                  
+                  {/* Auto-Fit Button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={autoFitEmoji}
+                    disabled={!pixelCanvasRef.current?.getPixels().length || !backgroundRemoved || isVirginState}
+                    title="Auto-fit (remove padding and maximize emoji)"
+                    className="w-10 h-10 p-0"
+                  >
+                    <Maximize2 className="h-5 w-5" />
+                  </Button>
+                </div>
                 
-                {/* Auto-Fit Button */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={autoFitEmoji}
-                  disabled={!pixelCanvasRef.current?.getPixels().length || !backgroundRemoved || isVirginState}
-                  title="Auto-fit (remove padding and maximize emoji)"
-                  className="w-10 h-10 p-0"
-                >
-                  <Maximize2 className="h-5 w-5" />
-                </Button>
+                {/* Background Selection - Shown directly below scissors when background is removed */}
+                {backgroundRemoved && (
+                  <div className="flex items-center gap-2">
+                    <Label className="text-xs text-muted-foreground">Background:</Label>
+                    <RadioGroup 
+                      value={backgroundColor} 
+                      onValueChange={(value) => {
+                        const newBg = value as "transparent" | "white" | "black";
+                        setBackgroundColor(newBg);
+                        const currentPixels = pixelCanvasRef.current?.getPixels();
+                        if (currentPixels) updatePreviews(currentPixels);
+                      }}
+                      className="flex gap-3"
+                    >
+                      <div className="flex items-center space-x-1.5">
+                        <RadioGroupItem value="transparent" id="bg-transparent" />
+                        <Label htmlFor="bg-transparent" className="text-xs text-muted-foreground cursor-pointer">Transparent</Label>
+                      </div>
+                      <div className="flex items-center space-x-1.5">
+                        <RadioGroupItem value="white" id="bg-white" />
+                        <Label htmlFor="bg-white" className="text-xs text-muted-foreground cursor-pointer">White</Label>
+                      </div>
+                      <div className="flex items-center space-x-1.5">
+                        <RadioGroupItem value="black" id="bg-black" />
+                        <Label htmlFor="bg-black" className="text-xs text-muted-foreground cursor-pointer">Black</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                )}
               </div>
 
               {/* Right Section: D-Pad Shift Controls */}
@@ -643,38 +675,6 @@ const Index = () => {
                 </div>
               </div>
             </div>
-            
-            {/* Background Selection - Shown below scissors when background is removed */}
-            {backgroundRemoved && (
-              <div className="flex justify-center">
-                <div className="flex items-center gap-3">
-                  <Label className="text-xs text-muted-foreground">Background:</Label>
-                  <RadioGroup 
-                    value={backgroundColor} 
-                    onValueChange={(value) => {
-                      const newBg = value as "transparent" | "white" | "black";
-                      setBackgroundColor(newBg);
-                      const currentPixels = pixelCanvasRef.current?.getPixels();
-                      if (currentPixels) updatePreviews(currentPixels);
-                    }}
-                    className="flex gap-4"
-                  >
-                    <div className="flex items-center space-x-1.5">
-                      <RadioGroupItem value="transparent" id="bg-transparent" />
-                      <Label htmlFor="bg-transparent" className="text-xs text-muted-foreground cursor-pointer">Transparent</Label>
-                    </div>
-                    <div className="flex items-center space-x-1.5">
-                      <RadioGroupItem value="white" id="bg-white" />
-                      <Label htmlFor="bg-white" className="text-xs text-muted-foreground cursor-pointer">White</Label>
-                    </div>
-                    <div className="flex items-center space-x-1.5">
-                      <RadioGroupItem value="black" id="bg-black" />
-                      <Label htmlFor="bg-black" className="text-xs text-muted-foreground cursor-pointer">Black</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-              </div>
-            )}
 
         {/* Instructions */}
         <p className="text-xs text-muted-foreground/60 italic text-center">
