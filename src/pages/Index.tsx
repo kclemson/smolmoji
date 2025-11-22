@@ -805,7 +805,7 @@ const Index = () => {
             )}
 
             {/* Background Selection Row - appears as its own section when background is removed */}
-            {backgroundRemoved && (
+            {backgroundRemoved && !isVirginState && (
               <div className="flex justify-center mt-4">
                 <div className="flex flex-col gap-1.5">
                   <Label className="text-xs text-muted-foreground">Background:</Label>
