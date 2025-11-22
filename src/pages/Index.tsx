@@ -507,6 +507,25 @@ const Index = () => {
                 />
               </div>
             
+        {/* Color Palette */}
+        <div className="flex justify-center">
+          <div className={cn(isVirginState && "opacity-50 pointer-events-none")}>
+            <ColorPicker
+              selectedColor={selectedColor}
+              onColorChange={setSelectedColor}
+              customColors={customColors}
+              onCustomColorsChange={setCustomColors}
+              isEyedropperActive={isEyedropperActive}
+              onEyedropperToggle={handleEyedropperToggle}
+              isEraserActive={selectedColor === "transparent"}
+              onEraserToggle={() => {
+                setSelectedColor("transparent");
+                setIsEyedropperActive(false);
+              }}
+            />
+          </div>
+        </div>
+            
             {/* Compact Tools Row: Undo, Redo, Separator, Auto-fit, Remove Background, Shift Controls */}
             <div className="flex justify-center gap-2 items-center">
               {/* Undo */}
@@ -651,28 +670,9 @@ const Index = () => {
                 </div>
               </div>
             )}
-            
-        {/* Color Palette */}
-        <div className="flex justify-center">
-          <div className={cn(isVirginState && "opacity-50 pointer-events-none")}>
-            <ColorPicker
-              selectedColor={selectedColor}
-              onColorChange={setSelectedColor}
-              customColors={customColors}
-              onCustomColorsChange={setCustomColors}
-              isEyedropperActive={isEyedropperActive}
-              onEyedropperToggle={handleEyedropperToggle}
-              isEraserActive={selectedColor === "transparent"}
-              onEraserToggle={() => {
-                setSelectedColor("transparent");
-                setIsEyedropperActive(false);
-              }}
-            />
-          </div>
-        </div>
 
         {/* Instructions */}
-        <p className="text-xs text-muted-foreground text-center">
+        <p className="text-xs text-muted-foreground/60 italic text-center">
           left click to color, right click to revert. click and drag to create a rectangle.
         </p>
         </div>
