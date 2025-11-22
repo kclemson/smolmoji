@@ -149,27 +149,10 @@ const Index = () => {
     threshold: number = 20,
     currentBackground: "transparent" | "white" | "black" = "transparent"
   ): boolean => {
-    // Map transparent to actual background color for visual comparison
-    let normalizedColor1 = color1;
-    let normalizedColor2 = color2;
-    
-    if (color1 === 'transparent') {
-      normalizedColor1 = currentBackground === 'black' ? '#000000' : 
-                         currentBackground === 'white' ? '#ffffff' : 
-                         'transparent';
-    }
-    
-    if (color2 === 'transparent') {
-      normalizedColor2 = currentBackground === 'black' ? '#000000' : 
-                         currentBackground === 'white' ? '#ffffff' : 
-                         'transparent';
-    }
-    
-    // If both are still transparent, they match
-    if (normalizedColor1 === 'transparent' && normalizedColor2 === 'transparent') return true;
-    
-    // If one is transparent and one isn't (when background is "transparent"), they don't match
-    if (normalizedColor1 === 'transparent' || normalizedColor2 === 'transparent') return false;
+    // For selection purposes, always treat transparent as white
+    // This ensures consistent magic wand behavior
+    const normalizedColor1 = color1 === 'transparent' ? '#ffffff' : color1;
+    const normalizedColor2 = color2 === 'transparent' ? '#ffffff' : color2;
     
     if (normalizedColor1 === normalizedColor2) return true;
     return colorDistance(normalizedColor1, normalizedColor2) <= threshold;
