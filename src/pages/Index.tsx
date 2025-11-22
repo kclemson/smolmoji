@@ -9,8 +9,10 @@ import { Separator } from "@/components/ui/separator";
 import { PixelCanvas, PixelCanvasRef } from "@/components/PixelCanvas";
 import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors, Wand2 } from "lucide-react";
+import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors, Wand2, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Slider } from "@/components/ui/slider";
 
 const Index = () => {
   const ERROR_MESSAGE = "hrm, the model didn't like that - it does that sometimes. try something else.";
@@ -26,6 +28,9 @@ const Index = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isMagicWandActive, setIsMagicWandActive] = useState(false);
   const [selectedPixels, setSelectedPixels] = useState<Set<string>>(new Set());
+  const [magicWandTolerance, setMagicWandTolerance] = useLocalStorage<number>("emoji-magicWandTolerance", 25);
+  const [backgroundRemovalTolerance, setBackgroundRemovalTolerance] = useLocalStorage<number>("emoji-backgroundRemovalTolerance", 20);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   // Refs for canvases
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -78,7 +83,7 @@ const Index = () => {
       visited.add(key);
       
       const pixelColor = pixels[y]?.[x] || 'transparent';
-      if (!colorsAreSimilar(pixelColor, targetColor, 30)) continue;
+      if (!colorsAreSimilar(pixelColor, targetColor, magicWandTolerance)) continue;
       
       selected.add(key);
       
@@ -555,22 +560,70 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-8">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div 
-        className="w-full max-w-md mx-auto space-y-4 sm:space-y-6"
+        className="w-full flex flex-col items-center gap-2 sm:gap-3" 
         style={{ maxWidth: '448px', width: '100%' }}
       >
         {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+        <div className="w-full flex items-center justify-between">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold">
             smolmoji.com
           </h1>
+          
+          {!isVirginState && (
+            <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Settings</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-6 py-4">
+                  {/* Magic Wand Tolerance */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">Magic Wand Tolerance: {magicWandTolerance}</Label>
+                    </div>
+                    <Slider
+                      min={10}
+                      max={50}
+                      step={5}
+                      value={[magicWandTolerance]}
+                      onValueChange={(value) => setMagicWandTolerance(value[0])}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground">Lower = more selective</p>
+                  </div>
+                  
+                  {/* Background Removal Tolerance */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">Background Removal Tolerance: {backgroundRemovalTolerance}</Label>
+                    </div>
+                    <Slider
+                      min={5}
+                      max={40}
+                      step={5}
+                      value={[backgroundRemovalTolerance]}
+                      onValueChange={(value) => setBackgroundRemovalTolerance(value[0])}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground">Higher = more aggressive</p>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
 
         {/* Single Column Layout */}
         <div className="space-y-2 sm:space-y-3">
           {/* Row 1: Design Direction with integrated generate button */}
-          <div className="relative w-[320px] mx-auto">
+          <div className="relative w-full" style={{ maxWidth: '320px', marginLeft: 'auto', marginRight: 'auto' }}>
             <Textarea
               placeholder={errorMessage || "Describe your emoji idea: chicken nugget with wizard hat, woman laughing with salad, etc..."}
               value={prompt}
