@@ -203,6 +203,7 @@ export const PixelCanvas = ({
     newPixels[coords.y][coords.x] = selectedColor === "transparent" ? "transparent" : selectedColor;
     setPixels(newPixels);
     onPixelChange(newPixels);
+    onEditComplete?.(newPixels); // Record history with correct state
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -310,11 +311,8 @@ export const PixelCanvas = ({
         setPixels(newPixels);
         onPixelChange(newPixels);
         onEditComplete?.(newPixels);
-      } else {
-        // Single click - the onClick handler already painted it (for left-click)
-        // For right-click, handleContextMenu will handle it
-        onEditComplete?.(pixels);
       }
+      // Single click - onClick handler (left-click) or handleContextMenu (right-click) already recorded history
 
       setSelectionStart(null);
       setSelectionEnd(null);
