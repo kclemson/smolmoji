@@ -130,12 +130,26 @@ const Index = () => {
   // Undo/Redo functions
   const pushToHistory = useCallback((newPixels: string[][]) => {
     const currentIndex = historyIndexRef.current;
+    
+    // If we just cleared history (index is -1), start fresh
+    // This bypasses the functional setter's stale 'prev' value from React batching
+    if (currentIndex === -1) {
+      const clonedPixels = structuredClone(newPixels);
+      setHistoryStack([clonedPixels]);
+      setHistoryIndex(0);
+      historyIndexRef.current = 0;
+      return;
+    }
+    
+    // Normal case: append to existing history
     setHistoryStack(prev => {
       const truncated = prev.slice(0, currentIndex + 1);
       const newStack = [...truncated, structuredClone(newPixels)];
       return newStack.slice(-MAX_HISTORY);
     });
-    setHistoryIndex(Math.min(currentIndex + 1, MAX_HISTORY - 1));
+    const newIndex = Math.min(currentIndex + 1, MAX_HISTORY - 1);
+    setHistoryIndex(newIndex);
+    historyIndexRef.current = newIndex;
   }, []);
 
   const undo = useCallback(() => {
