@@ -11,6 +11,8 @@ import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, Ar
 import { cn } from "@/lib/utils";
 
 const Index = () => {
+  const ERROR_MESSAGE = "hrm, the model didn't like that - it does that sometimes. try something else.";
+  
   const [prompt, setPrompt] = useState("");
   const [imageData, setImageData] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState("#000000");
@@ -70,16 +72,22 @@ const Index = () => {
     }
 
     setIsGenerating(true);
-    const { data } = await supabase.functions.invoke("generate-emoji", {
-      body: { prompt },
-    });
+    
+    try {
+      const { data } = await supabase.functions.invoke("generate-emoji", {
+        body: { prompt },
+      });
 
-    // If we didn't get an image, something went wrong
-    if (!data?.imageUrl) {
-      setErrorMessage("hrm, the model didn't like that - it does that sometimes. try something else.");
-    } else {
-      // We got an image, load it
-      setImageData(data.imageUrl);
+      // If we didn't get an image, something went wrong
+      if (!data?.imageUrl) {
+        setErrorMessage(ERROR_MESSAGE);
+      } else {
+        // We got an image, load it
+        setImageData(data.imageUrl);
+      }
+    } catch (error) {
+      // Handle any thrown errors (like 500 responses)
+      setErrorMessage(ERROR_MESSAGE);
     }
     
     setIsGenerating(false);
