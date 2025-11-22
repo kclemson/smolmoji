@@ -10,60 +10,24 @@ interface ColorPickerProps {
   onColorChange: (color: string) => void;
   customColors: string[];
   onCustomColorsChange: (colors: string[] | ((prev: string[]) => string[])) => void;
-  isEyedropperActive?: boolean;
-  onEyedropperToggle?: () => void;
-  isEraserActive?: boolean;
-  onEraserToggle?: () => void;
 }
 
 export const ColorPicker = ({ 
   selectedColor, 
   onColorChange,
   customColors,
-  onCustomColorsChange,
-  isEyedropperActive,
-  onEyedropperToggle,
-  isEraserActive,
-  onEraserToggle
+  onCustomColorsChange
 }: ColorPickerProps) => {
   const [customColor, setCustomColor] = useState("#000000");
   const colorInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="flex flex-col gap-2">
-      {/* Single Row: Eraser, Eyedropper, Palette, + 5 color slots */}
+      {/* Single Row: Palette + 5 color slots */}
       <div 
-        className="grid grid-cols-8 gap-2 w-full"
-        style={{ display: 'grid', gridTemplateColumns: 'repeat(8, minmax(0, 1fr))', width: '100%' }}
+        className="grid grid-cols-6 gap-2 w-full"
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(6, minmax(0, 1fr))', width: '100%' }}
       >
-        {/* Eraser */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onEraserToggle}
-          className={cn(
-            "w-10 h-10 p-0",
-            isEraserActive && "ring-2 ring-primary ring-offset-1 ring-offset-background"
-          )}
-          title="Eraser (set pixels to transparent)"
-        >
-          <Eraser className="h-5 w-5" />
-        </Button>
-
-        {/* Eyedropper */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onEyedropperToggle}
-          className={cn(
-            "w-10 h-10 p-0",
-            isEyedropperActive && "ring-2 ring-primary ring-offset-1 ring-offset-background"
-          )}
-          title="Eyedropper (pick color from canvas)"
-        >
-          <Pipette className="h-5 w-5" />
-        </Button>
-
         {/* Color Picker (Palette) */}
         <div className="relative">
           <input

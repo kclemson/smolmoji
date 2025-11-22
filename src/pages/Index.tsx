@@ -9,7 +9,10 @@ import { Separator } from "@/components/ui/separator";
 import { PixelCanvas, PixelCanvasRef } from "@/components/PixelCanvas";
 import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors, Wand2, Settings } from "lucide-react";
+import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors, Wand2, Settings, Pencil, Move, Palette } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 
 import { Slider } from "@/components/ui/slider";
@@ -31,6 +34,11 @@ const Index = () => {
   const [magicWandTolerance, setMagicWandTolerance] = useLocalStorage<number>("emoji-magicWandTolerance", 25);
   const [backgroundRemovalTolerance, setBackgroundRemovalTolerance] = useLocalStorage<number>("emoji-backgroundRemovalTolerance", 20);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  
+  // Drawing mode state
+  const [drawingMode, setDrawingMode] = useState<'pencil' | 'eraser' | 'wand'>('pencil');
+  const [brushSize, setBrushSize] = useState<number>(1);
+  const [isDpadExpanded, setIsDpadExpanded] = useState(false);
   
   // Refs for canvases
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -661,181 +669,271 @@ const Index = () => {
                 />
               </div>
 
-        {/* Color Palette - hidden in virgin state */}
+        {/* Row 1: Palette, Eyedropper, + 5 Color Slots - hidden in virgin state */}
         {!isVirginState && (
           <div className="w-[320px] mx-auto">
-            <ColorPicker
-              selectedColor={selectedColor}
-              onColorChange={(color) => {
-                if (selectedPixels.size > 0) {
-                  setSelectedColor(color); // Update color first
-                  applyActionToSelection('fill'); // Apply to selection
-                } else {
-                  setSelectedColor(color); // Normal color selection
+            <div className="grid grid-cols-7 gap-2 w-full">
+              {/* Color Picker (Palette) */}
+              <div className="relative">
+                <input
+                  type="color"
+                  value={selectedColor === "transparent" ? "#000000" : selectedColor}
+                  onChange={(e) => {
+                    const newColor = e.target.value.toUpperCase();
+                    setSelectedColor(newColor);
+                  }}
+                  onBlur={(e) => {
+                    const newColor = e.target.value.toUpperCase();
+                    setSelectedColor(newColor);
+                    
+                    // Add to custom colors FIFO style
+                    setCustomColors((prevColors) => {
+                      const filtered = prevColors.filter(c => c !== newColor);
+                      return [newColor, ...filtered].slice(0, 5);
+                    });
+                  }}
+                  className="absolute inset-0 w-10 h-10 opacity-0 cursor-pointer z-10"
+                />
+                <button
+                  className={cn(
+                    "w-10 h-10 rounded-md border-2 transition-all hover:scale-110",
+                    "border-border bg-muted/20 flex items-center justify-center pointer-events-none"
+                  )}
+                >
+                  <Palette className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Eyedropper */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleEyedropperToggle}
+                className={cn(
+                  "w-10 h-10 p-0",
+                  isEyedropperActive && "ring-2 ring-primary ring-offset-1 ring-offset-background"
+                )}
+                title="Eyedropper (pick color from canvas)"
+              >
+                <Pipette className="h-5 w-5" />
+              </Button>
+
+              {/* 5 dynamic color slots */}
+              {Array.from({ length: 5 }).map((_, index) => {
+                const color = customColors[index];
+                return (
+                  <button
+                    key={`color-${index}`}
+                    onClick={() => {
+                      if (color) {
+                        if (selectedPixels.size > 0) {
+                          setSelectedColor(color);
+                          applyActionToSelection('fill');
+                        } else {
+                          setSelectedColor(color);
+                        }
+                      }
+                    }}
+                    className={cn(
+                      "w-10 h-10 rounded-md transition-all",
+                      color && "border-2",
+                      color ? "hover:scale-110 cursor-pointer" : "cursor-default",
+                      color && selectedColor === color 
+                        ? "border-border ring-2 ring-primary ring-offset-1 ring-offset-background" 
+                        : color && "border-border"
+                    )}
+                    style={color ? { backgroundColor: color } : {}}
+                    disabled={!color}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Row 2: Drawing Modes (Pencil, Eraser, Magic Wand) + Brush Size - hidden in virgin state */}
+        {!isVirginState && (
+          <div className="w-[320px] mx-auto flex items-center justify-between gap-2">
+            {/* Drawing Mode Toggle Group */}
+            <ToggleGroup 
+              type="single" 
+              value={drawingMode} 
+              onValueChange={(value) => {
+                if (value) {
+                  setDrawingMode(value as 'pencil' | 'eraser' | 'wand');
+                  
+                  // Update related state based on mode
+                  if (value === 'eraser') {
+                    setSelectedColor("transparent");
+                    setIsEyedropperActive(false);
+                    setIsMagicWandActive(false);
+                    setSelectedPixels(new Set());
+                  } else if (value === 'wand') {
+                    setIsMagicWandActive(true);
+                    setIsEyedropperActive(false);
+                    if (selectedColor === "transparent") {
+                      setSelectedColor("#000000");
+                    }
+                  } else if (value === 'pencil') {
+                    setIsMagicWandActive(false);
+                    setSelectedPixels(new Set());
+                    setIsEyedropperActive(false);
+                    if (selectedColor === "transparent") {
+                      setSelectedColor("#000000");
+                    }
+                  }
                 }
               }}
-              customColors={customColors}
-              onCustomColorsChange={setCustomColors}
-              isEyedropperActive={isEyedropperActive}
-              onEyedropperToggle={handleEyedropperToggle}
-              isEraserActive={selectedColor === "transparent"}
-              onEraserToggle={() => {
-                if (selectedPixels.size > 0) {
-                  applyActionToSelection('erase'); // Apply erase to selection
-                } else {
-                  setSelectedColor("transparent"); // Normal eraser mode
-                  setIsEyedropperActive(false);
-                  setIsMagicWandActive(false);
-                }
-              }}
-            />
+              className="flex gap-1"
+            >
+              <ToggleGroupItem value="pencil" aria-label="Pencil tool" className="w-10 h-10 p-0">
+                <Pencil className="h-5 w-5" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="eraser" aria-label="Eraser tool" className="w-10 h-10 p-0">
+                <Eraser className="h-5 w-5" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="wand" aria-label="Magic wand tool" className="w-10 h-10 p-0">
+                <Wand2 className="h-5 w-5" />
+              </ToggleGroupItem>
+            </ToggleGroup>
+
+            {/* Brush Size Selector (visible when pencil or eraser active) */}
+            {(drawingMode === 'pencil' || drawingMode === 'eraser') && (
+              <Select value={brushSize.toString()} onValueChange={(value) => setBrushSize(parseInt(value))}>
+                <SelectTrigger className="w-20 h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1x1</SelectItem>
+                  <SelectItem value="3">3x3</SelectItem>
+                  <SelectItem value="5">5x5</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
           </div>
         )}
             
-            {/* Compact Tools Row: Undo, Redo, Auto-fit, Remove Background, Shift Controls */}
-            {!isVirginState && (
-              <div className="w-[320px] mx-auto">
-                <div className="flex justify-between items-center w-full">
-                {/* Left Section: Undo/Redo */}
-                <div className="flex gap-2 items-center">
-                  {/* Undo */}
+        {/* Row 3: Edit Tools (Undo, Redo, Scissors, Autofit, Collapsible D-pad) - hidden in virgin state */}
+        {!isVirginState && (
+          <div className="w-[320px] mx-auto">
+            <div className="flex justify-between items-center w-full">
+              {/* Left Section: Undo/Redo */}
+              <div className="flex gap-2 items-center">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={undo}
+                  disabled={historyIndex <= 0 || isVirginState}
+                  className="w-10 h-10 p-0"
+                  title="Undo (Ctrl+Z)"
+                >
+                  <Undo2 className="h-5 w-5" />
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={redo}
+                  disabled={historyIndex >= historyStack.length - 1 || isVirginState}
+                  className="w-10 h-10 p-0"
+                  title="Redo (Ctrl+Y)"
+                >
+                  <Redo2 className="h-5 w-5" />
+                </Button>
+              </div>
+
+              {/* Center Section: Scissors, Autofit */}
+              <div className="flex gap-2 items-center">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRemoveBackground}
+                  disabled={!pixelCanvasRef.current?.getPixels().length || backgroundRemoved || isVirginState}
+                  title="Remove background from edges"
+                  className="w-10 h-10 p-0"
+                >
+                  <Scissors className="h-5 w-5" />
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={autoFitEmoji}
+                  disabled={!pixelCanvasRef.current?.getPixels().length || !backgroundRemoved || isVirginState}
+                  title="Auto-fit (remove padding and maximize emoji)"
+                  className="w-10 h-10 p-0"
+                >
+                  <Maximize2 className="h-5 w-5" />
+                </Button>
+              </div>
+
+              {/* Right Section: Collapsible D-Pad */}
+              <Collapsible open={isDpadExpanded} onOpenChange={setIsDpadExpanded}>
+                <CollapsibleTrigger asChild>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={undo}
-                    disabled={historyIndex <= 0 || isVirginState}
                     className="w-10 h-10 p-0"
-                    title="Undo (Ctrl+Z)"
+                    title="Shift pixels"
                   >
-                    <Undo2 className="h-5 w-5" />
+                    <Move className="h-5 w-5" />
                   </Button>
-                  
-                  {/* Redo */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={redo}
-                    disabled={historyIndex >= historyStack.length - 1 || isVirginState}
-                    className="w-10 h-10 p-0"
-                    title="Redo (Ctrl+Y)"
-                  >
-                    <Redo2 className="h-5 w-5" />
-                  </Button>
-                </div>
-
-                {/* Center Section: Magic Wand, Scissors/Autofit */}
-                <div className="flex flex-col gap-2 items-center">
-                  <div className="flex gap-2 items-center">
-                    {/* Magic Wand Button */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const newState = !isMagicWandActive;
-                        setIsMagicWandActive(newState);
-                        if (!newState) {
-                          setSelectedPixels(new Set()); // Clear selection when manually deactivating
-                        }
-                      }}
-                      disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
-                      title="Magic wand: Select contiguous pixels"
-                      className={cn(
-                        "w-10 h-10 p-0",
-                        isMagicWandActive && "ring-2 ring-primary ring-offset-1 ring-offset-background"
-                      )}
-                    >
-                      <Wand2 className="h-5 w-5" />
-                    </Button>
-
-                    {/* Remove Background Button */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleRemoveBackground}
-                      disabled={!pixelCanvasRef.current?.getPixels().length || backgroundRemoved || isVirginState}
-                      title="Remove background from edges"
-                      className="w-10 h-10 p-0"
-                    >
-                      <Scissors className="h-5 w-5" />
-                    </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="absolute mt-1 bg-background border rounded-md p-1 shadow-lg z-10">
+                  <div className="grid grid-cols-3 grid-rows-3 gap-0">
+                    <div className="col-start-2 row-start-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => shiftPixels('up')}
+                        disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                        className="w-6 h-6 p-0"
+                      >
+                        <ArrowUp className="h-3 w-3" />
+                      </Button>
+                    </div>
                     
-                    {/* Auto-Fit Button */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={autoFitEmoji}
-                      disabled={!pixelCanvasRef.current?.getPixels().length || !backgroundRemoved || isVirginState}
-                      title="Auto-fit (remove padding and maximize emoji)"
-                      className="w-10 h-10 p-0"
-                    >
-                      <Maximize2 className="h-5 w-5" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Right Section: D-Pad Shift Controls */}
-                <div className="flex items-center">
-                  <div className="grid grid-cols-3 grid-rows-3 gap-0 w-fit">
-                  {/* Up button - centered in top row */}
-                  <div className="col-start-2 row-start-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => shiftPixels('up')}
-                      disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
-                      title="Shift pixels up"
-                      className="w-6 h-6 p-0"
-                    >
-                      <ArrowUp className="h-3 w-3" />
-                    </Button>
-                  </div>
-                  
-                  {/* Left button */}
-                  <div className="col-start-1 row-start-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => shiftPixels('left')}
-                      disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
-                      title="Shift pixels left"
-                      className="w-6 h-6 p-0"
-                    >
-                      <ArrowLeft className="h-3 w-3" />
-                    </Button>
-                  </div>
-                  
-                  {/* Down button - centered in bottom row */}
-                  <div className="col-start-2 row-start-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => shiftPixels('down')}
-                      disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
-                      title="Shift pixels down"
-                      className="w-6 h-6 p-0"
-                    >
-                      <ArrowDown className="h-3 w-3" />
-                    </Button>
-                  </div>
-                  
-                  {/* Right button */}
-                  <div className="col-start-3 row-start-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => shiftPixels('right')}
-                      disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
-                      title="Shift pixels right"
-                      className="w-6 h-6 p-0"
-                    >
-                      <ArrowRight className="h-3 w-3" />
-                    </Button>
+                    <div className="col-start-1 row-start-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => shiftPixels('left')}
+                        disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                        className="w-6 h-6 p-0"
+                      >
+                        <ArrowLeft className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    
+                    <div className="col-start-2 row-start-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => shiftPixels('down')}
+                        disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                        className="w-6 h-6 p-0"
+                      >
+                        <ArrowDown className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    
+                    <div className="col-start-3 row-start-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => shiftPixels('right')}
+                        disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                        className="w-6 h-6 p-0"
+                      >
+                        <ArrowRight className="h-3 w-3" />
+                      </Button>
                     </div>
                   </div>
-                </div>
-              </div>
+                </CollapsibleContent>
+              </Collapsible>
             </div>
-            )}
+          </div>
+        )}
 
             {/* Settings Section - inline collapsible at bottom */}
             {!isVirginState && (
