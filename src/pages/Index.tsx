@@ -78,7 +78,7 @@ const Index = () => {
       visited.add(key);
       
       const pixelColor = pixels[y]?.[x] || 'transparent';
-      if (!colorsAreSimilar(pixelColor, targetColor, 30)) continue;
+      if (!colorsAreSimilar(pixelColor, targetColor, 45)) continue;
       
       selected.add(key);
       
