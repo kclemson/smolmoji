@@ -27,7 +27,6 @@ const Index = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEyedropperActive, setIsEyedropperActive] = useState(false);
   const [backgroundColor, setBackgroundColor] = useLocalStorage<"transparent" | "white" | "black">("emoji-backgroundColor", "transparent");
-  const [backgroundRemoved, setBackgroundRemoved] = useLocalStorage<boolean>("emoji-backgroundRemoved", false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isMagicWandActive, setIsMagicWandActive] = useState(false);
   const [selectedPixels, setSelectedPixels] = useState<Set<string>>(new Set());
@@ -295,7 +294,6 @@ const Index = () => {
       setCustomColors(DEFAULT_CUSTOM_COLORS);
       setSelectedColor("#000000");
       setBackgroundColor("transparent");
-      setBackgroundRemoved(false);
       setIsEyedropperActive(false);
       setIsMagicWandActive(false);
       setSelectedPixels(new Set());
@@ -503,7 +501,6 @@ const Index = () => {
 
   const handleRemoveBackground = useCallback(() => {
     pixelCanvasRef.current?.removeBackground();
-    setBackgroundRemoved(true);
   }, []);
 
 
@@ -865,7 +862,7 @@ const Index = () => {
                   variant="outline"
                   size="sm"
                   onClick={handleRemoveBackground}
-                  disabled={!pixelCanvasRef.current?.getPixels().length || backgroundRemoved || isVirginState}
+                  disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
                   title="Remove background from edges"
                   className="w-10 h-10 p-0"
                 >
@@ -876,7 +873,7 @@ const Index = () => {
                   variant="outline"
                   size="sm"
                   onClick={autoFitEmoji}
-                  disabled={!pixelCanvasRef.current?.getPixels().length || !backgroundRemoved || isVirginState}
+                  disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
                   title="Auto-fit (remove padding and maximize emoji)"
                   className="w-10 h-10 p-0"
                 >
@@ -1021,33 +1018,37 @@ const Index = () => {
                     </div>
                     
                     {/* Background Selection - integrated here */}
-                    {backgroundRemoved && (
-                      <div className="space-y-2">
-                        <Label className="text-xs font-medium">Background:</Label>
-                        <RadioGroup 
-                          value={backgroundColor} 
-                          onValueChange={(value) => {
-                            const newBg = value as "transparent" | "white" | "black";
-                            setBackgroundColor(newBg);
-                            refreshPreview();
-                          }}
-                          className="flex flex-col gap-1.5"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="transparent" id="bg-transparent" />
-                            <Label htmlFor="bg-transparent" className="text-xs cursor-pointer">Transparent</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="white" id="bg-white" />
-                            <Label htmlFor="bg-white" className="text-xs cursor-pointer">White</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="black" id="bg-black" />
-                            <Label htmlFor="bg-black" className="text-xs cursor-pointer">Black</Label>
-                          </div>
-                        </RadioGroup>
-                      </div>
-                    )}
+                    <div className="space-y-2">
+                      <Label className="text-xs font-medium">Background:</Label>
+                      <RadioGroup 
+                        value={backgroundColor} 
+                        onValueChange={(value) => {
+                          const newBg = value as "transparent" | "white" | "black";
+                          setBackgroundColor(newBg);
+                          refreshPreview();
+                        }}
+                        className="flex flex-col gap-1.5"
+                      >
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="transparent" id="bg-transparent" />
+                          <Label htmlFor="bg-transparent" className="text-xs cursor-pointer">
+                            Transparent
+                          </Label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="white" id="bg-white" />
+                          <Label htmlFor="bg-white" className="text-xs cursor-pointer">
+                            White
+                          </Label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="black" id="bg-black" />
+                          <Label htmlFor="bg-black" className="text-xs cursor-pointer">
+                            Black
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
                   </div>
                 )}
               </div>
