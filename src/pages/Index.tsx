@@ -786,6 +786,7 @@ const Index = () => {
                   }
                 }
               }}
+              variant="outline"
               className="flex gap-1"
             >
               <ToggleGroupItem value="pencil" aria-label="Pencil tool" className="w-10 h-10 p-0">
@@ -805,16 +806,17 @@ const Index = () => {
                 type="single" 
                 value={brushSize.toString()} 
                 onValueChange={(value) => value && setBrushSize(parseInt(value))}
+                variant="outline"
                 className="flex gap-1"
               >
                 <ToggleGroupItem value="1" aria-label="1x1 brush" className="w-10 h-10 p-0">
-                  <div className="w-1 h-1 rounded-full bg-current" />
+                  <div className="w-1 h-1 bg-current" />
                 </ToggleGroupItem>
                 <ToggleGroupItem value="3" aria-label="3x3 brush" className="w-10 h-10 p-0">
-                  <div className="w-2 h-2 rounded-full bg-current" />
+                  <div className="w-2 h-2 bg-current" />
                 </ToggleGroupItem>
                 <ToggleGroupItem value="5" aria-label="5x5 brush" className="w-10 h-10 p-0">
-                  <div className="w-3 h-3 rounded-full bg-current" />
+                  <div className="w-3 h-3 bg-current" />
                 </ToggleGroupItem>
               </ToggleGroup>
             )}
