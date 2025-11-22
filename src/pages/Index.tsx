@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { PixelCanvas, PixelCanvasRef } from "@/components/PixelCanvas";
 import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors, Wand2, Settings, Pencil, Move, Palette } from "lucide-react";
+import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors, Wand2, Settings, Pencil, Move, Palette, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -878,69 +878,72 @@ const Index = () => {
               </div>
 
               {/* Right Section: Collapsible D-Pad */}
-              <Collapsible open={isDpadExpanded} onOpenChange={setIsDpadExpanded} className="relative">
-                <CollapsibleTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-10 h-10 p-0"
-                    title="Shift pixels"
-                  >
-                    <Move className="h-5 w-5" />
-                  </Button>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="absolute right-0 mt-1 bg-background border rounded-md p-1 shadow-lg z-10">
-                  <div className="grid grid-cols-3 grid-rows-3 gap-0">
-                    <div className="col-start-2 row-start-1">
+              <div className="relative">
+                <Collapsible open={isDpadExpanded} onOpenChange={setIsDpadExpanded}>
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-10 h-10 p-0"
+                      title="Shift pixels"
+                    >
+                      <Move className="h-5 w-5" />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="absolute right-0 mt-1 bg-background border rounded-md p-1 shadow-lg z-10">
+                    <div className="grid grid-cols-3 gap-0">
+                      {/* Top row */}
+                      <div />
                       <Button
                         variant="outline"
                         size="sm"
+                        className="w-6 h-6 p-0"
                         onClick={() => shiftPixels('up')}
-                        disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
-                        className="w-6 h-6 p-0"
+                        disabled={isVirginState}
+                        title="Shift up"
                       >
-                        <ArrowUp className="h-3 w-3" />
+                        <ChevronUp className="h-3 w-3" />
                       </Button>
-                    </div>
-                    
-                    <div className="col-start-1 row-start-2">
+                      <div />
+                      {/* Middle row */}
                       <Button
                         variant="outline"
                         size="sm"
+                        className="w-6 h-6 p-0"
                         onClick={() => shiftPixels('left')}
-                        disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
-                        className="w-6 h-6 p-0"
+                        disabled={isVirginState}
+                        title="Shift left"
                       >
-                        <ArrowLeft className="h-3 w-3" />
+                        <ChevronLeft className="h-3 w-3" />
                       </Button>
-                    </div>
-                    
-                    <div className="col-start-2 row-start-3">
+                      <div />
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => shiftPixels('down')}
-                        disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
                         className="w-6 h-6 p-0"
-                      >
-                        <ArrowDown className="h-3 w-3" />
-                      </Button>
-                    </div>
-                    
-                    <div className="col-start-3 row-start-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
                         onClick={() => shiftPixels('right')}
-                        disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
-                        className="w-6 h-6 p-0"
+                        disabled={isVirginState}
+                        title="Shift right"
                       >
-                        <ArrowRight className="h-3 w-3" />
+                        <ChevronRight className="h-3 w-3" />
                       </Button>
+                      {/* Bottom row */}
+                      <div />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-6 h-6 p-0"
+                        onClick={() => shiftPixels('down')}
+                        disabled={isVirginState}
+                        title="Shift down"
+                      >
+                        <ChevronDown className="h-3 w-3" />
+                      </Button>
+                      <div />
                     </div>
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
             </div>
           </div>
         )}
