@@ -598,7 +598,7 @@ const Index = () => {
                         const currentPixels = pixelCanvasRef.current?.getPixels();
                         if (currentPixels) updatePreviews(currentPixels);
                       }}
-                      className="flex gap-3"
+                      className="flex flex-col gap-1.5"
                     >
                       <div className="flex items-center space-x-1.5">
                         <RadioGroupItem value="transparent" id="bg-transparent" />
