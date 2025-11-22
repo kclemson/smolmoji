@@ -63,7 +63,7 @@ const Index = () => {
         if (savedPixels) {
           const pixels = JSON.parse(savedPixels);
           pixelCanvasRef.current.setPixels(pixels);
-          refreshPreview();
+          renderPreview(pixels, backgroundColor);
           console.log("Loaded persisted pixels from localStorage");
         }
         hasLoadedPixels.current = true;
@@ -340,12 +340,10 @@ const Index = () => {
   };
 
 
-  const refreshPreview = () => {
+  // Helper function to render preview canvas with explicit parameters
+  const renderPreview = (pixels: string[][], bg: "transparent" | "white" | "black") => {
     const preview32 = preview32Ref.current;
     if (!preview32) return;
-
-    const pixels = pixelCanvasRef.current?.getPixels();
-    if (!pixels) return;
 
     const ctx = preview32.getContext("2d");
     if (!ctx) return;
@@ -353,25 +351,24 @@ const Index = () => {
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, 32, 32);
     
-    // Fill background based on current backgroundColor state
-    if (backgroundColor === "white") {
+    // Fill background
+    if (bg === "white") {
       ctx.fillStyle = "#FFFFFF";
       ctx.fillRect(0, 0, 32, 32);
-    } else if (backgroundColor === "black") {
+    } else if (bg === "black") {
       ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, 32, 32);
     }
-    // If transparent, leave it cleared
     
-    // Draw emoji pixels on top
-    pixels.forEach((row, y) => {
-      row.forEach((color, x) => {
-        if (color !== "transparent") {
-          ctx.fillStyle = color;
+    // Draw emoji pixels
+    for (let y = 0; y < 32; y++) {
+      for (let x = 0; x < 32; x++) {
+        if (pixels[y][x] !== "transparent") {
+          ctx.fillStyle = pixels[y][x];
           ctx.fillRect(x, y, 1, 1);
         }
-      });
-    });
+      }
+    }
   };
 
   // Handle pixels updated from PixelCanvas
@@ -405,33 +402,7 @@ const Index = () => {
     }
     
     // Update preview immediately with the new pixels
-    const preview32 = preview32Ref.current;
-    if (preview32) {
-      const ctx = preview32.getContext("2d");
-      if (ctx) {
-        ctx.imageSmoothingEnabled = false;
-        ctx.clearRect(0, 0, 32, 32);
-        
-        // Read backgroundColor from current state (always fresh!)
-        if (backgroundColor === "white") {
-          ctx.fillStyle = "#FFFFFF";
-          ctx.fillRect(0, 0, 32, 32);
-        } else if (backgroundColor === "black") {
-          ctx.fillStyle = "#000000";
-          ctx.fillRect(0, 0, 32, 32);
-        }
-        
-        // Draw the new pixels
-        for (let y = 0; y < 32; y++) {
-          for (let x = 0; x < 32; x++) {
-            if (newPixels[y][x] !== "transparent") {
-              ctx.fillStyle = newPixels[y][x];
-              ctx.fillRect(x, y, 1, 1);
-            }
-          }
-        }
-      }
-    }
+    renderPreview(newPixels, backgroundColor);
   }, [backgroundColor]);
 
   const handleMagicWandClick = useCallback((x: number, y: number) => {
@@ -512,7 +483,7 @@ const Index = () => {
     pixelCanvasRef.current?.setPixels(restoredPixels);
     setHistoryIndex(newIndex);
     historyIndexRef.current = newIndex;
-    refreshPreview();
+    // Preview will update via handlePixelsUpdated
   }, [historyIndex, historyStack]);
 
   const redo = useCallback(() => {
@@ -522,18 +493,18 @@ const Index = () => {
     pixelCanvasRef.current?.setPixels(restoredPixels);
     setHistoryIndex(newIndex);
     historyIndexRef.current = newIndex;
-    refreshPreview();
+    // Preview will update via handlePixelsUpdated
   }, [historyIndex, historyStack]);
 
   // Simplified tool functions - delegate to PixelCanvas
   const shiftPixels = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
     pixelCanvasRef.current?.shift(direction);
-    refreshPreview();
+    // Preview will update via handlePixelsUpdated
   }, []);
 
   const autoFitEmoji = useCallback(() => {
     pixelCanvasRef.current?.autoFit();
-    refreshPreview();
+    // Preview will update via handlePixelsUpdated
   }, []);
 
   const handleRemoveBackground = useCallback(() => {
@@ -1062,7 +1033,8 @@ const Index = () => {
                         onValueChange={(value) => {
                           const newBg = value as "transparent" | "white" | "black";
                           setBackgroundColor(newBg);
-                          refreshPreview();
+                          const pixels = pixelCanvasRef.current?.getPixels() || [];
+                          renderPreview(pixels, newBg);
                         }}
                         className="flex flex-col gap-1.5"
                       >
