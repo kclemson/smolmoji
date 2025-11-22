@@ -340,11 +340,11 @@ const Index = () => {
   };
 
 
-  const refreshPreview = () => {
+  const refreshPreview = (pixelsOverride?: string[][]) => {
     const preview32 = preview32Ref.current;
     if (!preview32) return;
 
-    const pixels = pixelCanvasRef.current?.getPixels();
+    const pixels = pixelsOverride || pixelCanvasRef.current?.getPixels();
     if (!pixels) return;
 
     const ctx = preview32.getContext("2d");
@@ -405,7 +405,7 @@ const Index = () => {
     }
     
     // Update preview after state is updated
-    refreshPreview();
+    refreshPreview(newPixels);
   }, []);
 
   const handleMagicWandClick = useCallback((x: number, y: number) => {
