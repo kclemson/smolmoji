@@ -39,6 +39,15 @@ const Index = () => {
     
     // Clear all state on regenerate
     if (isRegenerating) {
+      // Clear preview canvas IMMEDIATELY for instant visual feedback
+      const preview32 = preview32Ref.current;
+      if (preview32) {
+        const ctx = preview32.getContext("2d");
+        if (ctx) {
+          ctx.clearRect(0, 0, 32, 32);
+        }
+      }
+      
       setImageData(null);
       setPixels([]);
       setOriginalPixels([]);
@@ -69,7 +78,7 @@ const Index = () => {
   };
 
 
-  const updatePreviews = () => {
+  const updatePreviews = (pixelsToRender: string[][] = pixels) => {
     const preview32 = preview32Ref.current;
     if (!preview32) return;
 
@@ -90,7 +99,7 @@ const Index = () => {
     // If transparent, leave it cleared (already done by clearRect above)
     
     // Draw emoji pixels on top
-    pixels.forEach((row, y) => {
+    pixelsToRender.forEach((row, y) => {
       row.forEach((color, x) => {
         if (color !== "transparent") {
           ctx.fillStyle = color;
@@ -100,9 +109,8 @@ const Index = () => {
     });
   };
 
-  const handlePixelChange = () => {
-    // Update previews immediately when pixels change
-    setTimeout(updatePreviews, 0);
+  const handlePixelChange = (newPixels: string[][]) => {
+    updatePreviews(newPixels);
   };
 
   const handleEyedropperToggle = () => {
@@ -114,10 +122,6 @@ const Index = () => {
     setIsEyedropperActive(false);
   };
 
-  useEffect(() => {
-    // Update previews whenever pixels or background changes
-    updatePreviews();
-  }, [pixels, backgroundColor]);
 
   // Sync ref with historyIndex state
   useEffect(() => {
@@ -144,7 +148,9 @@ const Index = () => {
       if (currentIndex <= 0) return currentStack;
       const newIndex = currentIndex - 1;
       setHistoryIndex(newIndex);
-      setPixels(structuredClone(currentStack[newIndex]));
+      const restoredPixels = structuredClone(currentStack[newIndex]);
+      setPixels(restoredPixels);
+      updatePreviews(restoredPixels);
       return currentStack;
     });
   }, []);
@@ -155,7 +161,9 @@ const Index = () => {
       if (currentIndex >= currentStack.length - 1) return currentStack;
       const newIndex = currentIndex + 1;
       setHistoryIndex(newIndex);
-      setPixels(structuredClone(currentStack[newIndex]));
+      const restoredPixels = structuredClone(currentStack[newIndex]);
+      setPixels(restoredPixels);
+      updatePreviews(restoredPixels);
       return currentStack;
     });
   }, []);
@@ -200,6 +208,7 @@ const Index = () => {
     });
     
     setPixels(newPixels);
+    updatePreviews(newPixels);
     pushToHistory(newPixels);
   }, [pixels, pushToHistory]);
 
@@ -264,6 +273,7 @@ const Index = () => {
     
     const newPixels = scaleContent(pixels, bounds, targetWidth, targetHeight);
     setPixels(newPixels);
+    updatePreviews(newPixels);
     pushToHistory(newPixels);
   }, [pixels, pushToHistory, findBoundingBox, scaleContent]);
 
@@ -373,6 +383,7 @@ const Index = () => {
     
     const cleanedPixels = removeEdgeBackground(pixels);
     setPixels(cleanedPixels);
+    updatePreviews(cleanedPixels);
     pushToHistory(cleanedPixels);
   }, [pixels, removeEdgeBackground, pushToHistory]);
 
@@ -521,7 +532,7 @@ const Index = () => {
               <div className="flex justify-center">
                 <PixelCanvas
                   imageData={imageData}
-                  onPixelChange={handlePixelChange}
+                  onPixelChange={(newPixels) => updatePreviews(newPixels)}
                   selectedColor={selectedColor}
                   gridSize={32}
                   canvasRef={mainCanvasRef}
@@ -699,7 +710,11 @@ const Index = () => {
             <Label className="text-xs text-muted-foreground">Background:</Label>
             <RadioGroup 
               value={backgroundColor} 
-              onValueChange={(value) => setBackgroundColor(value as "transparent" | "white" | "black")}
+              onValueChange={(value) => {
+                const newBg = value as "transparent" | "white" | "black";
+                setBackgroundColor(newBg);
+                updatePreviews();
+              }}
               className="flex gap-4"
             >
               <div className="flex items-center space-x-1.5">
