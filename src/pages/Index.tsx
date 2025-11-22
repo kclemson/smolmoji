@@ -19,6 +19,7 @@ const Index = () => {
   const [imageData, setImageData] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useLocalStorage<string>("emoji-selectedColor", "#000000");
   const [customColors, setCustomColors] = useLocalStorage<string[]>("emoji-customColors", DEFAULT_CUSTOM_COLORS);
+  const [extractedColors, setExtractedColors] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEyedropperActive, setIsEyedropperActive] = useState(false);
   const [backgroundColor, setBackgroundColor] = useLocalStorage<"transparent" | "white" | "black">("emoji-backgroundColor", "transparent");
@@ -55,6 +56,102 @@ const Index = () => {
     }
   }, []);
 
+  const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  };
+
+  const extractColorsFromImage = useCallback((imageUrl: string): Promise<string[]> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      
+      img.onload = () => {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = img.width;
+        tempCanvas.height = img.height;
+        const ctx = tempCanvas.getContext('2d');
+        
+        if (!ctx) {
+          resolve([]);
+          return;
+        }
+        
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, img.width, img.height);
+        const pixels = imageData.data;
+        
+        // Count color frequencies
+        const colorCounts = new Map<string, number>();
+        
+        for (let i = 0; i < pixels.length; i += 4) {
+          const r = pixels[i];
+          const g = pixels[i + 1];
+          const b = pixels[i + 2];
+          const a = pixels[i + 3];
+          
+          // Skip transparent/near-transparent pixels
+          if (a < 128) continue;
+          
+          const hex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`.toUpperCase();
+          colorCounts.set(hex, (colorCounts.get(hex) || 0) + 1);
+        }
+        
+        // Sort by frequency
+        const sortedColors = Array.from(colorCounts.entries())
+          .sort((a, b) => b[1] - a[1])
+          .map(([color]) => color);
+        
+        // Deduplicate similar colors
+        const distinctColors: string[] = [];
+        const SIMILARITY_THRESHOLD = 30;
+        
+        for (const color of sortedColors) {
+          const rgb = hexToRgb(color);
+          if (!rgb) continue;
+          
+          const isSimilar = distinctColors.some(existingColor => {
+            const existingRgb = hexToRgb(existingColor);
+            if (!existingRgb) return false;
+            
+            const distance = Math.sqrt(
+              Math.pow(rgb.r - existingRgb.r, 2) +
+              Math.pow(rgb.g - existingRgb.g, 2) +
+              Math.pow(rgb.b - existingRgb.b, 2)
+            );
+            
+            return distance < SIMILARITY_THRESHOLD;
+          });
+          
+          if (!isSimilar) {
+            distinctColors.push(color);
+          }
+          
+          if (distinctColors.length >= 12) break;
+        }
+        
+        // Build final array: black, white, then top 5 others
+        const black = distinctColors.find(c => c === '#000000');
+        const white = distinctColors.find(c => c === '#FFFFFF');
+        const others = distinctColors.filter(c => c !== '#000000' && c !== '#FFFFFF');
+        
+        const finalColors: string[] = [];
+        if (black) finalColors.push(black);
+        if (white) finalColors.push(white);
+        finalColors.push(...others.slice(0, 5)); // Take top 5 non-black/white colors
+        
+        resolve(finalColors);
+      };
+      
+      img.onerror = () => resolve([]);
+      img.src = imageUrl;
+    });
+  }, []);
+
   const handleGenerate = async () => {
     if (!prompt.trim()) {
       return;
@@ -83,6 +180,7 @@ const Index = () => {
       
       setImageData(null);
       setCustomColors(DEFAULT_CUSTOM_COLORS);
+      setExtractedColors([]);
       setSelectedColor("#000000");
       setBackgroundColor("transparent");
       setBackgroundRemoved(false);
@@ -116,6 +214,10 @@ const Index = () => {
         // We got an image, load it imperatively
         pixelCanvasRef.current?.loadImage(data.imageUrl);
         setImageData(data.imageUrl);
+        
+        // Extract and set colors
+        const colors = await extractColorsFromImage(data.imageUrl);
+        setExtractedColors(colors);
       }
     } catch (error) {
       // Handle any thrown errors (like 500 responses)
@@ -196,7 +298,7 @@ const Index = () => {
     // Add to custom colors FIFO style (same logic as ColorPicker)
     setCustomColors((prevColors) => {
       if (!prevColors.includes(color)) {
-        return [color, ...prevColors].slice(0, 8);
+        return [color, ...prevColors].slice(0, 6);
       }
       return prevColors;
     });
@@ -571,6 +673,7 @@ const Index = () => {
               onColorChange={setSelectedColor}
               customColors={customColors}
               onCustomColorsChange={setCustomColors}
+              extractedColors={extractedColors}
               isEyedropperActive={isEyedropperActive}
               onEyedropperToggle={handleEyedropperToggle}
               isEraserActive={selectedColor === "transparent"}
