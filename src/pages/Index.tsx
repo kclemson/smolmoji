@@ -825,7 +825,7 @@ const Index = () => {
             
         {/* Row 3: Edit Tools (Undo, Redo, Scissors, Autofit, Collapsible D-pad) - hidden in virgin state */}
         {!isVirginState && (
-          <div className="w-[320px] mx-auto">
+          <div className="w-[320px] mx-auto relative">
             <div className="flex justify-between items-center w-full">
               {/* Left Section: Undo/Redo */}
               <div className="flex gap-2 items-center">
@@ -878,7 +878,7 @@ const Index = () => {
               </div>
 
               {/* Right Section: Collapsible D-Pad */}
-              <Collapsible open={isDpadExpanded} onOpenChange={setIsDpadExpanded} className="relative">
+              <Collapsible open={isDpadExpanded} onOpenChange={setIsDpadExpanded}>
                 <CollapsibleTrigger asChild>
                   <Button
                     variant="outline"
@@ -889,59 +889,61 @@ const Index = () => {
                     <Move className="h-5 w-5" />
                   </Button>
                 </CollapsibleTrigger>
-                <CollapsibleContent className="absolute right-0 mt-1 bg-background border rounded-md p-1 shadow-lg z-10">
-                  <div className="grid grid-cols-3 grid-rows-3 gap-0">
-                    <div className="col-start-2 row-start-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => shiftPixels('up')}
-                        disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
-                        className="w-6 h-6 p-0"
-                      >
-                        <ArrowUp className="h-3 w-3" />
-                      </Button>
-                    </div>
-                    
-                    <div className="col-start-1 row-start-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => shiftPixels('left')}
-                        disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
-                        className="w-6 h-6 p-0"
-                      >
-                        <ArrowLeft className="h-3 w-3" />
-                      </Button>
-                    </div>
-                    
-                    <div className="col-start-2 row-start-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => shiftPixels('down')}
-                        disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
-                        className="w-6 h-6 p-0"
-                      >
-                        <ArrowDown className="h-3 w-3" />
-                      </Button>
-                    </div>
-                    
-                    <div className="col-start-3 row-start-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => shiftPixels('right')}
-                        disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
-                        className="w-6 h-6 p-0"
-                      >
-                        <ArrowRight className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </CollapsibleContent>
               </Collapsible>
             </div>
+            
+            {/* D-pad dropdown positioned absolutely within 320px container */}
+            <CollapsibleContent className="absolute right-0 mt-1 bg-background border rounded-md p-1 shadow-lg z-10">
+              <div className="grid grid-cols-3 grid-rows-3 gap-0">
+                <div className="col-start-2 row-start-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => shiftPixels('up')}
+                    disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                    className="w-6 h-6 p-0"
+                  >
+                    <ArrowUp className="h-3 w-3" />
+                  </Button>
+                </div>
+                
+                <div className="col-start-1 row-start-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => shiftPixels('left')}
+                    disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                    className="w-6 h-6 p-0"
+                  >
+                    <ArrowLeft className="h-3 w-3" />
+                  </Button>
+                </div>
+                
+                <div className="col-start-2 row-start-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => shiftPixels('down')}
+                    disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                    className="w-6 h-6 p-0"
+                  >
+                    <ArrowDown className="h-3 w-3" />
+                  </Button>
+                </div>
+                
+                <div className="col-start-3 row-start-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => shiftPixels('right')}
+                    disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                    className="w-6 h-6 p-0"
+                  >
+                    <ArrowRight className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            </CollapsibleContent>
           </div>
         )}
 
