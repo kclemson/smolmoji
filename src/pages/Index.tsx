@@ -471,7 +471,7 @@ const Index = () => {
               <div className="w-px h-8 bg-border" />
               
               {/* D-Pad Shift Controls */}
-              <div className="grid grid-cols-3 grid-rows-2 gap-0.5 w-fit">
+              <div className="grid grid-cols-3 grid-rows-3 gap-0.5 w-fit">
                 {/* Up button - centered in top row */}
                 <div className="col-start-2 row-start-1">
                   <Button
@@ -501,7 +501,7 @@ const Index = () => {
                 </div>
                 
                 {/* Down button - centered in bottom row */}
-                <div className="col-start-2 row-start-2">
+                <div className="col-start-2 row-start-3">
                   <Button
                     variant="outline"
                     size="sm"
