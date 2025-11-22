@@ -11,7 +11,7 @@ import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors, Wand2, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
 import { Slider } from "@/components/ui/slider";
 
 const Index = () => {
@@ -566,60 +566,10 @@ const Index = () => {
         style={{ maxWidth: '448px', width: '100%' }}
       >
         {/* Header */}
-        <div className="w-full flex items-center justify-center relative">
+        <div className="w-full flex items-center justify-center">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-700 via-cyan-600 to-teal-500 bg-clip-text text-transparent">
             smolmoji.com
           </h1>
-          
-          {!isVirginState && (
-            <div className="absolute right-0">
-              <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground">
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Settings</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-6 py-4">
-                    {/* Magic Wand Tolerance */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-sm font-medium">Magic Wand Tolerance: {magicWandTolerance}</Label>
-                      </div>
-                      <Slider
-                        min={10}
-                        max={50}
-                        step={5}
-                        value={[magicWandTolerance]}
-                        onValueChange={(value) => setMagicWandTolerance(value[0])}
-                        className="w-full"
-                      />
-                      <p className="text-xs text-muted-foreground">Lower = more selective</p>
-                    </div>
-                    
-                    {/* Background Removal Tolerance */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-sm font-medium">Background Removal Tolerance: {backgroundRemovalTolerance}</Label>
-                      </div>
-                      <Slider
-                        min={5}
-                        max={40}
-                        step={5}
-                        value={[backgroundRemovalTolerance]}
-                        onValueChange={(value) => setBackgroundRemovalTolerance(value[0])}
-                        className="w-full"
-                      />
-                      <p className="text-xs text-muted-foreground">Higher = more aggressive</p>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          )}
         </div>
 
         {/* Single Column Layout */}
@@ -887,35 +837,86 @@ const Index = () => {
             </div>
             )}
 
-            {/* Background Selection Row - appears as its own section when background is removed */}
-            {backgroundRemoved && !isVirginState && (
-              <div className="flex justify-center mt-4">
-                <div className="flex flex-col gap-1.5">
-                  <Label className="text-xs text-muted-foreground">Background:</Label>
-                  <RadioGroup 
-                    value={backgroundColor} 
-                    onValueChange={(value) => {
-                      const newBg = value as "transparent" | "white" | "black";
-                      setBackgroundColor(newBg);
-                      const currentPixels = pixelCanvasRef.current?.getPixels();
-                      if (currentPixels) updatePreviews(currentPixels);
-                    }}
-                    className="flex flex-col gap-1.5"
-                  >
-                    <div className="flex items-center space-x-1.5">
-                      <RadioGroupItem value="transparent" id="bg-transparent" />
-                      <Label htmlFor="bg-transparent" className="text-xs text-muted-foreground cursor-pointer">Transparent</Label>
+            {/* Settings Section - inline collapsible at bottom */}
+            {!isVirginState && (
+              <div className="flex flex-col items-center gap-2 mt-4">
+                {/* Settings Toggle Button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                  className="text-xs text-muted-foreground flex items-center gap-1"
+                >
+                  <Settings className="h-3 w-3" />
+                  {isSettingsOpen ? 'Hide Settings' : 'Settings'}
+                </Button>
+                
+                {/* Collapsible Settings Content */}
+                {isSettingsOpen && (
+                  <div className="w-[320px] space-y-4 pt-2">
+                    {/* Magic Wand Tolerance */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-medium">Magic Wand Tolerance: {magicWandTolerance}</Label>
+                      </div>
+                      <Slider
+                        min={10}
+                        max={50}
+                        step={5}
+                        value={[magicWandTolerance]}
+                        onValueChange={(value) => setMagicWandTolerance(value[0])}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-muted-foreground">Lower = more selective</p>
                     </div>
-                    <div className="flex items-center space-x-1.5">
-                      <RadioGroupItem value="white" id="bg-white" />
-                      <Label htmlFor="bg-white" className="text-xs text-muted-foreground cursor-pointer">White</Label>
+                    
+                    {/* Background Removal Tolerance */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-medium">Background Removal Tolerance: {backgroundRemovalTolerance}</Label>
+                      </div>
+                      <Slider
+                        min={5}
+                        max={40}
+                        step={5}
+                        value={[backgroundRemovalTolerance]}
+                        onValueChange={(value) => setBackgroundRemovalTolerance(value[0])}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-muted-foreground">Higher = more aggressive</p>
                     </div>
-                    <div className="flex items-center space-x-1.5">
-                      <RadioGroupItem value="black" id="bg-black" />
-                      <Label htmlFor="bg-black" className="text-xs text-muted-foreground cursor-pointer">Black</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
+                    
+                    {/* Background Selection - integrated here */}
+                    {backgroundRemoved && (
+                      <div className="space-y-2">
+                        <Label className="text-xs font-medium">Background:</Label>
+                        <RadioGroup 
+                          value={backgroundColor} 
+                          onValueChange={(value) => {
+                            const newBg = value as "transparent" | "white" | "black";
+                            setBackgroundColor(newBg);
+                            const currentPixels = pixelCanvasRef.current?.getPixels();
+                            if (currentPixels) updatePreviews(currentPixels);
+                          }}
+                          className="flex flex-col gap-1.5"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="transparent" id="bg-transparent" />
+                            <Label htmlFor="bg-transparent" className="text-xs cursor-pointer">Transparent</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="white" id="bg-white" />
+                            <Label htmlFor="bg-white" className="text-xs cursor-pointer">White</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="black" id="bg-black" />
+                            <Label htmlFor="bg-black" className="text-xs cursor-pointer">Black</Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
         </div>
