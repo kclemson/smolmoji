@@ -560,7 +560,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center p-4">
       <div 
         className="w-full flex flex-col items-center gap-2 sm:gap-3" 
         style={{ maxWidth: '448px', width: '100%' }}
