@@ -553,14 +553,6 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
         return;
       }
       
-      // Skip history for single right-clicks - already handled by handleContextMenu
-      const button = buttonRef.current;
-      if (!isDrag && button === 2) {
-        setSelectionStart(null);
-        setSelectionEnd(null);
-        return;
-      }
-      
       if (!isEyedropperActive) {
         // Calculate rectangle bounds
         const minX = Math.min(selectionStart.x, selectionEnd.x);
@@ -605,27 +597,6 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
 
   const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
     e.preventDefault();
-    
-    // ONLY process standalone context menu events (not part of drag operations)
-    // If isDrawing or isRightClickDrag is true, handleMouseUp will handle it
-    if (isDrawing || isRightClickDrag) {
-      return;
-    }
-    
-    const coords = getPixelCoords(e);
-    if (!coords) return;
-    
-    if (originalPixels.length === 0) return;
-    
-    const originalColor = originalPixels[coords.y]?.[coords.x];
-    if (originalColor !== undefined) {
-      setPixels(prevPixels => {
-        const newPixels = prevPixels.map(row => [...row]);
-        newPixels[coords.y][coords.x] = originalColor;
-        onPixelsUpdated?.(newPixels, false);
-        return newPixels;
-      });
-    }
   };
 
   return (
