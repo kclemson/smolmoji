@@ -116,6 +116,9 @@ const Index = () => {
           const rgb = hexToRgb(color);
           if (!rgb) continue;
           
+          // Skip white and near-white colors
+          if (rgb.r > 240 && rgb.g > 240 && rgb.b > 240) continue;
+          
           const isSimilar = distinctColors.some(existingColor => {
             const existingRgb = hexToRgb(existingColor);
             if (!existingRgb) return false;
