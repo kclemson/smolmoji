@@ -46,23 +46,23 @@ export const ColorPicker = ({
       <div className="flex flex-col gap-2">
         {/* Color Grid */}
         <div className="flex flex-col gap-2">
-          {/* Row 1: Eyedropper + Static colors */}
+          {/* Row 1: Eraser + Static colors */}
           <div 
             className="grid grid-cols-10 gap-2 w-full"
             style={{ display: 'grid', gridTemplateColumns: 'repeat(10, minmax(0, 1fr))', width: '100%' }}
           >
-            {/* First box: Eyedropper */}
+            {/* First box: Eraser */}
             <Button
               variant="outline"
               size="sm"
-              onClick={onEyedropperToggle}
+              onClick={onEraserToggle}
               className={cn(
                 "w-8 h-8 p-0",
-                isEyedropperActive && "ring-2 ring-primary ring-offset-1 ring-offset-background"
+                isEraserActive && "ring-2 ring-primary ring-offset-1 ring-offset-background"
               )}
-              title="Eyedropper (pick color from canvas)"
+              title="Eraser (set pixels to transparent)"
             >
-              <Pipette className="h-4 w-4" />
+              <Eraser className="h-4 w-4" />
             </Button>
 
             {/* Remaining 9 boxes: Static colors */}
@@ -81,23 +81,23 @@ export const ColorPicker = ({
             ))}
           </div>
           
-          {/* Row 2: Eraser + Color Picker + Recent/Custom colors */}
+          {/* Row 2: Eyedropper + Color Picker + Recent/Custom colors */}
           <div 
             className="grid grid-cols-10 gap-2 w-full"
             style={{ display: 'grid', gridTemplateColumns: 'repeat(10, minmax(0, 1fr))', width: '100%' }}
           >
-            {/* First box: Eraser */}
+            {/* First box: Eyedropper */}
             <Button
               variant="outline"
               size="sm"
-              onClick={onEraserToggle}
+              onClick={onEyedropperToggle}
               className={cn(
                 "w-8 h-8 p-0",
-                isEraserActive && "ring-2 ring-primary ring-offset-1 ring-offset-background"
+                isEyedropperActive && "ring-2 ring-primary ring-offset-1 ring-offset-background"
               )}
-              title="Eraser (set pixels to transparent)"
+              title="Eyedropper (pick color from canvas)"
             >
-              <Eraser className="h-4 w-4" />
+              <Pipette className="h-4 w-4" />
             </Button>
 
             {/* Second box: Color Picker Button */}
