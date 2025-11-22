@@ -51,7 +51,7 @@ export const ColorPicker = ({
           />
           <button
             className={cn(
-              "w-10 h-10 rounded-md border-2 transition-all hover:scale-110",
+              "w-10 h-10 rounded-md border transition-all hover:scale-110",
               "border-border bg-muted/20 flex items-center justify-center pointer-events-none"
             )}
           >
@@ -68,7 +68,7 @@ export const ColorPicker = ({
               onClick={() => color && onColorChange(color)}
               className={cn(
                 "w-10 h-10 rounded-md transition-all",
-                color && "border-2",
+                color && "border",
                 color ? "hover:scale-110 cursor-pointer" : "cursor-default",
                 color && selectedColor === color 
                   ? "border-border ring-2 ring-primary ring-offset-1 ring-offset-background" 
