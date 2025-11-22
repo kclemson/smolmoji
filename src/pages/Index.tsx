@@ -120,13 +120,28 @@ const Index = () => {
     return `smolmoji-${slug}.png`;
   };
 
-  const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : null;
+  const hexToRgb = (color: string): { r: number; g: number; b: number } | null => {
+    // Handle rgba format: rgba(r,g,b,a)
+    const rgbaMatch = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)$/i.exec(color);
+    if (rgbaMatch) {
+      return {
+        r: parseInt(rgbaMatch[1]),
+        g: parseInt(rgbaMatch[2]),
+        b: parseInt(rgbaMatch[3])
+      };
+    }
+    
+    // Handle hex format: #rrggbb
+    const hexMatch = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
+    if (hexMatch) {
+      return {
+        r: parseInt(hexMatch[1], 16),
+        g: parseInt(hexMatch[2], 16),
+        b: parseInt(hexMatch[3], 16)
+      };
+    }
+    
+    return null;
   };
 
   const colorDistance = (color1: string, color2: string): number => {
