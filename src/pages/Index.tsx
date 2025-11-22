@@ -625,7 +625,7 @@ const Index = () => {
         {/* Single Column Layout */}
         <div className="space-y-2 sm:space-y-3">
           {/* Row 1: Design Direction with integrated generate button */}
-          <div className="relative w-full" style={{ maxWidth: '320px', marginLeft: 'auto', marginRight: 'auto' }}>
+          <div className="relative w-[320px] mx-auto">
             <Textarea
               placeholder={errorMessage || "Describe your emoji idea: chicken nugget with wizard hat, woman laughing with salad, etc..."}
               value={prompt}
