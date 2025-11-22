@@ -37,6 +37,9 @@ const Index = () => {
   const MAX_HISTORY = 50;
   const hasLoadedPixels = useRef(false);
 
+  // Computed state: are we in "virgin" state (no prompt, no pixels)?
+  const isVirginState = !prompt.trim() && !pixelCanvasRef.current?.getPixels().length;
+
   // Load persisted pixels when canvas is ready (ref callback pattern - no useEffect!)
   const handleCanvasReady = useCallback(() => {
     if (!hasLoadedPixels.current && pixelCanvasRef.current) {
@@ -483,7 +486,7 @@ const Index = () => {
                   onClick={handleDownload} 
                   size="sm"
                   className="gap-2"
-                  disabled={!imageData}
+                  disabled={!imageData || isVirginState}
                   variant="outline"
                 >
                   <Download className="w-4 h-4" />
@@ -513,7 +516,7 @@ const Index = () => {
                 variant="outline"
                 size="sm"
                 onClick={undo}
-                disabled={historyIndex <= 0}
+                disabled={historyIndex <= 0 || isVirginState}
                 className="w-8 h-8 p-0"
                 title="Undo (Ctrl+Z)"
               >
@@ -525,7 +528,7 @@ const Index = () => {
                 variant="outline"
                 size="sm"
                 onClick={redo}
-                disabled={historyIndex >= historyStack.length - 1}
+                disabled={historyIndex >= historyStack.length - 1 || isVirginState}
                 className="w-8 h-8 p-0"
                 title="Redo (Ctrl+Y)"
               >
@@ -540,7 +543,7 @@ const Index = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleRemoveBackground}
-                disabled={!pixelCanvasRef.current?.getPixels().length || backgroundRemoved}
+                disabled={!pixelCanvasRef.current?.getPixels().length || backgroundRemoved || isVirginState}
                 title="Remove background from edges"
                 className="w-8 h-8 p-0"
               >
@@ -552,7 +555,7 @@ const Index = () => {
                 variant="outline"
                 size="sm"
                 onClick={autoFitEmoji}
-                disabled={!pixelCanvasRef.current?.getPixels().length || !backgroundRemoved}
+                disabled={!pixelCanvasRef.current?.getPixels().length || !backgroundRemoved || isVirginState}
                 title="Auto-fit (remove padding and maximize emoji)"
                 className="w-8 h-8 p-0"
               >
@@ -567,7 +570,7 @@ const Index = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => shiftPixels('up')}
-                    disabled={!pixelCanvasRef.current?.getPixels().length}
+                    disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
                     title="Shift pixels up"
                     className="w-6 h-6 p-0"
                   >
@@ -581,7 +584,7 @@ const Index = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => shiftPixels('left')}
-                    disabled={!pixelCanvasRef.current?.getPixels().length}
+                    disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
                     title="Shift pixels left"
                     className="w-6 h-6 p-0"
                   >
@@ -595,7 +598,7 @@ const Index = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => shiftPixels('down')}
-                    disabled={!pixelCanvasRef.current?.getPixels().length}
+                    disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
                     title="Shift pixels down"
                     className="w-6 h-6 p-0"
                   >
@@ -609,7 +612,7 @@ const Index = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => shiftPixels('right')}
-                    disabled={!pixelCanvasRef.current?.getPixels().length}
+                    disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
                     title="Shift pixels right"
                     className="w-6 h-6 p-0"
                   >
@@ -653,6 +656,7 @@ const Index = () => {
             
         {/* Color Palette */}
         <div className="flex justify-center">
+          <div className={cn(isVirginState && "opacity-50 pointer-events-none")}>
             <ColorPicker
               selectedColor={selectedColor}
               onColorChange={setSelectedColor}
@@ -666,6 +670,7 @@ const Index = () => {
                 setIsEyedropperActive(false);
               }}
             />
+          </div>
         </div>
 
         {/* Instructions */}
