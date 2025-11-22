@@ -571,21 +571,26 @@ const Index = () => {
                 }
               }}
               rows={2}
-              className="w-full text-xs resize-none pr-9"
+              className="w-full text-xs resize-none pr-28"
             />
             
-            {/* Generate icon button - bottom right */}
+            {/* Generate button - bottom right */}
             <Button
               onClick={handleGenerate}
               disabled={isGenerating || !prompt.trim()}
-              size="icon"
-              className="absolute bottom-1 right-2 h-6 w-6 rounded-full"
+              className="absolute bottom-1 right-2 h-6 px-2 rounded-full text-xs"
               variant={prompt.trim() ? "default" : "ghost"}
             >
               {isGenerating ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                  Generating...
+                </>
               ) : (
-                <Sparkles className="h-3.5 w-3.5" />
+                <>
+                  <Sparkles className="h-3.5 w-3.5 mr-1" />
+                  {(pixelCanvasRef.current?.getPixels() || []).length > 0 || imageData !== null ? "Re-generate" : "Generate"}
+                </>
               )}
             </Button>
           </div>
