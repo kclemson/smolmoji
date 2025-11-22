@@ -624,12 +624,14 @@ const Index = () => {
                   isMagicWandActive={isMagicWandActive}
                   onMagicWandClick={handleMagicWandClick}
                   selectedPixels={selectedPixels}
+                  isVirginState={isVirginState}
                 />
               </div>
 
-        {/* Color Palette */}
-        <div className={cn("w-[320px] mx-auto", isVirginState && "opacity-50 pointer-events-none")}>
-          <ColorPicker
+        {/* Color Palette - hidden in virgin state */}
+        {!isVirginState && (
+          <div className="w-[320px] mx-auto">
+            <ColorPicker
               selectedColor={selectedColor}
               onColorChange={(color) => {
                 if (selectedPixels.size > 0) {
@@ -655,149 +657,152 @@ const Index = () => {
               }}
             />
           </div>
-        </div>
+        )}
             
             {/* Compact Tools Row: Undo, Redo, Auto-fit, Remove Background, Shift Controls */}
-            <div className="w-[320px] mx-auto">
-              <div className="flex justify-between items-center w-full">
-              {/* Left Section: Undo/Redo */}
-              <div className="flex gap-2 items-center">
-                {/* Undo */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={undo}
-                  disabled={historyIndex <= 0 || isVirginState}
-                  className="w-10 h-10 p-0"
-                  title="Undo (Ctrl+Z)"
-                >
-                  <Undo2 className="h-5 w-5" />
-                </Button>
-                
-                {/* Redo */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={redo}
-                  disabled={historyIndex >= historyStack.length - 1 || isVirginState}
-                  className="w-10 h-10 p-0"
-                  title="Redo (Ctrl+Y)"
-                >
-                  <Redo2 className="h-5 w-5" />
-                </Button>
-              </div>
-
-              {/* Center Section: Magic Wand, Scissors/Autofit */}
-              <div className="flex flex-col gap-2 items-center">
+            {!isVirginState && (
+              <div className="w-[320px] mx-auto">
+                <div className="flex justify-between items-center w-full">
+                {/* Left Section: Undo/Redo */}
                 <div className="flex gap-2 items-center">
-                  {/* Magic Wand Button */}
+                  {/* Undo */}
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      const newState = !isMagicWandActive;
-                      setIsMagicWandActive(newState);
-                      if (!newState) {
-                        setSelectedPixels(new Set()); // Clear selection when manually deactivating
-                      }
-                    }}
-                    disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
-                    title="Magic wand: Select contiguous pixels"
-                    className={cn(
-                      "w-10 h-10 p-0",
-                      isMagicWandActive && "ring-2 ring-primary ring-offset-1 ring-offset-background"
-                    )}
-                  >
-                    <Wand2 className="h-5 w-5" />
-                  </Button>
-
-                  {/* Remove Background Button */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleRemoveBackground}
-                    disabled={!pixelCanvasRef.current?.getPixels().length || backgroundRemoved || isVirginState}
-                    title="Remove background from edges"
+                    onClick={undo}
+                    disabled={historyIndex <= 0 || isVirginState}
                     className="w-10 h-10 p-0"
+                    title="Undo (Ctrl+Z)"
                   >
-                    <Scissors className="h-5 w-5" />
+                    <Undo2 className="h-5 w-5" />
                   </Button>
                   
-                  {/* Auto-Fit Button */}
+                  {/* Redo */}
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={autoFitEmoji}
-                    disabled={!pixelCanvasRef.current?.getPixels().length || !backgroundRemoved || isVirginState}
-                    title="Auto-fit (remove padding and maximize emoji)"
+                    onClick={redo}
+                    disabled={historyIndex >= historyStack.length - 1 || isVirginState}
                     className="w-10 h-10 p-0"
+                    title="Redo (Ctrl+Y)"
                   >
-                    <Maximize2 className="h-5 w-5" />
+                    <Redo2 className="h-5 w-5" />
                   </Button>
                 </div>
-              </div>
 
-              {/* Right Section: D-Pad Shift Controls */}
-              <div className="flex items-center">
-                <div className="grid grid-cols-3 grid-rows-3 gap-0 w-fit">
-                {/* Up button - centered in top row */}
-                <div className="col-start-2 row-start-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => shiftPixels('up')}
-                    disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
-                    title="Shift pixels up"
-                    className="w-6 h-6 p-0"
-                  >
-                    <ArrowUp className="h-3 w-3" />
-                  </Button>
+                {/* Center Section: Magic Wand, Scissors/Autofit */}
+                <div className="flex flex-col gap-2 items-center">
+                  <div className="flex gap-2 items-center">
+                    {/* Magic Wand Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const newState = !isMagicWandActive;
+                        setIsMagicWandActive(newState);
+                        if (!newState) {
+                          setSelectedPixels(new Set()); // Clear selection when manually deactivating
+                        }
+                      }}
+                      disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                      title="Magic wand: Select contiguous pixels"
+                      className={cn(
+                        "w-10 h-10 p-0",
+                        isMagicWandActive && "ring-2 ring-primary ring-offset-1 ring-offset-background"
+                      )}
+                    >
+                      <Wand2 className="h-5 w-5" />
+                    </Button>
+
+                    {/* Remove Background Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRemoveBackground}
+                      disabled={!pixelCanvasRef.current?.getPixels().length || backgroundRemoved || isVirginState}
+                      title="Remove background from edges"
+                      className="w-10 h-10 p-0"
+                    >
+                      <Scissors className="h-5 w-5" />
+                    </Button>
+                    
+                    {/* Auto-Fit Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={autoFitEmoji}
+                      disabled={!pixelCanvasRef.current?.getPixels().length || !backgroundRemoved || isVirginState}
+                      title="Auto-fit (remove padding and maximize emoji)"
+                      className="w-10 h-10 p-0"
+                    >
+                      <Maximize2 className="h-5 w-5" />
+                    </Button>
+                  </div>
                 </div>
-                
-                {/* Left button */}
-                <div className="col-start-1 row-start-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => shiftPixels('left')}
-                    disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
-                    title="Shift pixels left"
-                    className="w-6 h-6 p-0"
-                  >
-                    <ArrowLeft className="h-3 w-3" />
-                  </Button>
-                </div>
-                
-                {/* Down button - centered in bottom row */}
-                <div className="col-start-2 row-start-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => shiftPixels('down')}
-                    disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
-                    title="Shift pixels down"
-                    className="w-6 h-6 p-0"
-                  >
-                    <ArrowDown className="h-3 w-3" />
-                  </Button>
-                </div>
-                
-                {/* Right button */}
-                <div className="col-start-3 row-start-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => shiftPixels('right')}
-                    disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
-                    title="Shift pixels right"
-                    className="w-6 h-6 p-0"
-                  >
-                    <ArrowRight className="h-3 w-3" />
-                  </Button>
+
+                {/* Right Section: D-Pad Shift Controls */}
+                <div className="flex items-center">
+                  <div className="grid grid-cols-3 grid-rows-3 gap-0 w-fit">
+                  {/* Up button - centered in top row */}
+                  <div className="col-start-2 row-start-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => shiftPixels('up')}
+                      disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                      title="Shift pixels up"
+                      className="w-6 h-6 p-0"
+                    >
+                      <ArrowUp className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  
+                  {/* Left button */}
+                  <div className="col-start-1 row-start-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => shiftPixels('left')}
+                      disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                      title="Shift pixels left"
+                      className="w-6 h-6 p-0"
+                    >
+                      <ArrowLeft className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  
+                  {/* Down button - centered in bottom row */}
+                  <div className="col-start-2 row-start-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => shiftPixels('down')}
+                      disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                      title="Shift pixels down"
+                      className="w-6 h-6 p-0"
+                    >
+                      <ArrowDown className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  
+                  {/* Right button */}
+                  <div className="col-start-3 row-start-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => shiftPixels('right')}
+                      disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                      title="Shift pixels right"
+                      className="w-6 h-6 p-0"
+                    >
+                      <ArrowRight className="h-3 w-3" />
+                    </Button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+            )}
 
             {/* Background Selection Row - appears as its own section when background is removed */}
             {backgroundRemoved && (

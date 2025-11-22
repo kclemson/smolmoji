@@ -23,6 +23,7 @@ interface PixelCanvasProps {
   isMagicWandActive?: boolean;
   onMagicWandClick?: (x: number, y: number) => void;
   selectedPixels?: Set<string>;
+  isVirginState?: boolean;
 }
 
 export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({ 
@@ -33,6 +34,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
   onColorPick,
   onPixelsUpdated,
   backgroundColor = "transparent",
+  isVirginState = false,
   onReady,
   isMagicWandActive = false,
   onMagicWandClick,
@@ -691,9 +693,11 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
       onTouchCancel={handleTouchEnd}
     >
       {/* Helper text positioned right above canvas within buffer zone */}
-      <p className="text-xs text-muted-foreground/60 italic text-center mb-1 select-none">
-        right click to revert - click and drag to create a rectangle
-      </p>
+      {!isVirginState && (
+        <p className="text-xs text-muted-foreground/60 italic text-center mb-1 select-none">
+          right click to revert - click and drag to create a rectangle
+        </p>
+      )}
       
       {/* Actual 320×320px pixel grid - rendering only, mouse events handled by parent wrapper */}
       <canvas
