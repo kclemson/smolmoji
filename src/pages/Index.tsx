@@ -609,11 +609,6 @@ const Index = () => {
                 </Button>
               </div>
               
-              {/* Instructions - positioned right above grid */}
-              <p className="text-xs text-muted-foreground/60 italic text-center mb-1 select-none">
-                right click to revert - click and drag to create a rectangle
-              </p>
-              
               {/* Main Canvas - Centered */}
               <div className="flex justify-center">
                 <PixelCanvas
