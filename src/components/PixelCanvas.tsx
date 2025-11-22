@@ -464,8 +464,17 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
 
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const coords = getPixelCoords(e);
-    if (!coords) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const rawX = Math.floor((e.clientX - rect.left) / pixelSize);
+    const rawY = Math.floor((e.clientY - rect.top) / pixelSize);
+
+    // Clamp coordinates to grid boundaries (same logic as handleMouseMove)
+    const x = Math.max(0, Math.min(gridSize - 1, rawX));
+    const y = Math.max(0, Math.min(gridSize - 1, rawY));
+    const coords = { x, y };
 
     // Reset any previous drag state first
     setIsRightClickDrag(false);
