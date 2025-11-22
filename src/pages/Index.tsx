@@ -58,6 +58,37 @@ const Index = () => {
     }
   }, []);
 
+  const generateFilename = (prompt: string): string => {
+    if (!prompt || !prompt.trim()) {
+      return `smolmoji-${Date.now()}.png`;
+    }
+
+    // Extract meaningful words from the prompt
+    const words = prompt
+      .trim()
+      .toLowerCase()
+      // Remove common filler words
+      .replace(/\b(with|and|the|a|an|in|on|at|for|to|of|as|emoji|pixel|art)\b/gi, ' ')
+      // Remove special characters and punctuation
+      .replace(/[^a-z0-9\s]/gi, '')
+      // Split into words and filter empty
+      .split(/\s+/)
+      .filter(word => word.length > 0);
+
+    // Take first 1-2 meaningful words
+    const filenameWords = words.slice(0, 2);
+    
+    if (filenameWords.length === 0) {
+      // Fallback if no meaningful words found
+      return `smolmoji-${Date.now()}.png`;
+    }
+
+    // Join words with dash
+    const slug = filenameWords.join('-');
+    
+    return `smolmoji-${slug}.png`;
+  };
+
   const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? {
@@ -411,7 +442,7 @@ const Index = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `discord-emoji-${Date.now()}.png`;
+      a.download = generateFilename(prompt);
       a.click();
       URL.revokeObjectURL(url);
     });
