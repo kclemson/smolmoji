@@ -364,9 +364,7 @@ const Index = () => {
     const pixels = pixelCanvasRef.current.getPixels();
     const selection = floodFillSelect(pixels, x, y);
     setSelectedPixels(selection);
-    
-    // Automatically deactivate the magic wand after selection is made
-    setIsMagicWandActive(false);
+    // Magic wand stays active - user can make multiple selections
   }, []);
 
   const applyActionToSelection = useCallback((action: 'fill' | 'erase') => {
