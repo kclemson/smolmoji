@@ -110,7 +110,7 @@ const Index = () => {
         
         // Deduplicate similar colors
         const distinctColors: string[] = [];
-        const SIMILARITY_THRESHOLD = 30;
+        const SIMILARITY_THRESHOLD = 20;
         
         for (const color of sortedColors) {
           const rgb = hexToRgb(color);
