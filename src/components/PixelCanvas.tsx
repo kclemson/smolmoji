@@ -90,7 +90,6 @@ export const PixelCanvas = ({
       // Set pixels without automatic processing
       setOriginalPixels(newPixels.map(row => [...row]));
       setPixels(newPixels);
-      onEditComplete?.(newPixels);
       };
       img.src = imageData;
     }
