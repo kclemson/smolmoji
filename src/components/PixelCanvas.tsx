@@ -26,6 +26,7 @@ interface PixelCanvasProps {
   selectedPixels?: Set<string>;
   isVirginState?: boolean;
   backgroundRemovalTolerance?: number;
+  brushSize?: number;
 }
 
 export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({ 
@@ -42,6 +43,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
   onMagicWandClick,
   selectedPixels = new Set(),
   backgroundRemovalTolerance = 20,
+  brushSize = 1,
 }, ref) => {
   const internalCanvasRef = useRef<HTMLCanvasElement>(null);
   const canvasRef = externalCanvasRef || internalCanvasRef;
@@ -597,26 +599,49 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
         const maxX = Math.max(selectionStart.x, selectionEnd.x);
         const maxY = Math.max(selectionStart.y, selectionEnd.y);
 
+        // Helper to expand coordinates based on brush size
+        const applyBrushSize = (x: number, y: number, size: number) => {
+          const offset = Math.floor(size / 2);
+          return {
+            minX: Math.max(0, x - offset),
+            minY: Math.max(0, y - offset),
+            maxX: Math.min(gridSize - 1, x + offset),
+            maxY: Math.min(gridSize - 1, y + offset),
+          };
+        };
+
         setPixels(prevPixels => {
           const newPixels = prevPixels.map(row => [...row]);
           
           if (wasRightClickDrag) {
-            // Restore rectangle to original AI pixels
+            // Restore rectangle to original AI pixels with brush size
             if (originalPixels.length > 0) {
               for (let y = minY; y <= maxY; y++) {
                 for (let x = minX; x <= maxX; x++) {
-                  const originalColor = originalPixels[y]?.[x];
-                  if (originalColor !== undefined) {
-                    newPixels[y][x] = originalColor;
+                  // Apply brush size to each pixel in selection
+                  const brushArea = applyBrushSize(x, y, brushSize);
+                  for (let by = brushArea.minY; by <= brushArea.maxY; by++) {
+                    for (let bx = brushArea.minX; bx <= brushArea.maxX; bx++) {
+                      const originalColor = originalPixels[by]?.[bx];
+                      if (originalColor !== undefined) {
+                        newPixels[by][bx] = originalColor;
+                      }
+                    }
                   }
                 }
               }
             }
           } else {
-            // Paint rectangle (or single pixel if !isDrag) with selected color
+            // Paint rectangle (or single pixel if !isDrag) with selected color and brush size
             for (let y = minY; y <= maxY; y++) {
               for (let x = minX; x <= maxX; x++) {
-                newPixels[y][x] = selectedColor === "transparent" ? "transparent" : selectedColor;
+                // Apply brush size to each pixel in selection
+                const brushArea = applyBrushSize(x, y, brushSize);
+                for (let by = brushArea.minY; by <= brushArea.maxY; by++) {
+                  for (let bx = brushArea.minX; bx <= brushArea.maxX; bx++) {
+                    newPixels[by][bx] = selectedColor === "transparent" ? "transparent" : selectedColor;
+                  }
+                }
               }
             }
           }

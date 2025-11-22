@@ -666,6 +666,8 @@ const Index = () => {
                   onMagicWandClick={handleMagicWandClick}
                   selectedPixels={selectedPixels}
                   isVirginState={isVirginState}
+                  backgroundRemovalTolerance={backgroundRemovalTolerance}
+                  brushSize={brushSize}
                 />
               </div>
 
@@ -799,16 +801,22 @@ const Index = () => {
 
             {/* Brush Size Selector (visible when pencil or eraser active) */}
             {(drawingMode === 'pencil' || drawingMode === 'eraser') && (
-              <Select value={brushSize.toString()} onValueChange={(value) => setBrushSize(parseInt(value))}>
-                <SelectTrigger className="w-20 h-10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1x1</SelectItem>
-                  <SelectItem value="3">3x3</SelectItem>
-                  <SelectItem value="5">5x5</SelectItem>
-                </SelectContent>
-              </Select>
+              <ToggleGroup 
+                type="single" 
+                value={brushSize.toString()} 
+                onValueChange={(value) => value && setBrushSize(parseInt(value))}
+                className="flex gap-1"
+              >
+                <ToggleGroupItem value="1" aria-label="1x1 brush" className="w-10 h-10 p-0">
+                  <div className="w-1 h-1 rounded-full bg-current" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="3" aria-label="3x3 brush" className="w-10 h-10 p-0">
+                  <div className="w-2 h-2 rounded-full bg-current" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="5" aria-label="5x5 brush" className="w-10 h-10 p-0">
+                  <div className="w-3 h-3 rounded-full bg-current" />
+                </ToggleGroupItem>
+              </ToggleGroup>
             )}
           </div>
         )}
