@@ -599,8 +599,16 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
         const maxX = Math.max(selectionStart.x, selectionEnd.x);
         const maxY = Math.max(selectionStart.y, selectionEnd.y);
 
-        // Helper to expand coordinates based on brush size
-        const applyBrushSize = (x: number, y: number, size: number) => {
+        // Helper to check if a pixel is within circular brush radius
+        const isWithinCircularBrush = (centerX: number, centerY: number, targetX: number, targetY: number, size: number) => {
+          const radius = Math.floor(size / 2);
+          const distanceSquared = (targetX - centerX) ** 2 + (targetY - centerY) ** 2;
+          const radiusSquared = radius ** 2;
+          return distanceSquared <= radiusSquared;
+        };
+
+        // Helper to get bounding box for efficient iteration
+        const getBrushBounds = (x: number, y: number, size: number) => {
           const offset = Math.floor(size / 2);
           return {
             minX: Math.max(0, x - offset),
@@ -614,17 +622,18 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
           const newPixels = prevPixels.map(row => [...row]);
           
           if (wasRightClickDrag) {
-            // Restore rectangle to original AI pixels with brush size
+            // Restore rectangle to original AI pixels with circular brush
             if (originalPixels.length > 0) {
               for (let y = minY; y <= maxY; y++) {
                 for (let x = minX; x <= maxX; x++) {
-                  // Apply brush size to each pixel in selection
-                  const brushArea = applyBrushSize(x, y, brushSize);
-                  for (let by = brushArea.minY; by <= brushArea.maxY; by++) {
-                    for (let bx = brushArea.minX; bx <= brushArea.maxX; bx++) {
-                      const originalColor = originalPixels[by]?.[bx];
-                      if (originalColor !== undefined) {
-                        newPixels[by][bx] = originalColor;
+                  const bounds = getBrushBounds(x, y, brushSize);
+                  for (let by = bounds.minY; by <= bounds.maxY; by++) {
+                    for (let bx = bounds.minX; bx <= bounds.maxX; bx++) {
+                      if (isWithinCircularBrush(x, y, bx, by, brushSize)) {
+                        const originalColor = originalPixels[by]?.[bx];
+                        if (originalColor !== undefined) {
+                          newPixels[by][bx] = originalColor;
+                        }
                       }
                     }
                   }
@@ -632,14 +641,15 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
               }
             }
           } else {
-            // Paint rectangle (or single pixel if !isDrag) with selected color and brush size
+            // Paint rectangle with circular brush
             for (let y = minY; y <= maxY; y++) {
               for (let x = minX; x <= maxX; x++) {
-                // Apply brush size to each pixel in selection
-                const brushArea = applyBrushSize(x, y, brushSize);
-                for (let by = brushArea.minY; by <= brushArea.maxY; by++) {
-                  for (let bx = brushArea.minX; bx <= brushArea.maxX; bx++) {
-                    newPixels[by][bx] = selectedColor === "transparent" ? "transparent" : selectedColor;
+                const bounds = getBrushBounds(x, y, brushSize);
+                for (let by = bounds.minY; by <= bounds.maxY; by++) {
+                  for (let bx = bounds.minX; bx <= bounds.maxX; bx++) {
+                    if (isWithinCircularBrush(x, y, bx, by, brushSize)) {
+                      newPixels[by][bx] = selectedColor === "transparent" ? "transparent" : selectedColor;
+                    }
                   }
                 }
               }
