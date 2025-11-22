@@ -407,30 +407,6 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
     return null;
   };
 
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const coords = getPixelCoords(e);
-    if (!coords) return;
-
-    // If eyedropper mode is active, pick the color instead of drawing
-    if (isEyedropperActive && onColorPick) {
-      const pickedColor = pixels[coords.y][coords.x];
-      if (pickedColor !== "transparent") {
-        onColorPick(pickedColor);
-      }
-      return;
-    }
-
-    // Don't paint if we're in the middle of dragging a selection
-    if (isDrawing) return;
-
-    // Normal drawing mode - single click
-    setPixels(prevPixels => {
-      const newPixels = prevPixels.map(row => [...row]);
-      newPixels[coords.y][coords.x] = selectedColor === "transparent" ? "transparent" : selectedColor;
-      onPixelsUpdated?.(newPixels, false);
-      return newPixels;
-    });
-  };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const coords = getPixelCoords(e);
@@ -498,13 +474,24 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
     const wasRightClickDrag = isRightClickDrag;
     
     setIsDrawing(false);
-    setIsRightClickDrag(false); // Reset immediately when mouse is released
+    setIsRightClickDrag(false);
 
-    // Check if we dragged (start !== end) or just clicked (start === end)
+    // Check if we have a selection
     if (selectionStart && selectionEnd) {
       const isDrag = selectionStart.x !== selectionEnd.x || selectionStart.y !== selectionEnd.y;
       
-      if (isDrag && !isEyedropperActive) {
+      // Handle eyedropper for single clicks
+      if (!isDrag && isEyedropperActive && onColorPick) {
+        const pickedColor = pixels[selectionStart.y][selectionStart.x];
+        if (pickedColor !== "transparent") {
+          onColorPick(pickedColor);
+        }
+        setSelectionStart(null);
+        setSelectionEnd(null);
+        return;
+      }
+      
+      if (!isEyedropperActive) {
         // Calculate rectangle bounds
         const minX = Math.min(selectionStart.x, selectionEnd.x);
         const minY = Math.min(selectionStart.y, selectionEnd.y);
@@ -527,7 +514,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
               }
             }
           } else {
-            // Paint rectangle with selected color
+            // Paint rectangle (or single pixel if !isDrag) with selected color
             for (let y = minY; y <= maxY; y++) {
               for (let x = minX; x <= maxX; x++) {
                 newPixels[y][x] = selectedColor === "transparent" ? "transparent" : selectedColor;
@@ -535,11 +522,11 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
             }
           }
           
+          // Only call onPixelsUpdated ONCE - whether it's a single click or drag
           onPixelsUpdated?.(newPixels, false);
           return newPixels;
         });
       }
-      // Single click - onClick handler (left-click) or handleContextMenu (right-click) already recorded history
 
       setSelectionStart(null);
       setSelectionEnd(null);
@@ -576,7 +563,6 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
           "bg-[hsl(var(--canvas-bg))]",
           isEyedropperActive ? "cursor-crosshair" : "cursor-cell"
         )}
-        onClick={handleCanvasClick}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
