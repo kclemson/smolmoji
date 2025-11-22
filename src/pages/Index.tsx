@@ -429,42 +429,40 @@ const Index = () => {
 
         {/* Single Column Layout */}
         <div className="space-y-2 sm:space-y-3">
-          {/* Row 1: Design Direction + Background + Generate */}
-          <div className="space-y-2 sm:space-y-3">
-          <Textarea
-            placeholder={errorMessage || "Describe your emoji idea - e.g. chicken nugget with a wizard hat, woman laughing with salad, ninja penguin, etc..."}
-                value={prompt}
-                onChange={(e) => {
-                  setPrompt(e.target.value);
-                  setErrorMessage(null);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && prompt.trim()) {
-                    e.preventDefault();
-                    handleGenerate();
-                  }
-                }}
-                rows={2}
-                className="w-full text-xs resize-none"
-              />
-              
-              
-              <div className="flex justify-center">
-                <Button 
-                  onClick={handleGenerate} 
-                  disabled={isGenerating || !prompt.trim()}
-                  size="sm"
-                  className="gap-2"
-                >
-                  {isGenerating ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="w-4 h-4" />
-                  )}
-                  {pixelCanvasRef.current?.getPixels().length || imageData !== null ? "Re-generate" : "Generate"}
-                </Button>
-              </div>
-            </div>
+          {/* Row 1: Design Direction with integrated generate button */}
+          <div className="relative">
+            <Textarea
+              placeholder={errorMessage || "Describe your emoji idea - e.g. chicken nugget with a wizard hat, woman laughing with salad, ninja penguin, etc..."}
+              value={prompt}
+              onChange={(e) => {
+                setPrompt(e.target.value);
+                setErrorMessage(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && prompt.trim()) {
+                  e.preventDefault();
+                  handleGenerate();
+                }
+              }}
+              rows={2}
+              className="w-full text-xs resize-none pr-10"
+            />
+            
+            {/* Generate icon button - bottom right */}
+            <Button
+              onClick={handleGenerate}
+              disabled={isGenerating || !prompt.trim()}
+              size="icon"
+              className="absolute bottom-2 right-2 h-7 w-7 rounded-full"
+              variant="ghost"
+            >
+              {isGenerating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
           </div>
 
           {/* Pixel Editor */}
