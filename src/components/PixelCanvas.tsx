@@ -694,6 +694,11 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
     >
+      {/* Helper text positioned right above canvas within buffer zone */}
+      <p className="text-xs text-muted-foreground/60 italic text-center mb-1 select-none">
+        right click to revert - click and drag to create a rectangle
+      </p>
+      
       {/* Actual 320×320px pixel grid - rendering only, mouse events handled by parent wrapper */}
       <canvas
         ref={canvasRef}
