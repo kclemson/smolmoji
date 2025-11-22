@@ -52,7 +52,7 @@ export const ColorPicker = ({
           <button
             className={cn(
               "w-10 h-10 rounded-md border transition-all hover:scale-110",
-              "border-border bg-muted/20 flex items-center justify-center pointer-events-none"
+              "border-border flex items-center justify-center pointer-events-none"
             )}
           >
             <Palette className="h-5 w-5" />
