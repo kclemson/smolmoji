@@ -445,7 +445,7 @@ const Index = () => {
                 }
               }}
               rows={2}
-              className="w-full text-xs resize-none pr-10"
+              className="w-full text-xs resize-none pr-9"
             />
             
             {/* Generate icon button - bottom right */}
@@ -453,13 +453,13 @@ const Index = () => {
               onClick={handleGenerate}
               disabled={isGenerating || !prompt.trim()}
               size="icon"
-              className="absolute bottom-2 right-2 h-7 w-7 rounded-full"
+              className="absolute bottom-1 right-2 h-6 w-6 rounded-full"
               variant="ghost"
             >
               {isGenerating ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
-                <Sparkles className="h-4 w-4" />
+                <Sparkles className="h-3.5 w-3.5" />
               )}
             </Button>
           </div>
