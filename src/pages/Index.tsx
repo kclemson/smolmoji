@@ -787,7 +787,7 @@ const Index = () => {
                 }
               }}
               variant="outline"
-              className="flex gap-1"
+              className="flex gap-2"
             >
               <ToggleGroupItem value="pencil" aria-label="Pencil tool" className="w-10 h-10 p-0">
                 <Pencil className="h-5 w-5" />
@@ -807,7 +807,7 @@ const Index = () => {
                 value={brushSize.toString()} 
                 onValueChange={(value) => value && setBrushSize(parseInt(value))}
                 variant="outline"
-                className="flex gap-1"
+                className="flex gap-2"
               >
                 <ToggleGroupItem value="1" aria-label="1x1 brush" className="w-10 h-10 p-0">
                   <div className="w-1 h-1 bg-current" />
