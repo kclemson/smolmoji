@@ -10,7 +10,7 @@ interface PixelCanvasProps {
   isEyedropperActive?: boolean;
   onColorPick?: (color: string) => void;
   pixels: string[][];
-  setPixels: (pixels: string[][]) => void;
+  setPixels: React.Dispatch<React.SetStateAction<string[][]>>;
   onEditComplete?: (pixels: string[][]) => void;
   backgroundColor?: "transparent" | "white" | "black";
   originalPixels: string[][];
@@ -199,11 +199,13 @@ export const PixelCanvas = ({
     if (isDrawing) return;
 
     // Normal drawing mode - single click
-    const newPixels = [...pixels];
-    newPixels[coords.y][coords.x] = selectedColor === "transparent" ? "transparent" : selectedColor;
-    setPixels(newPixels);
-    onPixelChange(newPixels);
-    onEditComplete?.(newPixels); // Record history with correct state
+    setPixels(prevPixels => {
+      const newPixels = prevPixels.map(row => [...row]);
+      newPixels[coords.y][coords.x] = selectedColor === "transparent" ? "transparent" : selectedColor;
+      onPixelChange(newPixels);
+      onEditComplete?.(newPixels);
+      return newPixels;
+    });
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -285,32 +287,34 @@ export const PixelCanvas = ({
         const maxX = Math.max(selectionStart.x, selectionEnd.x);
         const maxY = Math.max(selectionStart.y, selectionEnd.y);
 
-        const newPixels = pixels.map(row => [...row]);
-        
-        if (wasRightClickDrag) {
-          // Restore rectangle to original AI pixels
-          if (originalPixels.length > 0) {
-            for (let y = minY; y <= maxY; y++) {
-              for (let x = minX; x <= maxX; x++) {
-                const originalColor = originalPixels[y]?.[x];
-                if (originalColor !== undefined) {
-                  newPixels[y][x] = originalColor;
+        setPixels(prevPixels => {
+          const newPixels = prevPixels.map(row => [...row]);
+          
+          if (wasRightClickDrag) {
+            // Restore rectangle to original AI pixels
+            if (originalPixels.length > 0) {
+              for (let y = minY; y <= maxY; y++) {
+                for (let x = minX; x <= maxX; x++) {
+                  const originalColor = originalPixels[y]?.[x];
+                  if (originalColor !== undefined) {
+                    newPixels[y][x] = originalColor;
+                  }
                 }
               }
             }
-          }
-        } else {
-          // Paint rectangle with selected color (existing behavior)
-          for (let y = minY; y <= maxY; y++) {
-            for (let x = minX; x <= maxX; x++) {
-              newPixels[y][x] = selectedColor === "transparent" ? "transparent" : selectedColor;
+          } else {
+            // Paint rectangle with selected color (existing behavior)
+            for (let y = minY; y <= maxY; y++) {
+              for (let x = minX; x <= maxX; x++) {
+                newPixels[y][x] = selectedColor === "transparent" ? "transparent" : selectedColor;
+              }
             }
           }
-        }
-        
-        setPixels(newPixels);
-        onPixelChange(newPixels);
-        onEditComplete?.(newPixels);
+          
+          onPixelChange(newPixels);
+          onEditComplete?.(newPixels);
+          return newPixels;
+        });
       }
       // Single click - onClick handler (left-click) or handleContextMenu (right-click) already recorded history
 
@@ -329,11 +333,13 @@ export const PixelCanvas = ({
     
     const originalColor = originalPixels[coords.y]?.[coords.x];
     if (originalColor !== undefined) {
-      const newPixels = pixels.map(row => [...row]);
-      newPixels[coords.y][coords.x] = originalColor;
-      setPixels(newPixels);
-      onPixelChange(newPixels);
-      onEditComplete?.(newPixels);
+      setPixels(prevPixels => {
+        const newPixels = prevPixels.map(row => [...row]);
+        newPixels[coords.y][coords.x] = originalColor;
+        onPixelChange(newPixels);
+        onEditComplete?.(newPixels);
+        return newPixels;
+      });
     }
   };
 
