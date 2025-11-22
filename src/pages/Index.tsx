@@ -50,8 +50,8 @@ const Index = () => {
         }
       }
       
-      // Clear pixel grid canvas IMMEDIATELY
-      pixelCanvasRef.current?.setPixels([]);
+      // Animate pixel grid dissolve
+      pixelCanvasRef.current?.animateDissolve();
       
       setImageData(null);
       setCustomColors(DEFAULT_CUSTOM_COLORS);
