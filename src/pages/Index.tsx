@@ -567,7 +567,7 @@ const Index = () => {
       >
         {/* Header */}
         <div className="w-full flex items-center justify-center relative">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-cyan-400 to-teal-300 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-700 via-cyan-600 to-teal-500 bg-clip-text text-transparent">
             smolmoji.com
           </h1>
           
