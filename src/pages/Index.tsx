@@ -327,7 +327,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background p-4 sm:p-8">
       <div 
-        className="w-full max-w-md mx-auto space-y-8"
+        className="w-full max-w-md mx-auto space-y-4 sm:space-y-6"
         style={{ maxWidth: '448px', width: '100%' }}
       >
         {/* Header */}
@@ -338,9 +338,9 @@ const Index = () => {
         </div>
 
         {/* Single Column Layout */}
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {/* Row 1: Design Direction + Background + Generate */}
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
           <Textarea
             placeholder={errorMessage || "Describe your emoji idea... e.g., wizard cat casting spell, glitching heart, steaming ramen bowl, pixel sword with aura, ninja penguin, disco ball party"}
                 value={prompt}
@@ -355,7 +355,7 @@ const Index = () => {
                   }
                 }}
                 rows={2}
-                className="w-full text-sm resize-none"
+                className="w-full text-xs sm:text-sm resize-none"
               />
               
               
@@ -378,7 +378,7 @@ const Index = () => {
           </div>
 
           {/* Pixel Editor */}
-          <div className="space-y-4">
+          <div className="space-y-2 sm:space-y-3">
               {/* 32x32 Preview + Download Button */}
               <div className="flex items-center justify-center gap-4">
                 <canvas
