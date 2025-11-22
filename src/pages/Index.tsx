@@ -378,7 +378,18 @@ const Index = () => {
   const handlePixelsUpdated = useCallback((newPixels: string[][], isInitialLoad: boolean) => {
     // Don't push initial AI load to history
     if (!isInitialLoad) {
-      pushToHistory(newPixels);
+      // Get current pixels to compare
+      const currentPixels = pixelCanvasRef.current?.getPixels();
+      
+      // Compare pixels to see if anything actually changed
+      const hasChanges = !currentPixels || currentPixels.some((row, y) =>
+        row.some((color, x) => color !== newPixels[y]?.[x])
+      );
+      
+      // Only push to history if pixels actually changed
+      if (hasChanges) {
+        pushToHistory(newPixels);
+      }
     } else {
       // For initial load, set up the base history
       setHistoryStack([structuredClone(newPixels)]);
