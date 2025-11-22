@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 const Index = () => {
   const ERROR_MESSAGE = "hrm, the model didn't like that - it does that sometimes. try something else.";
   
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useLocalStorage<string>("emoji-prompt", "");
   const [imageData, setImageData] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useLocalStorage<string>("emoji-selectedColor", "#000000");
   const [customColors, setCustomColors] = useLocalStorage<string[]>("emoji-customColors", DEFAULT_CUSTOM_COLORS);
