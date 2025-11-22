@@ -39,15 +39,12 @@ const Index = () => {
     // Check if regenerating (there's existing work)
     const isRegenerating = pixels.length > 0 || imageData !== null;
     
-    // Clear state when regenerating
+    // Clear visual state when regenerating
     if (isRegenerating) {
       setImageData(null);
       setPixels([]);
       setOriginalPixels([]);
       setCustomColors([]);
-      setHistoryStack([]);
-      setHistoryIndex(-1);
-      historyIndexRef.current = -1;
     }
 
     setIsGenerating(true);
@@ -59,6 +56,12 @@ const Index = () => {
       if (error) throw error;
 
       if (data.imageUrl) {
+        // Clear history RIGHT BEFORE setting new image data to prevent batching issues
+        if (isRegenerating) {
+          setHistoryStack([]);
+          setHistoryIndex(-1);
+          historyIndexRef.current = -1;
+        }
         setImageData(data.imageUrl);
       }
     } catch (error: any) {
