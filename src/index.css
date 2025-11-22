@@ -112,8 +112,14 @@ All colors MUST be HSL.
   }
 
   /* Prevent text selection on rapid button clicks */
-  button, .no-select {
-    user-select: none;
-    -webkit-user-select: none;
-  }
+button, .no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+canvas {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
 }

@@ -600,6 +600,39 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
     }
   };
 
+  // Touch event handlers for mobile support
+  const touchToMouseEvent = (touch: React.Touch): React.MouseEvent<HTMLDivElement> => {
+    return {
+      clientX: touch.clientX,
+      clientY: touch.clientY,
+      button: 0,
+      preventDefault: () => {},
+    } as React.MouseEvent<HTMLDivElement>;
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (e.touches.length !== 1) return;
+    
+    const touch = e.touches[0];
+    const syntheticEvent = touchToMouseEvent(touch);
+    handleMouseDown(syntheticEvent);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (e.touches.length !== 1) return;
+    
+    const touch = e.touches[0];
+    const syntheticEvent = touchToMouseEvent(touch);
+    handleMouseMove(syntheticEvent);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    handleMouseUp();
+  };
+
   const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
     e.preventDefault();
   };
@@ -628,6 +661,10 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
       onMouseUp={handleMouseUp}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
     >
       {/* Actual 320×320px pixel grid - rendering only, mouse events handled by parent wrapper */}
       <canvas
