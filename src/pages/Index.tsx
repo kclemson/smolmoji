@@ -78,7 +78,7 @@ const Index = () => {
       visited.add(key);
       
       const pixelColor = pixels[y]?.[x] || 'transparent';
-      if (!colorsAreSimilar(pixelColor, targetColor, 45, backgroundColor)) continue;
+      if (!colorsAreSimilar(pixelColor, targetColor, 45)) continue;
       
       selected.add(key);
       
@@ -161,8 +161,7 @@ const Index = () => {
   const colorsAreSimilar = (
     color1: string, 
     color2: string, 
-    threshold: number = 20,
-    currentBackground: "transparent" | "white" | "black" = "transparent"
+    threshold: number = 20
   ): boolean => {
     // For selection purposes, always treat transparent as white
     // This ensures consistent magic wand behavior
