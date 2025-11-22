@@ -432,7 +432,7 @@ const Index = () => {
           {/* Row 1: Design Direction + Background + Generate */}
           <div className="space-y-2 sm:space-y-3">
           <Textarea
-            placeholder={errorMessage || "Describe your emoji idea... e.g., wizard cat casting spell, glitching heart, steaming ramen bowl, pixel sword with aura, ninja penguin, disco ball party"}
+            placeholder={errorMessage || "Describe your emoji idea - e.g. chicken nugget with a wizard hat, woman laughing with salad, ninja penguin, etc..."}
                 value={prompt}
                 onChange={(e) => {
                   setPrompt(e.target.value);
@@ -445,7 +445,7 @@ const Index = () => {
                   }
                 }}
                 rows={2}
-                className="w-full text-xs sm:text-sm resize-none"
+                className="w-full text-xs resize-none"
               />
               
               
