@@ -33,6 +33,7 @@ const Index = () => {
   const [selectedPixels, setSelectedPixels] = useState<Set<string>>(new Set());
   const [magicWandTolerance, setMagicWandTolerance] = useLocalStorage<number>("emoji-magicWandTolerance", 25);
   const [backgroundRemovalTolerance, setBackgroundRemovalTolerance] = useLocalStorage<number>("emoji-backgroundRemovalTolerance", 20);
+  const [colorExtractionTolerance, setColorExtractionTolerance] = useLocalStorage<number>("emoji-colorExtractionTolerance", 20);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   // Drawing mode state
@@ -226,9 +227,8 @@ const Index = () => {
           .sort((a, b) => b[1] - a[1])
           .map(([color]) => color);
         
-        // Deduplicate similar colors
+        // Deduplicate similar colors using user-defined tolerance
         const distinctColors: string[] = [];
-        const SIMILARITY_THRESHOLD = 20;
         
         for (const color of sortedColors) {
           const rgb = hexToRgb(color);
@@ -247,7 +247,7 @@ const Index = () => {
               Math.pow(rgb.b - existingRgb.b, 2)
             );
             
-            return distance < SIMILARITY_THRESHOLD;
+            return distance < colorExtractionTolerance;
           });
           
           if (!isSimilar) {
@@ -998,6 +998,22 @@ const Index = () => {
                         className="w-full"
                       />
                       <p className="text-xs text-muted-foreground">Higher = more aggressive</p>
+                    </div>
+                    
+                    {/* Color Extraction Tolerance */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-medium">Color Extraction Tolerance: {colorExtractionTolerance}</Label>
+                      </div>
+                      <Slider
+                        min={5}
+                        max={50}
+                        step={5}
+                        value={[colorExtractionTolerance]}
+                        onValueChange={(value) => setColorExtractionTolerance(value[0])}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-muted-foreground">Lower = fewer colors, higher = more colors</p>
                     </div>
                     
                     {/* Background Selection - integrated here */}
