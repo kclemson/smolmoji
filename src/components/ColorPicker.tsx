@@ -71,7 +71,7 @@ export const ColorPicker = ({
                 color && "border",
                 color ? "hover:scale-110 cursor-pointer" : "cursor-default",
                 color && selectedColor === color 
-                  ? "border-border ring-2 ring-primary ring-offset-1 ring-offset-background" 
+                  ? "border-primary"
                   : color && "border-border"
               )}
               style={color ? { backgroundColor: color } : {}}
