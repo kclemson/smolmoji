@@ -47,6 +47,7 @@ const Index = () => {
       setCustomColors([]);
       setHistoryStack([]);
       setHistoryIndex(-1);
+      historyIndexRef.current = -1;
     }
 
     setIsGenerating(true);
