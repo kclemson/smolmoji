@@ -516,9 +516,8 @@ const Index = () => {
               </p>
 
         {/* Color Palette */}
-        <div className="flex justify-center">
-          <div className={cn(isVirginState && "opacity-50 pointer-events-none")}>
-            <ColorPicker
+        <div className={cn("w-[320px] mx-auto", isVirginState && "opacity-50 pointer-events-none")}>
+          <ColorPicker
               selectedColor={selectedColor}
               onColorChange={setSelectedColor}
               customColors={customColors}
@@ -535,7 +534,8 @@ const Index = () => {
         </div>
             
             {/* Compact Tools Row: Undo, Redo, Auto-fit, Remove Background, Shift Controls */}
-            <div className="flex justify-between items-center w-full">
+            <div className="w-[320px] mx-auto">
+              <div className="flex justify-between items-center w-full">
               {/* Left Section: Undo/Redo */}
               <div className="flex gap-2 items-center">
                 {/* Undo */}
@@ -649,7 +649,7 @@ const Index = () => {
                   >
                     <ArrowRight className="h-3 w-3" />
                   </Button>
-                </div>
+                  </div>
                 </div>
               </div>
             </div>
