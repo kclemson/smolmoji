@@ -463,7 +463,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
   };
 
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -507,7 +507,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
     };
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isDrawing || !canvasRef.current) return;
     
     // Calculate coordinates even when outside canvas
@@ -600,20 +600,24 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
   };
 
   return (
-    <div className="relative">
+    <div 
+      className={cn(
+        "relative",
+        isEyedropperActive ? "cursor-crosshair" : "cursor-cell"
+      )}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      onMouseMove={handleMouseMove}
+    >
       <canvas
         ref={canvasRef}
         width={320}
         height={320}
         className={cn(
           "border-2 border-border rounded-lg",
-          "bg-[hsl(var(--canvas-bg))]",
-          isEyedropperActive ? "cursor-crosshair" : "cursor-cell"
+          "bg-[hsl(var(--canvas-bg))]"
         )}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onMouseMove={handleMouseMove}
         onContextMenu={handleContextMenu}
       />
     </div>
