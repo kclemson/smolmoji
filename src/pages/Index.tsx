@@ -295,7 +295,7 @@ const Index = () => {
         {/* Header */}
         <div className="text-center">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            smolmoji
+            smolmoji.com
           </h1>
         </div>
 
@@ -423,7 +423,7 @@ const Index = () => {
                 variant="outline"
                 size="sm"
                 onClick={autoFitEmoji}
-                disabled={!pixelCanvasRef.current?.getPixels().length}
+                disabled={!pixelCanvasRef.current?.getPixels().length || !backgroundRemoved}
                 title="Auto-fit (remove padding and maximize emoji)"
                 className="w-8 h-8 p-0"
               >
