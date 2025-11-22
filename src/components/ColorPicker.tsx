@@ -3,18 +3,6 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Pipette, Eraser, Palette } from "lucide-react";
 
-const STATIC_COLORS = [
-  "#000000", // Black
-  "#FFFFFF", // White
-  "#FF0000", // Red
-  "#FF6600", // Orange
-  "#FFFF00", // Yellow
-  "#00FF00", // Green
-  "#4169E1", // Royal Blue
-  "#00FFFF", // Cyan Blue
-  "#9900FF", // Purple
-];
-
 export const DEFAULT_CUSTOM_COLORS: string[] = [];
 
 interface ColorPickerProps {
@@ -22,6 +10,7 @@ interface ColorPickerProps {
   onColorChange: (color: string) => void;
   customColors: string[];
   onCustomColorsChange: (colors: string[] | ((prev: string[]) => string[])) => void;
+  extractedColors: string[];
   isEyedropperActive?: boolean;
   onEyedropperToggle?: () => void;
   isEraserActive?: boolean;
@@ -33,6 +22,7 @@ export const ColorPicker = ({
   onColorChange,
   customColors,
   onCustomColorsChange,
+  extractedColors,
   isEyedropperActive,
   onEyedropperToggle,
   isEraserActive,
@@ -46,10 +36,10 @@ export const ColorPicker = ({
       <div className="flex flex-col gap-2">
         {/* Color Grid */}
         <div className="flex flex-col gap-2">
-          {/* Row 1: Eraser + Static colors */}
+          {/* Row 1: Eraser + Extracted colors (7 slots) */}
           <div 
-            className="grid grid-cols-10 gap-2 w-full"
-            style={{ display: 'grid', gridTemplateColumns: 'repeat(10, minmax(0, 1fr))', width: '100%' }}
+            className="grid grid-cols-8 gap-2 w-full"
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(8, minmax(0, 1fr))', width: '100%' }}
           >
             {/* First box: Eraser */}
             <Button
@@ -65,10 +55,10 @@ export const ColorPicker = ({
               <Eraser className="h-4 w-4" />
             </Button>
 
-            {/* Remaining 9 boxes: Static colors */}
-            {STATIC_COLORS.map((color) => (
+            {/* Extracted colors (black, white, + 5 from image) */}
+            {extractedColors.map((color, index) => (
               <button
-                key={color}
+                key={`extracted-${color}-${index}`}
                 onClick={() => onColorChange(color)}
                 className={cn(
                   "w-8 h-8 rounded-md border-2 transition-all hover:scale-110",
@@ -79,12 +69,17 @@ export const ColorPicker = ({
                 style={{ backgroundColor: color }}
               />
             ))}
+
+            {/* Empty slots if fewer than 7 extracted colors */}
+            {Array.from({ length: 7 - extractedColors.length }).map((_, i) => (
+              <div key={`empty-extracted-${i}`} className="w-8 h-8" />
+            ))}
           </div>
           
-          {/* Row 2: Eyedropper + Color Picker + Recent/Custom colors */}
+          {/* Row 2: Eyedropper + Color Picker + Custom colors (6 slots) */}
           <div 
-            className="grid grid-cols-10 gap-2 w-full"
-            style={{ display: 'grid', gridTemplateColumns: 'repeat(10, minmax(0, 1fr))', width: '100%' }}
+            className="grid grid-cols-8 gap-2 w-full"
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(8, minmax(0, 1fr))', width: '100%' }}
           >
             {/* First box: Eyedropper */}
             <Button
@@ -110,15 +105,13 @@ export const ColorPicker = ({
                   setCustomColor(e.target.value);
                 }}
                 onBlur={(e) => {
-                  const newColor = e.target.value;
+                  const newColor = e.target.value.toUpperCase();
                   onColorChange(newColor);
                   
                   // Add to custom colors FIFO style using functional update
                   onCustomColorsChange((prevColors) => {
-                    if (!prevColors.includes(newColor)) {
-                      return [newColor, ...prevColors].slice(0, 8);
-                    }
-                    return prevColors; // Color already exists, no change
+                    const filtered = prevColors.filter(c => c !== newColor);
+                    return [newColor, ...filtered].slice(0, 6);
                   });
                 }}
                 className="absolute inset-0 w-8 h-8 opacity-0 cursor-pointer z-10"
@@ -133,8 +126,8 @@ export const ColorPicker = ({
               </button>
             </div>
 
-            {/* Remaining 8 boxes: Recent custom colors */}
-            {Array.from({ length: 8 }).map((_, index) => {
+            {/* Custom colors (6 slots) */}
+            {Array.from({ length: 6 }).map((_, index) => {
               const color = customColors[index];
               return (
                 <button
