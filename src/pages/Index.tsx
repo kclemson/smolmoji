@@ -130,7 +130,13 @@ const Index = () => {
   }, []);
 
   const handleEyedropperToggle = () => {
-    setIsEyedropperActive(!isEyedropperActive);
+    const newEyedropperState = !isEyedropperActive;
+    setIsEyedropperActive(newEyedropperState);
+    
+    // If activating eyedropper while eraser is selected, switch to a visible color
+    if (newEyedropperState && selectedColor === "transparent") {
+      setSelectedColor("#000000");
+    }
   };
 
   const handleColorPick = (color: string) => {

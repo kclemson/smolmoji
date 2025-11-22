@@ -473,9 +473,6 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
     const coords = getPixelCoords(e);
     if (!coords) return;
 
-    // Don't start drawing/selection if eyedropper is active
-    if (isEyedropperActive) return;
-
     // Reset any previous drag state first
     setIsRightClickDrag(false);
     
