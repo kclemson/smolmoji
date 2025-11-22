@@ -606,9 +606,9 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
   const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
     e.preventDefault();
     
-    // Skip if this was a drag operation - handleMouseUp already handled it
-    if (selectionStart && selectionEnd && 
-        (selectionStart.x !== selectionEnd.x || selectionStart.y !== selectionEnd.y)) {
+    // ONLY process standalone context menu events (not part of drag operations)
+    // If isDrawing or isRightClickDrag is true, handleMouseUp will handle it
+    if (isDrawing || isRightClickDrag) {
       return;
     }
     
