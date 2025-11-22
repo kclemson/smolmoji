@@ -515,10 +515,10 @@ const Index = () => {
                 size="sm"
                 onClick={undo}
                 disabled={historyIndex <= 0 || isVirginState}
-                className="w-8 h-8 p-0"
+                className="w-10 h-10 p-0"
                 title="Undo (Ctrl+Z)"
               >
-                <Undo2 className="h-3.5 w-3.5" />
+                <Undo2 className="h-5 w-5" />
               </Button>
               
               {/* Redo */}
@@ -527,14 +527,14 @@ const Index = () => {
                 size="sm"
                 onClick={redo}
                 disabled={historyIndex >= historyStack.length - 1 || isVirginState}
-                className="w-8 h-8 p-0"
+                className="w-10 h-10 p-0"
                 title="Redo (Ctrl+Y)"
               >
-              <Redo2 className="h-3.5 w-3.5" />
+              <Redo2 className="h-5 w-5" />
               </Button>
               
               {/* Visual separator */}
-              <Separator orientation="vertical" className="h-8" />
+              <Separator orientation="vertical" className="h-10" />
               
               {/* Remove Background Button */}
               <Button
@@ -543,9 +543,9 @@ const Index = () => {
                 onClick={handleRemoveBackground}
                 disabled={!pixelCanvasRef.current?.getPixels().length || backgroundRemoved || isVirginState}
                 title="Remove background from edges"
-                className="w-8 h-8 p-0"
+                className="w-10 h-10 p-0"
               >
-                <Scissors className="h-3.5 w-3.5" />
+                <Scissors className="h-5 w-5" />
               </Button>
               
               {/* Auto-Fit Button */}
@@ -555,9 +555,9 @@ const Index = () => {
                 onClick={autoFitEmoji}
                 disabled={!pixelCanvasRef.current?.getPixels().length || !backgroundRemoved || isVirginState}
                 title="Auto-fit (remove padding and maximize emoji)"
-                className="w-8 h-8 p-0"
+                className="w-10 h-10 p-0"
               >
-                <Maximize2 className="h-3.5 w-3.5" />
+                <Maximize2 className="h-5 w-5" />
               </Button>
               
               {/* D-Pad Shift Controls */}
