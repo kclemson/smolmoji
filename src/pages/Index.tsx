@@ -120,6 +120,14 @@ const Index = () => {
   const handleColorPick = (color: string) => {
     setSelectedColor(color);
     setIsEyedropperActive(false);
+    
+    // Add to custom colors FIFO style (same logic as ColorPicker)
+    setCustomColors((prevColors) => {
+      if (!prevColors.includes(color)) {
+        return [color, ...prevColors].slice(0, 8);
+      }
+      return prevColors;
+    });
   };
 
 
