@@ -587,9 +587,9 @@ const Index = () => {
                 </div>
                 
                 {/* Background Selection - Shown directly below scissors when background is removed */}
-                {backgroundRemoved && (
-                  <div className="flex items-center gap-2">
-                    <Label className="text-xs text-muted-foreground">Background:</Label>
+                  {backgroundRemoved && (
+                    <div className="flex flex-col gap-1.5">
+                      <Label className="text-xs text-muted-foreground">Background:</Label>
                     <RadioGroup 
                       value={backgroundColor} 
                       onValueChange={(value) => {
