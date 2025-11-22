@@ -19,6 +19,7 @@ const Index = () => {
   const [isEyedropperActive, setIsEyedropperActive] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState<"transparent" | "white" | "black">("transparent");
   const [backgroundRemoved, setBackgroundRemoved] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   // Refs for canvases
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -35,6 +36,9 @@ const Index = () => {
     if (!prompt.trim()) {
       return;
     }
+
+    // Clear error message
+    setErrorMessage(null);
 
     // Check if regenerating (there's existing work)
     const currentPixels = pixelCanvasRef.current?.getPixels() || [];
@@ -78,6 +82,13 @@ const Index = () => {
       }
     } catch (error: any) {
       console.error("Generation error:", error);
+      
+      // Check if it's a content blocking error
+      if (error.message?.includes("Content blocked") || error.toString().includes("Content blocked")) {
+        setErrorMessage("hrm, the model didn't like that - it does that sometimes. try something else.");
+      } else {
+        setErrorMessage("something went wrong. try again?");
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -293,9 +304,12 @@ const Index = () => {
           {/* Row 1: Design Direction + Background + Generate */}
           <div className="space-y-3">
           <Textarea
-            placeholder="Describe your emoji idea... e.g., wizard cat casting spell, glitching heart, steaming ramen bowl, pixel sword with aura, ninja penguin, disco ball party"
+            placeholder={errorMessage || "Describe your emoji idea... e.g., wizard cat casting spell, glitching heart, steaming ramen bowl, pixel sword with aura, ninja penguin, disco ball party"}
                 value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
+                onChange={(e) => {
+                  setPrompt(e.target.value);
+                  setErrorMessage(null);
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
