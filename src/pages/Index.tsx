@@ -19,7 +19,6 @@ const Index = () => {
   const [imageData, setImageData] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useLocalStorage<string>("emoji-selectedColor", "#000000");
   const [customColors, setCustomColors] = useLocalStorage<string[]>("emoji-customColors", DEFAULT_CUSTOM_COLORS);
-  const [extractedColors, setExtractedColors] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEyedropperActive, setIsEyedropperActive] = useState(false);
   const [backgroundColor, setBackgroundColor] = useLocalStorage<"transparent" | "white" | "black">("emoji-backgroundColor", "transparent");
@@ -129,22 +128,11 @@ const Index = () => {
           
           if (!isSimilar) {
             distinctColors.push(color);
+            if (distinctColors.length >= 5) break;
           }
-          
-          if (distinctColors.length >= 12) break;
         }
         
-        // Build final array: black, white, then top 5 others
-        const black = distinctColors.find(c => c === '#000000');
-        const white = distinctColors.find(c => c === '#FFFFFF');
-        const others = distinctColors.filter(c => c !== '#000000' && c !== '#FFFFFF');
-        
-        const finalColors: string[] = [];
-        if (black) finalColors.push(black);
-        if (white) finalColors.push(white);
-        finalColors.push(...others.slice(0, 5)); // Take top 5 non-black/white colors
-        
-        resolve(finalColors);
+        resolve(distinctColors.slice(0, 5));
       };
       
       img.onerror = () => resolve([]);
@@ -180,7 +168,6 @@ const Index = () => {
       
       setImageData(null);
       setCustomColors(DEFAULT_CUSTOM_COLORS);
-      setExtractedColors([]);
       setSelectedColor("#000000");
       setBackgroundColor("transparent");
       setBackgroundRemoved(false);
@@ -215,9 +202,9 @@ const Index = () => {
         pixelCanvasRef.current?.loadImage(data.imageUrl);
         setImageData(data.imageUrl);
         
-        // Extract and set colors
+        // Extract and set colors as initial customColors
         const colors = await extractColorsFromImage(data.imageUrl);
-        setExtractedColors(colors);
+        setCustomColors(colors);
       }
     } catch (error) {
       // Handle any thrown errors (like 500 responses)
@@ -295,12 +282,10 @@ const Index = () => {
     setSelectedColor(color);
     setIsEyedropperActive(false);
     
-    // Add to custom colors FIFO style (same logic as ColorPicker)
+    // Add to custom colors FIFO style using functional update
     setCustomColors((prevColors) => {
-      if (!prevColors.includes(color)) {
-        return [color, ...prevColors].slice(0, 6);
-      }
-      return prevColors;
+      const filtered = prevColors.filter(c => c !== color);
+      return [color, ...filtered].slice(0, 5);
     });
   };
 
@@ -673,7 +658,6 @@ const Index = () => {
               onColorChange={setSelectedColor}
               customColors={customColors}
               onCustomColorsChange={setCustomColors}
-              extractedColors={extractedColors}
               isEyedropperActive={isEyedropperActive}
               onEyedropperToggle={handleEyedropperToggle}
               isEraserActive={selectedColor === "transparent"}
