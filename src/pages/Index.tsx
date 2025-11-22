@@ -78,7 +78,7 @@ const Index = () => {
       visited.add(key);
       
       const pixelColor = pixels[y]?.[x] || 'transparent';
-      if (!colorsAreSimilar(pixelColor, targetColor, 45)) continue;
+      if (!colorsAreSimilar(pixelColor, targetColor, 45, backgroundColor)) continue;
       
       selected.add(key);
       
@@ -143,10 +143,36 @@ const Index = () => {
     );
   };
 
-  const colorsAreSimilar = (color1: string, color2: string, threshold: number = 20): boolean => {
-    if (color1 === color2) return true;
-    if (color1 === 'transparent' || color2 === 'transparent') return color1 === color2;
-    return colorDistance(color1, color2) <= threshold;
+  const colorsAreSimilar = (
+    color1: string, 
+    color2: string, 
+    threshold: number = 20,
+    currentBackground: "transparent" | "white" | "black" = "transparent"
+  ): boolean => {
+    // Map transparent to actual background color for visual comparison
+    let normalizedColor1 = color1;
+    let normalizedColor2 = color2;
+    
+    if (color1 === 'transparent') {
+      normalizedColor1 = currentBackground === 'black' ? '#000000' : 
+                         currentBackground === 'white' ? '#ffffff' : 
+                         'transparent';
+    }
+    
+    if (color2 === 'transparent') {
+      normalizedColor2 = currentBackground === 'black' ? '#000000' : 
+                         currentBackground === 'white' ? '#ffffff' : 
+                         'transparent';
+    }
+    
+    // If both are still transparent, they match
+    if (normalizedColor1 === 'transparent' && normalizedColor2 === 'transparent') return true;
+    
+    // If one is transparent and one isn't (when background is "transparent"), they don't match
+    if (normalizedColor1 === 'transparent' || normalizedColor2 === 'transparent') return false;
+    
+    if (normalizedColor1 === normalizedColor2) return true;
+    return colorDistance(normalizedColor1, normalizedColor2) <= threshold;
   };
 
   const extractColorsFromImage = useCallback((imageUrl: string): Promise<string[]> => {
