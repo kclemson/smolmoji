@@ -181,44 +181,46 @@ const Index = () => {
   }, [pushToHistory]);
 
   const shiftPixels = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
-    if (pixels.length === 0) return;
-    
-    const newPixels: string[][] = Array(32).fill(null).map(() => Array(32).fill('transparent'));
-    
-    pixels.forEach((row, y) => {
-      row.forEach((color, x) => {
-        if (color === 'transparent') return; // Skip background pixels
-        
-        let newX = x;
-        let newY = y;
-        
-        switch (direction) {
-          case 'up':
-            newY = y - 1;
-            break;
-          case 'down':
-            newY = y + 1;
-            break;
-          case 'left':
-            newX = x - 1;
-            break;
-          case 'right':
-            newX = x + 1;
-            break;
-        }
-        
-        // Only place pixel if it's within bounds
-        if (newX >= 0 && newX < 32 && newY >= 0 && newY < 32) {
-          newPixels[newY][newX] = color;
-        }
-        // Pixels that fall off the edge are simply discarded
+    setPixels(prevPixels => {
+      if (prevPixels.length === 0) return prevPixels;
+      
+      const newPixels: string[][] = Array(32).fill(null).map(() => Array(32).fill('transparent'));
+      
+      prevPixels.forEach((row, y) => {
+        row.forEach((color, x) => {
+          if (color === 'transparent') return; // Skip background pixels
+          
+          let newX = x;
+          let newY = y;
+          
+          switch (direction) {
+            case 'up':
+              newY = y - 1;
+              break;
+            case 'down':
+              newY = y + 1;
+              break;
+            case 'left':
+              newX = x - 1;
+              break;
+            case 'right':
+              newX = x + 1;
+              break;
+          }
+          
+          // Only place pixel if it's within bounds
+          if (newX >= 0 && newX < 32 && newY >= 0 && newY < 32) {
+            newPixels[newY][newX] = color;
+          }
+          // Pixels that fall off the edge are simply discarded
+        });
       });
+      
+      updatePreviews(newPixels);
+      pushToHistory(newPixels);
+      return newPixels;
     });
-    
-    setPixels(newPixels);
-    updatePreviews(newPixels);
-    pushToHistory(newPixels);
-  }, [pixels, pushToHistory]);
+  }, [pushToHistory]);
 
   const findBoundingBox = useCallback((pixelData: string[][]) => {
     let minX = 32, minY = 32, maxX = -1, maxY = -1;
@@ -266,24 +268,26 @@ const Index = () => {
   }, []);
 
   const autoFitEmoji = useCallback(() => {
-    if (pixels.length === 0) return;
-    
-    const bounds = findBoundingBox(pixels);
-    if (!bounds) return;
-    
-    const contentWidth = bounds.maxX - bounds.minX + 1;
-    const contentHeight = bounds.maxY - bounds.minY + 1;
-    
-    const maxSize = 30; // 32 - 2px margin (1px per side)
-    const scale = Math.min(maxSize / contentWidth, maxSize / contentHeight);
-    const targetWidth = Math.round(contentWidth * scale);
-    const targetHeight = Math.round(contentHeight * scale);
-    
-    const newPixels = scaleContent(pixels, bounds, targetWidth, targetHeight);
-    setPixels(newPixels);
-    updatePreviews(newPixels);
-    pushToHistory(newPixels);
-  }, [pixels, pushToHistory, findBoundingBox, scaleContent]);
+    setPixels(prevPixels => {
+      if (prevPixels.length === 0) return prevPixels;
+      
+      const bounds = findBoundingBox(prevPixels);
+      if (!bounds) return prevPixels;
+      
+      const contentWidth = bounds.maxX - bounds.minX + 1;
+      const contentHeight = bounds.maxY - bounds.minY + 1;
+      
+      const maxSize = 30; // 32 - 2px margin (1px per side)
+      const scale = Math.min(maxSize / contentWidth, maxSize / contentHeight);
+      const targetWidth = Math.round(contentWidth * scale);
+      const targetHeight = Math.round(contentHeight * scale);
+      
+      const newPixels = scaleContent(prevPixels, bounds, targetWidth, targetHeight);
+      updatePreviews(newPixels);
+      pushToHistory(newPixels);
+      return newPixels;
+    });
+  }, [pushToHistory, findBoundingBox, scaleContent]);
 
   const colorDistance = (color1: string, color2: string): number => {
     const rgba1 = color1.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
@@ -387,13 +391,15 @@ const Index = () => {
   }, []);
 
   const handleRemoveBackground = useCallback(() => {
-    if (pixels.length === 0) return;
-    
-    const cleanedPixels = removeEdgeBackground(pixels);
-    setPixels(cleanedPixels);
-    updatePreviews(cleanedPixels);
-    pushToHistory(cleanedPixels);
-  }, [pixels, removeEdgeBackground, pushToHistory]);
+    setPixels(prevPixels => {
+      if (prevPixels.length === 0) return prevPixels;
+      
+      const cleanedPixels = removeEdgeBackground(prevPixels);
+      updatePreviews(cleanedPixels);
+      pushToHistory(cleanedPixels);
+      return cleanedPixels;
+    });
+  }, [removeEdgeBackground, pushToHistory]);
 
   // Keyboard shortcuts
   useEffect(() => {
