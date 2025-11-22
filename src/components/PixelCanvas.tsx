@@ -600,10 +600,23 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
   };
 
   return (
+    /* 
+      Interactive container with responsive padding creates a "forgiving zone" for starting rectangle selections.
+      
+      Architecture:
+      - Mouse event handlers (onMouseDown, onMouseMove, etc.) are on this wrapper div, not the canvas
+      - Padding creates invisible clickable area around the 320×320px canvas
+      - Coordinate calculations in getPixelCoords() use canvas.getBoundingClientRect() and clamp to grid bounds
+      - This allows clicks outside the visible canvas to still initiate selections
+      
+      Responsive padding strategy:
+      - Mobile (p-4): 16px padding - minimal but functional
+      - Tablet (md:p-12): 48px padding - more comfortable
+      - Desktop (lg:p-20, xl:p-32): 80-128px padding - massive wiggle room for desktop users
+    */
     <div 
       className={cn(
         "relative p-4 md:p-12 lg:p-20 xl:p-32",
-        "border-2 border-red-500",
         isEyedropperActive ? "cursor-crosshair" : "cursor-cell"
       )}
       onMouseDown={handleMouseDown}
@@ -611,6 +624,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseUp}
     >
+      {/* Actual 320×320px pixel grid - rendering only, mouse events handled by parent wrapper */}
       <canvas
         ref={canvasRef}
         width={320}
