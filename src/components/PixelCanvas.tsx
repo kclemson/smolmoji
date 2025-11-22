@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 interface PixelCanvasProps {
   imageData: string | null;
-  onPixelChange: () => void;
+  onPixelChange: (newPixels: string[][]) => void;
   selectedColor: string;
   gridSize?: number;
   canvasRef?: React.RefObject<HTMLCanvasElement>;
@@ -201,7 +201,7 @@ export const PixelCanvas = ({
     const newPixels = [...pixels];
     newPixels[coords.y][coords.x] = selectedColor === "transparent" ? "transparent" : selectedColor;
     setPixels(newPixels);
-    onPixelChange();
+    onPixelChange(newPixels);
   };
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -304,7 +304,7 @@ export const PixelCanvas = ({
         }
         
         setPixels(newPixels);
-        onPixelChange();
+        onPixelChange(newPixels);
         onEditComplete?.(newPixels);
       } else {
         // Single click - the onClick handler already painted it (for left-click)
@@ -330,7 +330,7 @@ export const PixelCanvas = ({
       const newPixels = pixels.map(row => [...row]);
       newPixels[coords.y][coords.x] = originalColor;
       setPixels(newPixels);
-      onPixelChange();
+      onPixelChange(newPixels);
       onEditComplete?.(newPixels);
     }
   };
