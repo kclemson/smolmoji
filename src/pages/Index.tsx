@@ -406,24 +406,6 @@ const Index = () => {
                 <Redo2 className="h-3.5 w-3.5" />
               </Button>
               
-              {/* Separator */}
-              <div className="w-px h-8 bg-border" />
-              
-              {/* Auto-Fit Button */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={autoFitEmoji}
-                disabled={!pixelCanvasRef.current?.getPixels().length}
-                title="Auto-fit (remove padding and maximize emoji)"
-                className="w-8 h-8 p-0"
-              >
-                <Maximize2 className="h-3.5 w-3.5" />
-              </Button>
-              
-              {/* Separator */}
-              <div className="w-px h-8 bg-border" />
-              
               {/* Remove Background Button */}
               <Button
                 variant="outline"
@@ -436,8 +418,17 @@ const Index = () => {
                 <Scissors className="h-3.5 w-3.5" />
               </Button>
               
-              {/* Separator */}
-              <div className="w-px h-8 bg-border" />
+              {/* Auto-Fit Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={autoFitEmoji}
+                disabled={!pixelCanvasRef.current?.getPixels().length}
+                title="Auto-fit (remove padding and maximize emoji)"
+                className="w-8 h-8 p-0"
+              >
+                <Maximize2 className="h-3.5 w-3.5" />
+              </Button>
               
               {/* D-Pad Shift Controls */}
               <div className="grid grid-cols-3 grid-rows-3 gap-0 w-fit">
