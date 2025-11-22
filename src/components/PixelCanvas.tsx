@@ -8,10 +8,10 @@ export interface PixelCanvasRef {
   autoFit: () => void;
   removeBackground: () => void;
   animateDissolve: () => Promise<void>;
+  loadImage: (imageUrl: string) => void;
 }
 
 interface PixelCanvasProps {
-  imageData: string | null;
   selectedColor: string;
   gridSize?: number;
   canvasRef?: React.RefObject<HTMLCanvasElement>;
@@ -22,7 +22,6 @@ interface PixelCanvasProps {
 }
 
 export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({ 
-  imageData, 
   selectedColor,
   gridSize = 32,
   canvasRef: externalCanvasRef,
@@ -324,24 +323,8 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
           return currentPixels;
         });
       });
-    }
-  }), [pixels, onPixelsUpdated]);
-
-  useEffect(() => {
-    // Initialize empty grid
-    const emptyGrid = Array(gridSize).fill(null).map(() => 
-      Array(gridSize).fill("transparent")
-    );
-    setPixels(emptyGrid);
-    setOriginalPixels([]);
-  }, [gridSize]);
-
-  useEffect(() => {
-    if (imageData && canvasRef.current) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
+    },
+    loadImage: (imageUrl: string) => {
       const img = new Image();
       img.onload = () => {
         // Draw image to get pixel data
@@ -373,14 +356,25 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
           }
         }
         
-      // Set pixels and notify parent
-      setOriginalPixels(newPixels.map(row => [...row]));
-      setPixels(() => newPixels);
-      onPixelsUpdated?.(newPixels, true); // Signal initial load
+        // Update internal state
+        setOriginalPixels(newPixels.map(row => [...row]));
+        setPixels(newPixels);
+        
+        // Notify parent AFTER state is set (but this is now an imperative call, not during render)
+        onPixelsUpdated?.(newPixels, true);
       };
-      img.src = imageData;
-    }
-  }, [imageData, gridSize]);
+      img.src = imageUrl;
+    },
+  }), [pixels, onPixelsUpdated, gridSize]);
+
+  useEffect(() => {
+    // Initialize empty grid
+    const emptyGrid = Array(gridSize).fill(null).map(() => 
+      Array(gridSize).fill("transparent")
+    );
+    setPixels(emptyGrid);
+    setOriginalPixels([]);
+  }, [gridSize]);
 
   useEffect(() => {
     const canvas = canvasRef.current;

@@ -82,7 +82,8 @@ const Index = () => {
       if (!data?.imageUrl) {
         setErrorMessage(ERROR_MESSAGE);
       } else {
-        // We got an image, load it
+        // We got an image, load it imperatively
+        pixelCanvasRef.current?.loadImage(data.imageUrl);
         setImageData(data.imageUrl);
       }
     } catch (error) {
@@ -369,7 +370,6 @@ const Index = () => {
               <div className="flex justify-center">
                 <PixelCanvas
                   ref={pixelCanvasRef}
-                  imageData={imageData}
                   selectedColor={selectedColor}
                   gridSize={32}
                   canvasRef={mainCanvasRef}
