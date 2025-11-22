@@ -31,6 +31,22 @@ const Index = () => {
   const historyIndexRef = useRef(historyIndex);
   const MAX_HISTORY = 50;
 
+  // Utility to clear all emoji-related localStorage
+  const clearAllEmojiState = () => {
+    const keysToRemove = [
+      'emoji-imageData',
+      'emoji-selectedColor',
+      'emoji-customColors',
+      'emoji-pixels',
+      'emoji-originalPixels',
+      'emoji-backgroundColor',
+      'emoji-historyStack',
+      'emoji-historyIndex'
+    ];
+    
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+  };
+
   const handleGenerate = async () => {
     if (!prompt.trim()) {
       return;
@@ -39,12 +55,20 @@ const Index = () => {
     // Check if regenerating (there's existing work)
     const isRegenerating = pixels.length > 0 || imageData !== null;
     
-    // Clear visual state when regenerating
+    // NUCLEAR OPTION: Wipe ALL localStorage on regenerate
     if (isRegenerating) {
+      clearAllEmojiState();
+      
+      // Reset all in-memory state to initial values
       setImageData(null);
       setPixels([]);
       setOriginalPixels([]);
-      setCustomColors([]);
+      setCustomColors(DEFAULT_CUSTOM_COLORS);
+      setSelectedColor("#000000");
+      setBackgroundColor("transparent");
+      setHistoryStack([]);
+      setHistoryIndex(-1);
+      historyIndexRef.current = -1;
     }
 
     setIsGenerating(true);
@@ -56,12 +80,6 @@ const Index = () => {
       if (error) throw error;
 
       if (data.imageUrl) {
-        // Clear history RIGHT BEFORE setting new image data to prevent batching issues
-        if (isRegenerating) {
-          setHistoryStack([]);
-          setHistoryIndex(-1);
-          historyIndexRef.current = -1;
-        }
         setImageData(data.imageUrl);
       }
     } catch (error: any) {
@@ -131,17 +149,6 @@ const Index = () => {
   const pushToHistory = useCallback((newPixels: string[][]) => {
     const currentIndex = historyIndexRef.current;
     
-    // If we just cleared history (index is -1), start fresh
-    // This bypasses the functional setter's stale 'prev' value from React batching
-    if (currentIndex === -1) {
-      const clonedPixels = structuredClone(newPixels);
-      setHistoryStack([clonedPixels]);
-      setHistoryIndex(0);
-      historyIndexRef.current = 0;
-      return;
-    }
-    
-    // Normal case: append to existing history
     setHistoryStack(prev => {
       const truncated = prev.slice(0, currentIndex + 1);
       const newStack = [...truncated, structuredClone(newPixels)];
