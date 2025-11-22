@@ -59,6 +59,7 @@ const Index = () => {
       setSelectedColor("#000000");
       setBackgroundColor("transparent");
       setBackgroundRemoved(false);
+      setIsEyedropperActive(false);
       setHistoryStack([]);
       setHistoryIndex(-1);
       historyIndexRef.current = -1;
