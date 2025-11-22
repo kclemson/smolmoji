@@ -18,6 +18,7 @@ const Index = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEyedropperActive, setIsEyedropperActive] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState<"transparent" | "white" | "black">("transparent");
+  const [backgroundRemoved, setBackgroundRemoved] = useState(false);
   
   // Refs for canvases
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -57,6 +58,7 @@ const Index = () => {
       setCustomColors(DEFAULT_CUSTOM_COLORS);
       setSelectedColor("#000000");
       setBackgroundColor("transparent");
+      setBackgroundRemoved(false);
       setHistoryStack([]);
       setHistoryIndex(-1);
       historyIndexRef.current = -1;
@@ -195,6 +197,7 @@ const Index = () => {
 
   const handleRemoveBackground = useCallback(() => {
     pixelCanvasRef.current?.removeBackground();
+    setBackgroundRemoved(true);
   }, []);
 
 
@@ -437,7 +440,7 @@ const Index = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleRemoveBackground}
-                disabled={!pixelCanvasRef.current?.getPixels().length}
+                disabled={!pixelCanvasRef.current?.getPixels().length || backgroundRemoved}
                 title="Remove background from edges"
                 className="w-8 h-8 p-0"
               >
@@ -507,6 +510,38 @@ const Index = () => {
               </div>
             </div>
             
+            {/* Background Selection - Shown below scissors when background is removed */}
+            {backgroundRemoved && (
+              <div className="flex justify-center">
+                <div className="flex items-center gap-3">
+                  <Label className="text-xs text-muted-foreground">Background:</Label>
+                  <RadioGroup 
+                    value={backgroundColor} 
+                    onValueChange={(value) => {
+                      const newBg = value as "transparent" | "white" | "black";
+                      setBackgroundColor(newBg);
+                      const currentPixels = pixelCanvasRef.current?.getPixels();
+                      if (currentPixels) updatePreviews(currentPixels);
+                    }}
+                    className="flex gap-4"
+                  >
+                    <div className="flex items-center space-x-1.5">
+                      <RadioGroupItem value="transparent" id="bg-transparent" />
+                      <Label htmlFor="bg-transparent" className="text-xs text-muted-foreground cursor-pointer">Transparent</Label>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <RadioGroupItem value="white" id="bg-white" />
+                      <Label htmlFor="bg-white" className="text-xs text-muted-foreground cursor-pointer">White</Label>
+                    </div>
+                    <div className="flex items-center space-x-1.5">
+                      <RadioGroupItem value="black" id="bg-black" />
+                      <Label htmlFor="bg-black" className="text-xs text-muted-foreground cursor-pointer">Black</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+              </div>
+            )}
+            
         {/* Color Palette */}
         <div className="flex justify-center">
           <ColorPicker
@@ -515,36 +550,6 @@ const Index = () => {
             customColors={customColors}
             onCustomColorsChange={setCustomColors}
           />
-        </div>
-
-        {/* Background Selection - Moved below color picker */}
-        <div className="flex justify-center">
-          <div className="flex items-center gap-3">
-            <Label className="text-xs text-muted-foreground">Background:</Label>
-            <RadioGroup 
-              value={backgroundColor} 
-              onValueChange={(value) => {
-                const newBg = value as "transparent" | "white" | "black";
-                setBackgroundColor(newBg);
-                const currentPixels = pixelCanvasRef.current?.getPixels();
-                if (currentPixels) updatePreviews(currentPixels);
-              }}
-              className="flex gap-4"
-            >
-              <div className="flex items-center space-x-1.5">
-                <RadioGroupItem value="transparent" id="bg-transparent" />
-                <Label htmlFor="bg-transparent" className="text-xs text-muted-foreground cursor-pointer">Transparent</Label>
-              </div>
-              <div className="flex items-center space-x-1.5">
-                <RadioGroupItem value="white" id="bg-white" />
-                <Label htmlFor="bg-white" className="text-xs text-muted-foreground cursor-pointer">White</Label>
-              </div>
-              <div className="flex items-center space-x-1.5">
-                <RadioGroupItem value="black" id="bg-black" />
-                <Label htmlFor="bg-black" className="text-xs text-muted-foreground cursor-pointer">Black</Label>
-              </div>
-            </RadioGroup>
-          </div>
         </div>
 
         {/* Instructions */}
