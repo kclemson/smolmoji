@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
 import { PixelCanvas, PixelCanvasRef } from "@/components/PixelCanvas";
 import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
@@ -403,8 +404,11 @@ const Index = () => {
                 className="w-8 h-8 p-0"
                 title="Redo (Ctrl+Y)"
               >
-                <Redo2 className="h-3.5 w-3.5" />
+              <Redo2 className="h-3.5 w-3.5" />
               </Button>
+              
+              {/* Visual separator */}
+              <Separator orientation="vertical" className="h-8" />
               
               {/* Remove Background Button */}
               <Button
