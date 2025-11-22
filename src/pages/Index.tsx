@@ -457,7 +457,7 @@ const Index = () => {
               disabled={isGenerating || !prompt.trim()}
               size="icon"
               className="absolute bottom-1 right-2 h-6 w-6 rounded-full"
-              variant="ghost"
+              variant={prompt.trim() ? "default" : "ghost"}
             >
               {isGenerating ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
