@@ -42,7 +42,9 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
   const canvasRef = externalCanvasRef || internalCanvasRef;
   
   // Internal state - PixelCanvas now owns pixel data
-  const [pixels, setPixels] = useState<string[][]>([]);
+  const [pixels, setPixels] = useState<string[][]>(() => 
+    Array(gridSize).fill(null).map(() => Array(gridSize).fill("transparent"))
+  );
   const [originalPixels, setOriginalPixels] = useState<string[][]>([]);
   
   const [isDrawing, setIsDrawing] = useState(false);
@@ -376,16 +378,10 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
   }), [pixels, onPixelsUpdated, gridSize]);
 
   useEffect(() => {
-    // Initialize empty grid
-    const emptyGrid = Array(gridSize).fill(null).map(() => 
-      Array(gridSize).fill("transparent")
-    );
-    setPixels(emptyGrid);
-    setOriginalPixels([]);
-    
-    // Notify parent that canvas is ready for loading saved pixels
+    // Notify parent once that canvas is ready for loading saved pixels
     onReady?.();
-  }, [gridSize, onReady]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps = runs once on mount
 
   useEffect(() => {
     const canvas = canvasRef.current;
