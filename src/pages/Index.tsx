@@ -878,7 +878,7 @@ const Index = () => {
               </div>
 
               {/* Right Section: Collapsible D-Pad */}
-              <div className="relative">
+              <div className="relative w-fit">
                 <Collapsible open={isDpadExpanded} onOpenChange={setIsDpadExpanded}>
                   <CollapsibleTrigger asChild>
                     <Button
