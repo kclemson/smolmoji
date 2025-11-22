@@ -64,6 +64,7 @@ const Index = () => {
         if (savedPixels) {
           const pixels = JSON.parse(savedPixels);
           pixelCanvasRef.current.setPixels(pixels);
+          refreshPreview();
           console.log("Loaded persisted pixels from localStorage");
         }
         hasLoadedPixels.current = true;
@@ -341,9 +342,12 @@ const Index = () => {
   };
 
 
-  const updatePreviews = (pixelsToRender: string[][]) => {
+  const refreshPreview = () => {
     const preview32 = preview32Ref.current;
     if (!preview32) return;
+
+    const pixels = pixelCanvasRef.current?.getPixels();
+    if (!pixels) return;
 
     const ctx = preview32.getContext("2d");
     if (!ctx) return;
@@ -359,10 +363,10 @@ const Index = () => {
       ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, 32, 32);
     }
-    // If transparent, leave it cleared (already done by clearRect above)
+    // If transparent, leave it cleared
     
     // Draw emoji pixels on top
-    pixelsToRender.forEach((row, y) => {
+    pixels.forEach((row, y) => {
       row.forEach((color, x) => {
         if (color !== "transparent") {
           ctx.fillStyle = color;
@@ -374,8 +378,6 @@ const Index = () => {
 
   // Handle pixels updated from PixelCanvas
   const handlePixelsUpdated = useCallback((newPixels: string[][], isInitialLoad: boolean) => {
-    updatePreviews(newPixels);
-    
     // Don't push initial AI load to history
     if (!isInitialLoad) {
       pushToHistory(newPixels);
@@ -392,6 +394,9 @@ const Index = () => {
     } catch (error) {
       console.error("Error saving pixels to localStorage:", error);
     }
+    
+    // Update preview after state is updated
+    refreshPreview();
   }, []);
 
   const handleMagicWandClick = useCallback((x: number, y: number) => {
@@ -470,9 +475,9 @@ const Index = () => {
     const newIndex = historyIndex - 1;
     const restoredPixels = structuredClone(historyStack[newIndex]);
     pixelCanvasRef.current?.setPixels(restoredPixels);
-    updatePreviews(restoredPixels);
     setHistoryIndex(newIndex);
     historyIndexRef.current = newIndex;
+    refreshPreview();
   }, [historyIndex, historyStack]);
 
   const redo = useCallback(() => {
@@ -480,18 +485,20 @@ const Index = () => {
     const newIndex = historyIndex + 1;
     const restoredPixels = structuredClone(historyStack[newIndex]);
     pixelCanvasRef.current?.setPixels(restoredPixels);
-    updatePreviews(restoredPixels);
     setHistoryIndex(newIndex);
     historyIndexRef.current = newIndex;
+    refreshPreview();
   }, [historyIndex, historyStack]);
 
   // Simplified tool functions - delegate to PixelCanvas
   const shiftPixels = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
     pixelCanvasRef.current?.shift(direction);
+    refreshPreview();
   }, []);
 
   const autoFitEmoji = useCallback(() => {
     pixelCanvasRef.current?.autoFit();
+    refreshPreview();
   }, []);
 
   const handleRemoveBackground = useCallback(() => {
@@ -1022,8 +1029,7 @@ const Index = () => {
                           onValueChange={(value) => {
                             const newBg = value as "transparent" | "white" | "black";
                             setBackgroundColor(newBg);
-                            const currentPixels = pixelCanvasRef.current?.getPixels();
-                            if (currentPixels) updatePreviews(currentPixels);
+                            refreshPreview();
                           }}
                           className="flex flex-col gap-1.5"
                         >
