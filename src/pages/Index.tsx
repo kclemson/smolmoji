@@ -340,11 +340,11 @@ const Index = () => {
   };
 
 
-  const refreshPreview = (pixelsOverride?: string[][], backgroundOverride?: "transparent" | "white" | "black") => {
+  const refreshPreview = () => {
     const preview32 = preview32Ref.current;
     if (!preview32) return;
 
-    const pixels = pixelsOverride || pixelCanvasRef.current?.getPixels();
+    const pixels = pixelCanvasRef.current?.getPixels();
     if (!pixels) return;
 
     const ctx = preview32.getContext("2d");
@@ -353,12 +353,11 @@ const Index = () => {
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, 32, 32);
     
-    // Fill background based on selection
-    const bg = backgroundOverride ?? backgroundColor;
-    if (bg === "white") {
+    // Fill background based on current backgroundColor state
+    if (backgroundColor === "white") {
       ctx.fillStyle = "#FFFFFF";
       ctx.fillRect(0, 0, 32, 32);
-    } else if (bg === "black") {
+    } else if (backgroundColor === "black") {
       ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, 32, 32);
     }
@@ -405,9 +404,35 @@ const Index = () => {
       console.error("Error saving pixels to localStorage:", error);
     }
     
-    // Update preview after state is updated
-    refreshPreview(newPixels);
-  }, []);
+    // Update preview immediately with the new pixels
+    const preview32 = preview32Ref.current;
+    if (preview32) {
+      const ctx = preview32.getContext("2d");
+      if (ctx) {
+        ctx.imageSmoothingEnabled = false;
+        ctx.clearRect(0, 0, 32, 32);
+        
+        // Read backgroundColor from current state (always fresh!)
+        if (backgroundColor === "white") {
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillRect(0, 0, 32, 32);
+        } else if (backgroundColor === "black") {
+          ctx.fillStyle = "#000000";
+          ctx.fillRect(0, 0, 32, 32);
+        }
+        
+        // Draw the new pixels
+        for (let y = 0; y < 32; y++) {
+          for (let x = 0; x < 32; x++) {
+            if (newPixels[y][x] !== "transparent") {
+              ctx.fillStyle = newPixels[y][x];
+              ctx.fillRect(x, y, 1, 1);
+            }
+          }
+        }
+      }
+    }
+  }, [backgroundColor]);
 
   const handleMagicWandClick = useCallback((x: number, y: number) => {
     if (!pixelCanvasRef.current) return;
@@ -1037,7 +1062,7 @@ const Index = () => {
                         onValueChange={(value) => {
                           const newBg = value as "transparent" | "white" | "black";
                           setBackgroundColor(newBg);
-                          refreshPreview(undefined, newBg);
+                          refreshPreview();
                         }}
                         className="flex flex-col gap-1.5"
                       >
