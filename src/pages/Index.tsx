@@ -890,7 +890,11 @@ const Index = () => {
                       <Move className="h-5 w-5" />
                     </Button>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="absolute right-0 top-full mt-1 bg-background border rounded-md p-1 shadow-lg z-10">
+                </Collapsible>
+                
+                {/* D-pad dropdown - outside Collapsible but controlled by its state */}
+                {isDpadExpanded && (
+                  <div className="absolute right-0 top-full mt-1 bg-background border rounded-md p-1 shadow-lg z-10">
                     <div className="grid grid-cols-3 grid-rows-3 gap-0">
                       <div className="col-start-2 row-start-1">
                         <Button
@@ -940,8 +944,8 @@ const Index = () => {
                         </Button>
                       </div>
                     </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                  </div>
+                )}
               </div>
             </div>
           </div>
