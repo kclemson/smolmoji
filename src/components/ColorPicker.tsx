@@ -51,7 +51,7 @@ export const ColorPicker = ({
                 className={cn(
                   "w-8 h-8 rounded-md border-2 transition-all hover:scale-110",
                   selectedColor === color 
-                    ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background" 
+                    ? "border-border ring-2 ring-primary ring-offset-2 ring-offset-background" 
                     : "border-border"
                 )}
                 style={{ backgroundColor: color }}
@@ -108,7 +108,7 @@ export const ColorPicker = ({
                     "w-8 h-8 rounded-md border-2 transition-all",
                     color ? "hover:scale-110 cursor-pointer" : "cursor-default",
                     color && selectedColor === color 
-                      ? "border-primary ring-2 ring-primary ring-offset-2 ring-offset-background" 
+                      ? "border-border ring-2 ring-primary ring-offset-2 ring-offset-background" 
                       : "border-border",
                     !color && "bg-muted/20"
                   )}
