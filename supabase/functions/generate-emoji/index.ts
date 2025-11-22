@@ -31,7 +31,7 @@ serve(async (req) => {
         messages: [
           {
             role: "user",
-            content: `YOU ARE A PIXEL ART STICKER DESIGNER.
+            content: `YOU ARE A PIXEL ART EMOJI CREATOR. Your job is to interpret ANY input as an emoji concept and create it.
 
 CRITICAL RULE: Do not draw anything that a human being would see as a "background".
 
@@ -73,12 +73,19 @@ AVOID:
 - Realistic rendering with excessive texture
 - Random color variations
 
+HOW TO INTERPRET PROMPTS:
+- If it's letters/text (like "KC"): create a stylized text emoji with those letters
+- If it's vague (like "lemson"): be creative and make your best interpretation
+- If it's abstract: create a symbolic or geometric representation
+- If it's unclear: default to creating something fun and emoji-like
+
 EXAMPLES:
+- "KC": Bold letters K and C in a fun emoji style
 - Smiley: circle + dots for eyes + curve (2-3 colors + shading)
 - Fire: flame shape with gradient (3-5 colors), clean edges
 - Heart: solid shape with highlight (2-3 colors)
 
-Create a pixel art emoji of: ${prompt}`,
+Create a pixel art emoji based on: ${prompt}`,
           },
         ],
         modalities: ["image", "text"],
