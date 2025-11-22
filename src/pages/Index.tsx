@@ -519,6 +519,7 @@ const Index = () => {
       
       const mod = navigator.platform.includes('Mac') ? e.metaKey : e.ctrlKey;
       
+      // Undo/Redo shortcuts
       if (mod && e.key === 'z') {
         e.preventDefault();
         undo();
@@ -527,11 +528,17 @@ const Index = () => {
         e.preventDefault();
         redo();
       }
+      
+      // Delete selected pixels
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedPixels.size > 0) {
+        e.preventDefault();
+        applyActionToSelection('erase');
+      }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo]);
+  }, [undo, redo, selectedPixels, applyActionToSelection]);
 
   const handleDownload = () => {
     const pixels = pixelCanvasRef.current?.getPixels();
