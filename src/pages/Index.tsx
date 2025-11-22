@@ -135,18 +135,26 @@ const Index = () => {
   }, []);
 
   const undo = useCallback(() => {
-    if (historyIndex <= 0) return;
-    const newIndex = historyIndex - 1;
-    setHistoryIndex(newIndex);
-    setPixels(structuredClone(historyStack[newIndex]));
-  }, [historyIndex, historyStack]);
+    const currentIndex = historyIndexRef.current;
+    setHistoryStack(currentStack => {
+      if (currentIndex <= 0) return currentStack;
+      const newIndex = currentIndex - 1;
+      setHistoryIndex(newIndex);
+      setPixels(structuredClone(currentStack[newIndex]));
+      return currentStack;
+    });
+  }, []);
 
   const redo = useCallback(() => {
-    if (historyIndex >= historyStack.length - 1) return;
-    const newIndex = historyIndex + 1;
-    setHistoryIndex(newIndex);
-    setPixels(structuredClone(historyStack[newIndex]));
-  }, [historyIndex, historyStack]);
+    const currentIndex = historyIndexRef.current;
+    setHistoryStack(currentStack => {
+      if (currentIndex >= currentStack.length - 1) return currentStack;
+      const newIndex = currentIndex + 1;
+      setHistoryIndex(newIndex);
+      setPixels(structuredClone(currentStack[newIndex]));
+      return currentStack;
+    });
+  }, []);
 
   const handlePixelEditComplete = useCallback((newPixels: string[][]) => {
     pushToHistory(newPixels);
