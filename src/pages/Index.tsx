@@ -432,7 +432,7 @@ const Index = () => {
           {/* Row 1: Design Direction with integrated generate button */}
           <div className="relative">
             <Textarea
-              placeholder={errorMessage || "Describe your emoji idea - e.g. chicken nugget with a wizard hat, woman laughing with salad, ninja penguin, etc..."}
+              placeholder={errorMessage || "Describe your emoji idea: chicken nugget with wizard hat, woman laughing with salad, etc..."}
               value={prompt}
               onChange={(e) => {
                 setPrompt(e.target.value);
