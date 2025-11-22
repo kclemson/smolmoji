@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { PixelCanvas } from "@/components/PixelCanvas";
+import { PixelCanvas, PixelCanvasRef } from "@/components/PixelCanvas";
 import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors } from "lucide-react";
@@ -17,11 +17,12 @@ const Index = () => {
   const [customColors, setCustomColors] = useState<string[]>(DEFAULT_CUSTOM_COLORS);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEyedropperActive, setIsEyedropperActive] = useState(false);
-  const [pixels, setPixels] = useState<string[][]>([]);
-  const [originalPixels, setOriginalPixels] = useState<string[][]>([]);
   const [backgroundColor, setBackgroundColor] = useState<"transparent" | "white" | "black">("transparent");
+  
+  // Refs for canvases
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
   const preview32Ref = useRef<HTMLCanvasElement>(null);
+  const pixelCanvasRef = useRef<PixelCanvasRef>(null);
   
   // Undo/Redo state
   const [historyStack, setHistoryStack] = useState<string[][][]>([]);
@@ -35,7 +36,8 @@ const Index = () => {
     }
 
     // Check if regenerating (there's existing work)
-    const isRegenerating = pixels.length > 0 || imageData !== null;
+    const currentPixels = pixelCanvasRef.current?.getPixels() || [];
+    const isRegenerating = currentPixels.length > 0 || imageData !== null;
     
     // Clear all state on regenerate
     if (isRegenerating) {
@@ -49,8 +51,6 @@ const Index = () => {
       }
       
       setImageData(null);
-      setPixels([]);
-      setOriginalPixels([]);
       setCustomColors(DEFAULT_CUSTOM_COLORS);
       setSelectedColor("#000000");
       setBackgroundColor("transparent");
@@ -78,7 +78,7 @@ const Index = () => {
   };
 
 
-  const updatePreviews = (pixelsToRender: string[][] = pixels) => {
+  const updatePreviews = (pixelsToRender: string[][]) => {
     const preview32 = preview32Ref.current;
     if (!preview32) return;
 
@@ -109,9 +109,20 @@ const Index = () => {
     });
   };
 
-  const handlePixelChange = (newPixels: string[][]) => {
+  // Handle pixels updated from PixelCanvas
+  const handlePixelsUpdated = useCallback((newPixels: string[][], isInitialLoad: boolean) => {
     updatePreviews(newPixels);
-  };
+    
+    // Don't push initial AI load to history
+    if (!isInitialLoad) {
+      pushToHistory(newPixels);
+    } else {
+      // For initial load, set up the base history
+      setHistoryStack([structuredClone(newPixels)]);
+      setHistoryIndex(0);
+      historyIndexRef.current = 0;
+    }
+  }, []);
 
   const handleEyedropperToggle = () => {
     setIsEyedropperActive(!isEyedropperActive);
@@ -151,255 +162,38 @@ const Index = () => {
   }, []);
 
   const undo = useCallback(() => {
-    const currentIndex = historyIndexRef.current;
-    setHistoryStack(currentStack => {
-      if (currentIndex <= 0) return currentStack;
-      const newIndex = currentIndex - 1;
-      setHistoryIndex(newIndex);
-      const restoredPixels = structuredClone(currentStack[newIndex]);
-      setPixels(restoredPixels);
-      updatePreviews(restoredPixels);
-      return currentStack;
-    });
-  }, []);
+    if (historyIndex <= 0) return;
+    const newIndex = historyIndex - 1;
+    const restoredPixels = structuredClone(historyStack[newIndex]);
+    pixelCanvasRef.current?.setPixels(restoredPixels);
+    updatePreviews(restoredPixels);
+    setHistoryIndex(newIndex);
+    historyIndexRef.current = newIndex;
+  }, [historyIndex, historyStack]);
 
   const redo = useCallback(() => {
-    const currentIndex = historyIndexRef.current;
-    setHistoryStack(currentStack => {
-      if (currentIndex >= currentStack.length - 1) return currentStack;
-      const newIndex = currentIndex + 1;
-      setHistoryIndex(newIndex);
-      const restoredPixels = structuredClone(currentStack[newIndex]);
-      setPixels(restoredPixels);
-      updatePreviews(restoredPixels);
-      return currentStack;
-    });
-  }, []);
+    if (historyIndex >= historyStack.length - 1) return;
+    const newIndex = historyIndex + 1;
+    const restoredPixels = structuredClone(historyStack[newIndex]);
+    pixelCanvasRef.current?.setPixels(restoredPixels);
+    updatePreviews(restoredPixels);
+    setHistoryIndex(newIndex);
+    historyIndexRef.current = newIndex;
+  }, [historyIndex, historyStack]);
 
-  const handlePixelEditComplete = useCallback((newPixels: string[][]) => {
-    pushToHistory(newPixels);
-  }, [pushToHistory]);
-
+  // Simplified tool functions - delegate to PixelCanvas
   const shiftPixels = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
-    setPixels(prevPixels => {
-      if (prevPixels.length === 0) return prevPixels;
-      
-      const newPixels: string[][] = Array(32).fill(null).map(() => Array(32).fill('transparent'));
-      
-      prevPixels.forEach((row, y) => {
-        row.forEach((color, x) => {
-          if (color === 'transparent') return; // Skip background pixels
-          
-          let newX = x;
-          let newY = y;
-          
-          switch (direction) {
-            case 'up':
-              newY = y - 1;
-              break;
-            case 'down':
-              newY = y + 1;
-              break;
-            case 'left':
-              newX = x - 1;
-              break;
-            case 'right':
-              newX = x + 1;
-              break;
-          }
-          
-          // Only place pixel if it's within bounds
-          if (newX >= 0 && newX < 32 && newY >= 0 && newY < 32) {
-            newPixels[newY][newX] = color;
-          }
-          // Pixels that fall off the edge are simply discarded
-        });
-      });
-      
-      updatePreviews(newPixels);
-      pushToHistory(newPixels);
-      return newPixels;
-    });
-  }, [pushToHistory]);
-
-  const findBoundingBox = useCallback((pixelData: string[][]) => {
-    let minX = 32, minY = 32, maxX = -1, maxY = -1;
-    
-    for (let y = 0; y < 32; y++) {
-      for (let x = 0; x < 32; x++) {
-        if (pixelData[y][x] !== 'transparent') {
-          minX = Math.min(minX, x);
-          minY = Math.min(minY, y);
-          maxX = Math.max(maxX, x);
-          maxY = Math.max(maxY, y);
-        }
-      }
-    }
-    
-    if (maxX === -1) return null;
-    return { minX, minY, maxX, maxY };
-  }, []);
-
-  const scaleContent = useCallback((
-    sourcePixels: string[][],
-    sourceBounds: { minX: number; minY: number; maxX: number; maxY: number },
-    targetWidth: number,
-    targetHeight: number
-  ) => {
-    const sourceWidth = sourceBounds.maxX - sourceBounds.minX + 1;
-    const sourceHeight = sourceBounds.maxY - sourceBounds.minY + 1;
-    
-    const newPixels: string[][] = Array(32).fill(null).map(() => 
-      Array(32).fill('transparent')
-    );
-    
-    const targetX = Math.floor((32 - targetWidth) / 2);
-    const targetY = Math.floor((32 - targetHeight) / 2);
-    
-    for (let y = 0; y < targetHeight; y++) {
-      for (let x = 0; x < targetWidth; x++) {
-        const sourceX = sourceBounds.minX + Math.floor(x * sourceWidth / targetWidth);
-        const sourceY = sourceBounds.minY + Math.floor(y * sourceHeight / targetHeight);
-        newPixels[targetY + y][targetX + x] = sourcePixels[sourceY][sourceX];
-      }
-    }
-    
-    return newPixels;
+    pixelCanvasRef.current?.shift(direction);
   }, []);
 
   const autoFitEmoji = useCallback(() => {
-    setPixels(prevPixels => {
-      if (prevPixels.length === 0) return prevPixels;
-      
-      const bounds = findBoundingBox(prevPixels);
-      if (!bounds) return prevPixels;
-      
-      const contentWidth = bounds.maxX - bounds.minX + 1;
-      const contentHeight = bounds.maxY - bounds.minY + 1;
-      
-      const maxSize = 30; // 32 - 2px margin (1px per side)
-      const scale = Math.min(maxSize / contentWidth, maxSize / contentHeight);
-      const targetWidth = Math.round(contentWidth * scale);
-      const targetHeight = Math.round(contentHeight * scale);
-      
-      const newPixels = scaleContent(prevPixels, bounds, targetWidth, targetHeight);
-      updatePreviews(newPixels);
-      pushToHistory(newPixels);
-      return newPixels;
-    });
-  }, [pushToHistory, findBoundingBox, scaleContent]);
-
-  const colorDistance = (color1: string, color2: string): number => {
-    const rgba1 = color1.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-    const rgba2 = color2.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-    
-    if (!rgba1 || !rgba2) return Infinity;
-    
-    const r1 = parseInt(rgba1[1]), g1 = parseInt(rgba1[2]), b1 = parseInt(rgba1[3]);
-    const r2 = parseInt(rgba2[1]), g2 = parseInt(rgba2[2]), b2 = parseInt(rgba2[3]);
-    
-    return Math.sqrt(Math.pow(r1 - r2, 2) + Math.pow(g1 - g2, 2) + Math.pow(b1 - b2, 2));
-  };
-
-  const removeEdgeBackground = useCallback((pixelData: string[][]): string[][] => {
-    const COLOR_THRESHOLD = 5;
-    const gridSize = 32;
-    
-    const edgeColorGroups = new Map<string, { count: number, colors: Set<string> }>();
-    
-    const addToGroup = (color: string) => {
-      if (color === "transparent") return;
-      
-      let foundGroup = false;
-      for (const [representative, group] of edgeColorGroups.entries()) {
-        if (colorDistance(color, representative) <= COLOR_THRESHOLD) {
-          group.count++;
-          group.colors.add(color);
-          foundGroup = true;
-          break;
-        }
-      }
-      
-      if (!foundGroup) {
-        edgeColorGroups.set(color, { count: 1, colors: new Set([color]) });
-      }
-    };
-    
-    for (let x = 0; x < gridSize; x++) {
-      addToGroup(pixelData[0][x]);
-      addToGroup(pixelData[gridSize-1][x]);
-    }
-    for (let y = 0; y < gridSize; y++) {
-      addToGroup(pixelData[y][0]);
-      addToGroup(pixelData[y][gridSize-1]);
-    }
-    
-    if (edgeColorGroups.size === 0) return pixelData;
-    
-    let bgColorGroup: Set<string> | null = null;
-    let maxCount = 0;
-    edgeColorGroups.forEach((group) => {
-      if (group.count > maxCount) {
-        maxCount = group.count;
-        bgColorGroup = group.colors;
-      }
-    });
-    
-    if (!bgColorGroup) return pixelData;
-    
-    const visited = Array(gridSize).fill(null).map(() => Array(gridSize).fill(false));
-    const queue: [number, number][] = [];
-    
-    const isSimilarToBackground = (color: string): boolean => {
-      if (color === "transparent") return false;
-      for (const bgColor of bgColorGroup!) {
-        if (colorDistance(color, bgColor) <= COLOR_THRESHOLD) {
-          return true;
-        }
-      }
-      return false;
-    };
-    
-    for (let x = 0; x < gridSize; x++) {
-      if (isSimilarToBackground(pixelData[0][x])) queue.push([0, x]);
-      if (isSimilarToBackground(pixelData[gridSize-1][x])) queue.push([gridSize-1, x]);
-    }
-    for (let y = 0; y < gridSize; y++) {
-      if (isSimilarToBackground(pixelData[y][0])) queue.push([y, 0]);
-      if (isSimilarToBackground(pixelData[y][gridSize-1])) queue.push([y, gridSize-1]);
-    }
-    
-    const result = pixelData.map(row => [...row]);
-    
-    while (queue.length > 0) {
-      const [y, x] = queue.shift()!;
-      
-      if (visited[y][x]) continue;
-      visited[y][x] = true;
-      
-      if (isSimilarToBackground(pixelData[y][x])) {
-        result[y][x] = "transparent";
-        
-        if (y > 0 && !visited[y-1][x]) queue.push([y-1, x]);
-        if (y < gridSize-1 && !visited[y+1][x]) queue.push([y+1, x]);
-        if (x > 0 && !visited[y][x-1]) queue.push([y, x-1]);
-        if (x < gridSize-1 && !visited[y][x+1]) queue.push([y, x+1]);
-      }
-    }
-    
-    return result;
+    pixelCanvasRef.current?.autoFit();
   }, []);
 
   const handleRemoveBackground = useCallback(() => {
-    setPixels(prevPixels => {
-      if (prevPixels.length === 0) return prevPixels;
-      
-      const cleanedPixels = removeEdgeBackground(prevPixels);
-      updatePreviews(cleanedPixels);
-      pushToHistory(cleanedPixels);
-      return cleanedPixels;
-    });
-  }, [removeEdgeBackground, pushToHistory]);
+    pixelCanvasRef.current?.removeBackground();
+  }, []);
+
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -423,6 +217,9 @@ const Index = () => {
   }, [undo, redo]);
 
   const handleDownload = () => {
+    const pixels = pixelCanvasRef.current?.getPixels();
+    if (!pixels || pixels.length === 0) return;
+
     // Create a temporary canvas for the final image
     const tempCanvas = document.createElement("canvas");
     tempCanvas.width = 512;
@@ -509,7 +306,7 @@ const Index = () => {
                   ) : (
                     <Sparkles className="w-4 h-4" />
                   )}
-                  {pixels.length > 0 || imageData !== null ? "Re-generate" : "Generate"}
+                  {pixelCanvasRef.current?.getPixels().length || imageData !== null ? "Re-generate" : "Generate"}
                 </Button>
               </div>
             </div>
@@ -545,19 +342,15 @@ const Index = () => {
               {/* Main Canvas - Centered */}
               <div className="flex justify-center">
                 <PixelCanvas
+                  ref={pixelCanvasRef}
                   imageData={imageData}
-                  onPixelChange={(newPixels) => updatePreviews(newPixels)}
                   selectedColor={selectedColor}
                   gridSize={32}
                   canvasRef={mainCanvasRef}
                   isEyedropperActive={isEyedropperActive}
                   onColorPick={handleColorPick}
-                  pixels={pixels}
-                  setPixels={setPixels}
-                  onEditComplete={handlePixelEditComplete}
+                  onPixelsUpdated={handlePixelsUpdated}
                   backgroundColor={backgroundColor}
-                  originalPixels={originalPixels}
-                  setOriginalPixels={setOriginalPixels}
                 />
               </div>
             
@@ -623,7 +416,7 @@ const Index = () => {
                 variant="outline"
                 size="sm"
                 onClick={autoFitEmoji}
-                disabled={pixels.length === 0}
+                disabled={!pixelCanvasRef.current?.getPixels().length}
                 title="Auto-fit (remove padding and maximize emoji)"
                 className="w-8 h-8 p-0"
               >
@@ -638,7 +431,7 @@ const Index = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleRemoveBackground}
-                disabled={pixels.length === 0}
+                disabled={!pixelCanvasRef.current?.getPixels().length}
                 title="Remove background from edges"
                 className="w-8 h-8 p-0"
               >
@@ -656,7 +449,7 @@ const Index = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => shiftPixels('up')}
-                    disabled={pixels.length === 0}
+                    disabled={!pixelCanvasRef.current?.getPixels().length}
                     title="Shift pixels up"
                     className="w-6 h-6 p-0"
                   >
@@ -670,7 +463,7 @@ const Index = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => shiftPixels('left')}
-                    disabled={pixels.length === 0}
+                    disabled={!pixelCanvasRef.current?.getPixels().length}
                     title="Shift pixels left"
                     className="w-6 h-6 p-0"
                   >
@@ -684,7 +477,7 @@ const Index = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => shiftPixels('down')}
-                    disabled={pixels.length === 0}
+                    disabled={!pixelCanvasRef.current?.getPixels().length}
                     title="Shift pixels down"
                     className="w-6 h-6 p-0"
                   >
@@ -698,7 +491,7 @@ const Index = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => shiftPixels('right')}
-                    disabled={pixels.length === 0}
+                    disabled={!pixelCanvasRef.current?.getPixels().length}
                     title="Shift pixels right"
                     className="w-6 h-6 p-0"
                   >
@@ -727,7 +520,8 @@ const Index = () => {
               onValueChange={(value) => {
                 const newBg = value as "transparent" | "white" | "black";
                 setBackgroundColor(newBg);
-                updatePreviews();
+                const currentPixels = pixelCanvasRef.current?.getPixels();
+                if (currentPixels) updatePreviews(currentPixels);
               }}
               className="flex gap-4"
             >
