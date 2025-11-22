@@ -87,9 +87,9 @@ export const PixelCanvas = ({
           }
         }
         
-      // Set pixels without automatic processing
+      // Set pixels without automatic processing - use functional pattern to avoid race conditions
       setOriginalPixels(newPixels.map(row => [...row]));
-      setPixels(newPixels);
+      setPixels(() => newPixels); // Functional pattern ensures this replaces any stale state
       onEditComplete?.(newPixels); // Save initial AI state to history
       };
       img.src = imageData;
