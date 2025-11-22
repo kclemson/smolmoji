@@ -458,19 +458,22 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
       );
     }
 
-    // Draw selection overlay for magic wand
+    // Draw selection overlay for magic wand (marching ants style)
     if (selectedPixels.size > 0) {
       selectedPixels.forEach(key => {
         const [x, y] = key.split(',').map(Number);
+        const px = x * pixelSize;
+        const py = y * pixelSize;
         
-        // Semi-transparent blue fill
-        ctx.fillStyle = 'rgba(59, 130, 246, 0.35)';
-        ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+        // Draw black outer stroke (2px)
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(px, py, pixelSize, pixelSize);
         
-        // Border around selected pixel
-        ctx.strokeStyle = 'rgba(59, 130, 246, 0.8)';
+        // Draw white inner stroke (1px, inset by 1px)
+        ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 1;
-        ctx.strokeRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+        ctx.strokeRect(px + 1, py + 1, pixelSize - 2, pixelSize - 2);
       });
     }
   }, [pixels, gridSize, pixelSize, selectionStart, selectionEnd, backgroundColor, isRightClickDrag, selectedPixels]);
