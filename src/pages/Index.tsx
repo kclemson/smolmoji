@@ -598,7 +598,7 @@ const Index = () => {
                 }
               }}
               rows={2}
-              className="w-full text-xs resize-none pr-6"
+              className="w-full text-xs resize-none pr-2"
             />
             
             {/* Generate button - bottom right */}
