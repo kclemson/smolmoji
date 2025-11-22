@@ -75,6 +75,17 @@ const Index = () => {
         body: { prompt },
       });
 
+      // Check for errors in the response data (edge function errors)
+      if (data?.error) {
+        // Check if it's a content blocking error
+        if (data.error.includes("Content blocked")) {
+          setErrorMessage("hrm, the model didn't like that - it does that sometimes. try something else.");
+        } else {
+          setErrorMessage("something went wrong. try again?");
+        }
+        return;
+      }
+
       if (error) throw error;
 
       if (data.imageUrl) {
@@ -82,13 +93,7 @@ const Index = () => {
       }
     } catch (error: any) {
       console.error("Generation error:", error);
-      
-      // Check if it's a content blocking error
-      if (error.message?.includes("Content blocked") || error.toString().includes("Content blocked")) {
-        setErrorMessage("hrm, the model didn't like that - it does that sometimes. try something else.");
-      } else {
-        setErrorMessage("something went wrong. try again?");
-      }
+      setErrorMessage("something went wrong. try again?");
     } finally {
       setIsGenerating(false);
     }
