@@ -609,6 +609,11 @@ const Index = () => {
                 </Button>
               </div>
               
+              {/* Instructions - positioned right above grid */}
+              <p className="text-xs text-muted-foreground/60 italic text-center mb-1 select-none">
+                right click to revert - click and drag to create a rectangle
+              </p>
+              
               {/* Main Canvas - Centered */}
               <div className="flex justify-center">
                 <PixelCanvas
@@ -626,11 +631,6 @@ const Index = () => {
                   selectedPixels={selectedPixels}
                 />
               </div>
-
-              {/* Instructions */}
-              <p className="text-xs text-muted-foreground/60 italic text-center mt-2">
-                right click to revert - click and drag to create a rectangle
-              </p>
 
         {/* Color Palette */}
         <div className={cn("w-[320px] mx-auto", isVirginState && "opacity-50 pointer-events-none")}>
