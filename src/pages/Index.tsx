@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { PixelCanvas, PixelCanvasRef } from "@/components/PixelCanvas";
 import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors } from "lucide-react";
+import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors, Wand2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Index = () => {
@@ -24,6 +24,8 @@ const Index = () => {
   const [backgroundColor, setBackgroundColor] = useLocalStorage<"transparent" | "white" | "black">("emoji-backgroundColor", "transparent");
   const [backgroundRemoved, setBackgroundRemoved] = useLocalStorage<boolean>("emoji-backgroundRemoved", false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isMagicWandActive, setIsMagicWandActive] = useState(false);
+  const [selectedPixels, setSelectedPixels] = useState<Set<string>>(new Set());
   
   // Refs for canvases
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -57,6 +59,35 @@ const Index = () => {
       }
     }
   }, []);
+
+  const floodFillSelect = (
+    pixels: string[][],
+    startX: number,
+    startY: number
+  ): Set<string> => {
+    const targetColor = pixels[startY]?.[startX] || 'transparent';
+    const selected = new Set<string>();
+    const queue: Array<{x: number, y: number}> = [{x: startX, y: startY}];
+    const visited = new Set<string>();
+    
+    while (queue.length > 0) {
+      const {x, y} = queue.shift()!;
+      const key = `${x},${y}`;
+      
+      if (visited.has(key) || x < 0 || x >= 32 || y < 0 || y >= 32) continue;
+      visited.add(key);
+      
+      const pixelColor = pixels[y]?.[x] || 'transparent';
+      if (pixelColor !== targetColor) continue;
+      
+      selected.add(key);
+      
+      // Add 4-directional neighbors
+      queue.push({x: x - 1, y}, {x: x + 1, y}, {x, y: y - 1}, {x, y: y + 1});
+    }
+    
+    return selected;
+  };
 
   const generateFilename = (prompt: string): string => {
     if (!prompt || !prompt.trim()) {
@@ -209,6 +240,8 @@ const Index = () => {
       setBackgroundColor("transparent");
       setBackgroundRemoved(false);
       setIsEyedropperActive(false);
+      setIsMagicWandActive(false);
+      setSelectedPixels(new Set());
       setHistoryStack([]);
       setHistoryIndex(-1);
       historyIndexRef.current = -1;
@@ -305,6 +338,35 @@ const Index = () => {
     }
   }, []);
 
+  const handleMagicWandClick = useCallback((x: number, y: number) => {
+    if (!pixelCanvasRef.current) return;
+    
+    const pixels = pixelCanvasRef.current.getPixels();
+    const selection = floodFillSelect(pixels, x, y);
+    setSelectedPixels(selection);
+    
+    // Automatically deactivate the magic wand after selection is made
+    setIsMagicWandActive(false);
+  }, []);
+
+  const applyActionToSelection = useCallback((action: 'fill' | 'erase') => {
+    if (!pixelCanvasRef.current || selectedPixels.size === 0) return;
+    
+    const pixels = pixelCanvasRef.current.getPixels();
+    const newPixels = pixels.map((row, y) =>
+      row.map((color, x) => {
+        const key = `${x},${y}`;
+        if (selectedPixels.has(key)) {
+          return action === 'erase' ? 'transparent' : selectedColor;
+        }
+        return color;
+      })
+    );
+    
+    pixelCanvasRef.current.setPixels(newPixels);
+    setSelectedPixels(new Set()); // Clear selection after action
+  }, [selectedPixels, selectedColor]);
+
   const handleEyedropperToggle = () => {
     const newEyedropperState = !isEyedropperActive;
     setIsEyedropperActive(newEyedropperState);
@@ -313,6 +375,9 @@ const Index = () => {
     if (newEyedropperState && selectedColor === "transparent") {
       setSelectedColor("#000000");
     }
+    
+    setIsMagicWandActive(false); // Deactivate magic wand
+    setSelectedPixels(new Set()); // Clear selection
   };
 
   const handleColorPick = (color: string) => {
@@ -538,6 +603,9 @@ const Index = () => {
                   onPixelsUpdated={handlePixelsUpdated}
                   backgroundColor={backgroundColor}
                   onReady={handleCanvasReady}
+                  isMagicWandActive={isMagicWandActive}
+                  onMagicWandClick={handleMagicWandClick}
+                  selectedPixels={selectedPixels}
                 />
               </div>
 
@@ -550,15 +618,27 @@ const Index = () => {
         <div className={cn("w-[320px] mx-auto", isVirginState && "opacity-50 pointer-events-none")}>
           <ColorPicker
               selectedColor={selectedColor}
-              onColorChange={setSelectedColor}
+              onColorChange={(color) => {
+                if (selectedPixels.size > 0) {
+                  setSelectedColor(color); // Update color first
+                  applyActionToSelection('fill'); // Apply to selection
+                } else {
+                  setSelectedColor(color); // Normal color selection
+                }
+              }}
               customColors={customColors}
               onCustomColorsChange={setCustomColors}
               isEyedropperActive={isEyedropperActive}
               onEyedropperToggle={handleEyedropperToggle}
               isEraserActive={selectedColor === "transparent"}
               onEraserToggle={() => {
-                setSelectedColor("transparent");
-                setIsEyedropperActive(false);
+                if (selectedPixels.size > 0) {
+                  applyActionToSelection('erase'); // Apply erase to selection
+                } else {
+                  setSelectedColor("transparent"); // Normal eraser mode
+                  setIsEyedropperActive(false);
+                  setIsMagicWandActive(false);
+                }
               }}
             />
           </div>
@@ -594,9 +674,30 @@ const Index = () => {
                 </Button>
               </div>
 
-              {/* Center Section: Scissors/Autofit - with background controls below scissors */}
+              {/* Center Section: Magic Wand, Scissors/Autofit */}
               <div className="flex flex-col gap-2 items-center">
                 <div className="flex gap-2 items-center">
+                  {/* Magic Wand Button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newState = !isMagicWandActive;
+                      setIsMagicWandActive(newState);
+                      if (!newState) {
+                        setSelectedPixels(new Set()); // Clear selection when manually deactivating
+                      }
+                    }}
+                    disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                    title="Magic wand: Select contiguous pixels"
+                    className={cn(
+                      "w-10 h-10 p-0",
+                      isMagicWandActive && "ring-2 ring-primary ring-offset-1 ring-offset-background"
+                    )}
+                  >
+                    <Wand2 className="h-5 w-5" />
+                  </Button>
+
                   {/* Remove Background Button */}
                   <Button
                     variant="outline"
