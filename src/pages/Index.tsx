@@ -878,7 +878,7 @@ const Index = () => {
               </div>
 
               {/* Right Section: Collapsible D-Pad */}
-              <div className="relative">
+              <div className="relative flex justify-end">
                 <Collapsible open={isDpadExpanded} onOpenChange={setIsDpadExpanded}>
                   <CollapsibleTrigger asChild>
                     <Button
@@ -890,7 +890,7 @@ const Index = () => {
                       <Move className="h-5 w-5" />
                     </Button>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="absolute right-0 mt-1 bg-background border rounded-md p-1 shadow-lg z-10">
+                  <CollapsibleContent className="absolute right-0 top-full mt-1 bg-background border rounded-md p-1 shadow-lg z-10">
                     <div className="grid grid-cols-3 grid-rows-3 gap-0">
                       <div className="col-start-2 row-start-1">
                         <Button
