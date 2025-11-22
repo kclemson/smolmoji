@@ -73,14 +73,7 @@ AVOID:
 - Realistic rendering with excessive texture
 - Random color variations
 
-HOW TO INTERPRET PROMPTS:
-- If it's letters/text (like "KC"): create a stylized text emoji with those letters
-- If it's vague (like "lemson"): be creative and make your best interpretation
-- If it's abstract: create a symbolic or geometric representation
-- If it's unclear: default to creating something fun and emoji-like
-
 EXAMPLES:
-- "KC": Bold letters K and C in a fun emoji style
 - Smiley: circle + dots for eyes + curve (2-3 colors + shading)
 - Fire: flame shape with gradient (3-5 colors), clean edges
 - Heart: solid shape with highlight (2-3 colors)
