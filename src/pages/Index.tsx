@@ -125,6 +125,10 @@ const Index = () => {
   }, []);
 
   const handleEyedropperToggle = () => {
+    // If turning on eyedropper and eraser is active, switch to a default color
+    if (!isEyedropperActive && selectedColor === "transparent") {
+      setSelectedColor("#000000"); // Default to black
+    }
     setIsEyedropperActive(!isEyedropperActive);
   };
 
@@ -374,7 +378,10 @@ const Index = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setSelectedColor("transparent")}
+                onClick={() => {
+                  setSelectedColor("transparent");
+                  setIsEyedropperActive(false);
+                }}
                 className={cn(
                   "w-8 h-8 p-0",
                   selectedColor === "transparent" && "ring-2 ring-primary"
