@@ -654,7 +654,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
     */
     <div 
       className={cn(
-        "relative px-4 py-2 md:px-12 md:py-4 lg:px-20 lg:py-6 xl:px-32 xl:py-8",
+        "relative px-4 py-0 sm:py-2 md:px-12 md:py-4 lg:px-20 lg:py-6 xl:px-32 xl:py-8",
         isEyedropperActive ? "cursor-crosshair" : "cursor-cell"
       )}
       onMouseDown={handleMouseDown}
