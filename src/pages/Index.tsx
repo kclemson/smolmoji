@@ -70,33 +70,19 @@ const Index = () => {
     }
 
     setIsGenerating(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-emoji", {
-        body: { prompt },
-      });
+    const { data } = await supabase.functions.invoke("generate-emoji", {
+      body: { prompt },
+    });
 
-      // Check for errors in the response data (edge function errors)
-      if (data?.error) {
-        // Check if it's a content blocking error
-        if (data.error.includes("Content blocked")) {
-          setErrorMessage("hrm, the model didn't like that - it does that sometimes. try something else.");
-        } else {
-          setErrorMessage("something went wrong. try again?");
-        }
-        return;
-      }
-
-      if (error) throw error;
-
-      if (data.imageUrl) {
-        setImageData(data.imageUrl);
-      }
-    } catch (error: any) {
-      console.error("Generation error:", error);
-      setErrorMessage("something went wrong. try again?");
-    } finally {
-      setIsGenerating(false);
+    // If we didn't get an image, something went wrong
+    if (!data?.imageUrl) {
+      setErrorMessage("hrm, the model didn't like that - it does that sometimes. try something else.");
+    } else {
+      // We got an image, load it
+      setImageData(data.imageUrl);
     }
+    
+    setIsGenerating(false);
   };
 
 
