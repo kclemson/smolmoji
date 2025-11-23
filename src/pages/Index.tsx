@@ -1350,10 +1350,6 @@ const Index = () => {
                     <div>Shift pixels</div>
                     <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">B</kbd></div>
                     <div>Remove background</div>
-                    
-                    <div className="col-span-2 font-medium text-foreground mt-2">Input</div>
-                    <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Enter</kbd></div>
-                    <div>Generate emoji</div>
                   </div>
                 </div>
               </div>
