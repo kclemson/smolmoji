@@ -26,7 +26,7 @@ const Index = () => {
   const [customColors, setCustomColors] = useLocalStorage<string[]>("emoji-customColors", DEFAULT_CUSTOM_COLORS);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEyedropperActive, setIsEyedropperActive] = useState(false);
-  const [backgroundColor, setBackgroundColor] = useLocalStorage<"transparent" | "white" | "black">("emoji-backgroundColor", "transparent");
+  const [backgroundColor, setBackgroundColor] = useLocalStorage<"transparent" | "white" | "black" | string>("emoji-backgroundColor", "transparent");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isMagicWandActive, setIsMagicWandActive] = useState(false);
   const [selectedPixels, setSelectedPixels] = useState<Set<string>>(new Set());
@@ -45,6 +45,7 @@ const Index = () => {
   const preview32Ref = useRef<HTMLCanvasElement>(null);
   const pixelCanvasRef = useRef<PixelCanvasRef>(null);
   const colorPaletteInputRef = useRef<HTMLInputElement>(null);
+  const customBackgroundInputRef = useRef<HTMLInputElement>(null);
   
   // Undo/Redo state
   const [historyStack, setHistoryStack] = useState<string[][][]>([]);
@@ -342,7 +343,7 @@ const Index = () => {
 
 
   // Helper function to render preview canvas with explicit parameters
-  const renderPreview = (pixels: string[][], bg: "transparent" | "white" | "black") => {
+  const renderPreview = (pixels: string[][], bg: "transparent" | "white" | "black" | string) => {
     const preview32 = preview32Ref.current;
     if (!preview32) return;
 
@@ -358,6 +359,10 @@ const Index = () => {
       ctx.fillRect(0, 0, 32, 32);
     } else if (bg === "black") {
       ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, 32, 32);
+    } else if (bg !== "transparent") {
+      // Custom color (any hex value)
+      ctx.fillStyle = bg;
       ctx.fillRect(0, 0, 32, 32);
     }
     
@@ -683,6 +688,10 @@ const Index = () => {
       ctx.fillRect(0, 0, 512, 512);
     } else if (backgroundColor === "black") {
       ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, 512, 512);
+    } else if (backgroundColor !== "transparent") {
+      // Custom color
+      ctx.fillStyle = backgroundColor;
       ctx.fillRect(0, 0, 512, 512);
     }
 
@@ -1173,12 +1182,21 @@ const Index = () => {
                         Background:
                       </Label>
                       <RadioGroup 
-                        value={backgroundColor} 
+                        value={
+                          backgroundColor === "transparent" || backgroundColor === "white" || backgroundColor === "black"
+                            ? backgroundColor
+                            : "custom"
+                        } 
                         onValueChange={(value) => {
-                          const newBg = value as "transparent" | "white" | "black";
-                          setBackgroundColor(newBg);
-                          const pixels = pixelCanvasRef.current?.getPixels() || [];
-                          renderPreview(pixels, newBg);
+                          if (value === "custom") {
+                            // Open color picker
+                            setTimeout(() => customBackgroundInputRef.current?.click(), 0);
+                          } else {
+                            const newBg = value as "transparent" | "white" | "black";
+                            setBackgroundColor(newBg);
+                            const pixels = pixelCanvasRef.current?.getPixels() || [];
+                            renderPreview(pixels, newBg);
+                          }
                         }}
                         className="flex flex-col gap-1.5 ml-4"
                       >
@@ -1199,6 +1217,33 @@ const Index = () => {
                           <Label htmlFor="bg-black" className="text-xs cursor-pointer">
                             Black
                           </Label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem value="custom" id="bg-custom" />
+                          <Label htmlFor="bg-custom" className="text-xs cursor-pointer">
+                            Custom Color
+                          </Label>
+                          {backgroundColor !== "transparent" && backgroundColor !== "white" && backgroundColor !== "black" && (
+                            <div className="relative ml-2">
+                              <input
+                                ref={customBackgroundInputRef}
+                                type="color"
+                                defaultValue={backgroundColor.startsWith('#') ? backgroundColor : '#888888'}
+                                onBlur={(e) => {
+                                  const newColor = e.target.value.toUpperCase();
+                                  setBackgroundColor(newColor);
+                                  const pixels = pixelCanvasRef.current?.getPixels() || [];
+                                  renderPreview(pixels, newColor);
+                                }}
+                                className="absolute inset-0 w-8 h-8 opacity-0 cursor-pointer z-10"
+                              />
+                              <button
+                                className="w-8 h-8 rounded border border-border flex items-center justify-center pointer-events-none"
+                                style={{ backgroundColor: backgroundColor }}
+                              >
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </RadioGroup>
                     </div>
