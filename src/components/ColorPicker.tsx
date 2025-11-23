@@ -10,16 +10,19 @@ interface ColorPickerProps {
   onColorChange: (color: string) => void;
   customColors: string[];
   onCustomColorsChange: (colors: string[] | ((prev: string[]) => string[])) => void;
+  colorPaletteInputRef?: React.RefObject<HTMLInputElement>;
 }
 
 export const ColorPicker = ({ 
   selectedColor, 
   onColorChange,
   customColors,
-  onCustomColorsChange
+  onCustomColorsChange,
+  colorPaletteInputRef
 }: ColorPickerProps) => {
   const [customColor, setCustomColor] = useState("#000000");
-  const colorInputRef = useRef<HTMLInputElement>(null);
+  const localInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = colorPaletteInputRef || localInputRef;
 
   return (
     <div className="flex flex-col gap-2">
@@ -31,7 +34,7 @@ export const ColorPicker = ({
         {/* Color Picker (Palette) */}
         <div className="relative">
           <input
-            ref={colorInputRef}
+            ref={inputRef}
             type="color"
             value={customColor}
             onChange={(e) => {

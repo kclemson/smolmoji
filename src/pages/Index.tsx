@@ -44,6 +44,7 @@ const Index = () => {
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
   const preview32Ref = useRef<HTMLCanvasElement>(null);
   const pixelCanvasRef = useRef<PixelCanvasRef>(null);
+  const colorPaletteInputRef = useRef<HTMLInputElement>(null);
   
   // Undo/Redo state
   const [historyStack, setHistoryStack] = useState<string[][][]>([]);
@@ -515,30 +516,149 @@ const Index = () => {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      
       const mod = navigator.platform.includes('Mac') ? e.metaKey : e.ctrlKey;
       
-      // Undo/Redo shortcuts
+      // === UNDO/REDO ===
       if (mod && e.key === 'z') {
         e.preventDefault();
         undo();
+        return;
       }
       if (mod && e.key === 'y') {
         e.preventDefault();
         redo();
+        return;
       }
       
-      // Delete selected pixels
+      // === SELECTION MANAGEMENT ===
+      if (e.key === 'Escape') {
+        setSelectedPixels(new Set());
+        setIsMagicWandActive(false);
+        return;
+      }
+      
+      if (mod && e.key === 'a') {
+        e.preventDefault();
+        // Select all pixels (32x32 grid)
+        const allPixels = new Set<string>();
+        for (let y = 0; y < 32; y++) {
+          for (let x = 0; x < 32; x++) {
+            allPixels.add(`${x},${y}`);
+          }
+        }
+        setSelectedPixels(allPixels);
+        setIsMagicWandActive(true);
+        return;
+      }
+      
+      if (mod && e.key === 'd') {
+        e.preventDefault();
+        setSelectedPixels(new Set());
+        setIsMagicWandActive(false);
+        return;
+      }
+      
+      // === DELETE SELECTED PIXELS ===
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedPixels.size > 0) {
         e.preventDefault();
         applyActionToSelection('erase');
+        return;
+      }
+      
+      // Prevent shortcuts when typing in textarea
+      if (e.target instanceof HTMLTextAreaElement) return;
+      
+      // === TOOL SELECTION ===
+      if (e.key === 'p') {
+        setDrawingMode('pencil');
+        setIsMagicWandActive(false);
+        setIsEyedropperActive(false);
+        if (selectedColor === 'transparent') {
+          setSelectedColor('#000000');
+        }
+        return;
+      }
+      
+      if (e.key === 'e') {
+        setDrawingMode('eraser');
+        setSelectedColor('transparent');
+        setIsMagicWandActive(false);
+        setIsEyedropperActive(false);
+        return;
+      }
+      
+      if (e.key === 'w') {
+        setDrawingMode('wand');
+        setIsMagicWandActive(true);
+        setIsEyedropperActive(false);
+        return;
+      }
+      
+      if (e.key === 'i') {
+        const newEyedropperState = !isEyedropperActive;
+        setIsEyedropperActive(newEyedropperState);
+        setIsMagicWandActive(false);
+        if (newEyedropperState && selectedColor === 'transparent') {
+          setSelectedColor('#000000');
+        }
+        return;
+      }
+      
+      if (e.key === 'c') {
+        colorPaletteInputRef.current?.click();
+        return;
+      }
+      
+      // === COLOR SELECTION (1-5) ===
+      if (['1', '2', '3', '4', '5'].includes(e.key)) {
+        const index = parseInt(e.key) - 1;
+        const color = customColors[index];
+        if (color) {
+          setSelectedColor(color);
+          // Switch to pencil if coming from eraser
+          if (selectedColor === 'transparent') {
+            setDrawingMode('pencil');
+          }
+        }
+        return;
+      }
+      
+      // === TRANSFORM/EDIT (only when not in virgin state) ===
+      if (!isVirginState) {
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          shiftPixels('up');
+          return;
+        }
+        
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          shiftPixels('down');
+          return;
+        }
+        
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          shiftPixels('left');
+          return;
+        }
+        
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          shiftPixels('right');
+          return;
+        }
+        
+        if (e.key === 'b') {
+          handleRemoveBackground();
+          return;
+        }
       }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo, selectedPixels, applyActionToSelection]);
+  }, [undo, redo, selectedPixels, applyActionToSelection, isVirginState, customColors, selectedColor, isEyedropperActive, isMagicWandActive, shiftPixels, handleRemoveBackground]);
 
   const handleDownload = () => {
     const pixels = pixelCanvasRef.current?.getPixels();
@@ -697,6 +817,7 @@ const Index = () => {
               {/* Color Picker (Palette) */}
               <div className="relative">
                 <input
+                  ref={colorPaletteInputRef}
                   type="color"
                   value={selectedColor === "transparent" ? "#000000" : selectedColor}
                   onChange={(e) => {
