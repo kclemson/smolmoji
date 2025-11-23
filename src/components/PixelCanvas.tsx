@@ -4,9 +4,9 @@ import { cn } from "@/lib/utils";
 export interface PixelCanvasRef {
   getPixels: () => string[][];
   setPixels: (newPixels: string[][]) => void;
-  shift: (direction: 'up' | 'down' | 'left' | 'right') => void;
-  autoFit: () => void;
-  removeBackground: (tolerance?: number) => void;
+  shift: (direction: 'up' | 'down' | 'left' | 'right') => string[][];
+  autoFit: () => string[][];
+  removeBackground: (tolerance?: number) => string[][];
   animateDissolve: () => Promise<void>;
   loadImage: (imageUrl: string) => void;
 }
@@ -213,68 +213,68 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
       setPixels(newPixels);
     },
     shift: (direction: 'up' | 'down' | 'left' | 'right') => {
-      setPixels(prevPixels => {
-        if (prevPixels.length === 0) return prevPixels;
-        
-        const newPixels: string[][] = Array(32).fill(null).map(() => Array(32).fill('transparent'));
-        
-        prevPixels.forEach((row, y) => {
-          row.forEach((color, x) => {
-            if (color === 'transparent') return;
-            
-            let newX = x;
-            let newY = y;
-            
-            switch (direction) {
-              case 'up':
-                newY = y - 1;
-                break;
-              case 'down':
-                newY = y + 1;
-                break;
-              case 'left':
-                newX = x - 1;
-                break;
-              case 'right':
-                newX = x + 1;
-                break;
-            }
-            
-            if (newX >= 0 && newX < 32 && newY >= 0 && newY < 32) {
-              newPixels[newY][newX] = color;
-            }
-          });
+      const currentPixels = pixels;
+      if (currentPixels.length === 0) return currentPixels;
+      
+      const newPixels: string[][] = Array(32).fill(null).map(() => Array(32).fill('transparent'));
+      
+      currentPixels.forEach((row, y) => {
+        row.forEach((color, x) => {
+          if (color === 'transparent') return;
+          
+          let newX = x;
+          let newY = y;
+          
+          switch (direction) {
+            case 'up':
+              newY = y - 1;
+              break;
+            case 'down':
+              newY = y + 1;
+              break;
+            case 'left':
+              newX = x - 1;
+              break;
+            case 'right':
+              newX = x + 1;
+              break;
+          }
+          
+          if (newX >= 0 && newX < 32 && newY >= 0 && newY < 32) {
+            newPixels[newY][newX] = color;
+          }
         });
-        
-        return newPixels;
       });
+      
+      setPixels(newPixels);
+      return newPixels;
     },
     autoFit: () => {
-      setPixels(prevPixels => {
-        if (prevPixels.length === 0) return prevPixels;
-        
-        const bounds = findBoundingBox(prevPixels);
-        if (!bounds) return prevPixels;
-        
-        const contentWidth = bounds.maxX - bounds.minX + 1;
-        const contentHeight = bounds.maxY - bounds.minY + 1;
-        
-        const maxSize = 30;
-        const scale = Math.min(maxSize / contentWidth, maxSize / contentHeight);
-        const targetWidth = Math.round(contentWidth * scale);
-        const targetHeight = Math.round(contentHeight * scale);
-        
-        const newPixels = scaleContent(prevPixels, bounds, targetWidth, targetHeight);
-        return newPixels;
-      });
+      const currentPixels = pixels;
+      if (currentPixels.length === 0) return currentPixels;
+      
+      const bounds = findBoundingBox(currentPixels);
+      if (!bounds) return currentPixels;
+      
+      const contentWidth = bounds.maxX - bounds.minX + 1;
+      const contentHeight = bounds.maxY - bounds.minY + 1;
+      
+      const maxSize = 30;
+      const scale = Math.min(maxSize / contentWidth, maxSize / contentHeight);
+      const targetWidth = Math.round(contentWidth * scale);
+      const targetHeight = Math.round(contentHeight * scale);
+      
+      const newPixels = scaleContent(currentPixels, bounds, targetWidth, targetHeight);
+      setPixels(newPixels);
+      return newPixels;
     },
     removeBackground: (tolerance: number = 20) => {
-      setPixels(prevPixels => {
-        if (prevPixels.length === 0) return prevPixels;
-        
-        const cleanedPixels = removeEdgeBackground(prevPixels, tolerance);
-        return cleanedPixels;
-      });
+      const currentPixels = pixels;
+      if (currentPixels.length === 0) return currentPixels;
+      
+      const cleanedPixels = removeEdgeBackground(currentPixels, tolerance);
+      setPixels(cleanedPixels);
+      return cleanedPixels;
     },
     animateDissolve: () => {
       return new Promise<void>((resolve) => {

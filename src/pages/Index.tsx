@@ -572,24 +572,21 @@ const Index = () => {
 
   // Simplified tool functions - delegate to PixelCanvas
   const shiftPixels = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
-    pixelCanvasRef.current?.shift(direction);
-    const updatedPixels = pixelCanvasRef.current?.getPixels();
+    const updatedPixels = pixelCanvasRef.current?.shift(direction);
     if (updatedPixels) {
       handlePixelsUpdated(updatedPixels, false);
     }
   }, [handlePixelsUpdated]);
 
   const autoFitEmoji = useCallback(() => {
-    pixelCanvasRef.current?.autoFit();
-    const updatedPixels = pixelCanvasRef.current?.getPixels();
+    const updatedPixels = pixelCanvasRef.current?.autoFit();
     if (updatedPixels) {
       handlePixelsUpdated(updatedPixels, false);
     }
   }, [handlePixelsUpdated]);
 
   const handleRemoveBackground = useCallback(() => {
-    pixelCanvasRef.current?.removeBackground(backgroundRemovalTolerance);
-    const updatedPixels = pixelCanvasRef.current?.getPixels();
+    const updatedPixels = pixelCanvasRef.current?.removeBackground(backgroundRemovalTolerance);
     if (updatedPixels) {
       handlePixelsUpdated(updatedPixels, false);
     }
