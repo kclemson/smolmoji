@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 
 import { Slider } from "@/components/ui/slider";
 
@@ -62,7 +63,7 @@ const Index = () => {
 
   // Load persisted pixels when canvas is ready (ref callback pattern - no useEffect!)
   const handleCanvasReady = useCallback(() => {
-    console.log("🔍 handleCanvasReady called, hasRestoredFromStorage:", hasRestoredFromStorage.current, "pixelCanvasRef:", !!pixelCanvasRef.current);
+    logger.state("handleCanvasReady called", { hasRestoredFromStorage: hasRestoredFromStorage.current, pixelCanvasRef: !!pixelCanvasRef.current });
     if (!hasRestoredFromStorage.current && pixelCanvasRef.current) {
       try {
         const savedPixels = localStorage.getItem("emoji-pixels");
@@ -87,10 +88,10 @@ const Index = () => {
                 lastKnownPixelsRef.current = structuredClone(pixels);
                 historyIndexRef.current = index;
                 shouldInitializeHistory = false;
-                console.log(`Restored persisted history (${stack.length} entries, index ${index})`);
+                logger.history("restored persisted history", { entries: stack.length, index });
               }
             } catch (e) {
-              console.warn("Invalid persisted history, reinitializing", e);
+              logger.warn("invalid persisted history, reinitializing", e);
             }
           }
           
@@ -101,12 +102,12 @@ const Index = () => {
             setHistoryIndex(0);
             historyIndexRef.current = 0;
             lastKnownPixelsRef.current = structuredClone(pixels);
-            console.log("Initialized fresh history from loaded pixels");
+            logger.history("initialized fresh history from loaded pixels", { pixelsSize: `${pixels.length}x${pixels[0]?.length || 0}` });
           }
         }
         hasRestoredFromStorage.current = true;
       } catch (error) {
-        console.error("Error loading pixels from localStorage:", error);
+        logger.error("error loading pixels from localStorage", error);
         hasRestoredFromStorage.current = true;
       }
     }
@@ -345,7 +346,7 @@ const Index = () => {
         localStorage.removeItem("emoji-history-stack");
         localStorage.removeItem("emoji-history-index");
       } catch (error) {
-        console.error("Error clearing localStorage:", error);
+        logger.error("error clearing localStorage", error);
       }
       
       // Reset the loaded flag so new emoji can be persisted
@@ -429,7 +430,7 @@ const Index = () => {
     setHistoryIndex(newIndex);
     historyIndexRef.current = newIndex;
     
-    console.log('📝 History updated:', {
+    logger.history("history updated", {
       prevIndex: currentIndex,
       newIndex,
       stackLength: Math.min(currentIndex + 2, MAX_HISTORY),
@@ -438,7 +439,7 @@ const Index = () => {
   }, []);
 
   const handlePixelsUpdated = useCallback((newPixels: string[][], isInitialImageFromAI: boolean) => {
-    console.log('🔄 handlePixelsUpdated called:', { 
+    logger.state("handlePixelsUpdated called", { 
       isInitialImageFromAI, 
       pixelsSize: `${newPixels.length}x${newPixels[0]?.length}`,
       hasLastPixels: !!lastKnownPixelsRef.current 
@@ -450,7 +451,7 @@ const Index = () => {
       setHistoryIndex(0);
       historyIndexRef.current = 0;
       lastKnownPixelsRef.current = structuredClone(newPixels);
-      console.log('📥 Initial load processed, history initialized');
+      logger.history("initial load processed, history initialized", { pixelsSize: `${newPixels.length}x${newPixels[0]?.length}` });
     } else {
       // Compare against last known pixels (not getPixels which may be stale)
       const lastPixels = lastKnownPixelsRef.current;
@@ -460,8 +461,8 @@ const Index = () => {
         row.some((color, x) => color !== newPixels[y]?.[x])
       );
       
-      console.log('🔍 Change detection:', { 
-        hasChanges, 
+      logger.state("change detection", { 
+        hasChanges,
         lastPixelsSize: lastPixels ? `${lastPixels.length}x${lastPixels[0]?.length}` : 'none',
         newPixelsSize: `${newPixels.length}x${newPixels[0]?.length}`
       });
@@ -499,6 +500,8 @@ const Index = () => {
 
   const applyActionToSelection = useCallback((action: 'fill' | 'erase') => {
     if (!pixelCanvasRef.current || selectedPixels.size === 0) return;
+    
+    logger.tool("magic-wand action", { action, selectedPixelsCount: selectedPixels.size });
     
     const pixels = pixelCanvasRef.current.getPixels();
     const newPixels = pixels.map((row, y) =>
@@ -574,6 +577,7 @@ const Index = () => {
 
   // Simplified tool functions - delegate to PixelCanvas
   const shiftPixels = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
+    logger.tool("shift transform", { direction });
     const updatedPixels = pixelCanvasRef.current?.shift(direction);
     if (updatedPixels) {
       handlePixelsUpdated(updatedPixels, false);
@@ -581,6 +585,7 @@ const Index = () => {
   }, [handlePixelsUpdated]);
 
   const autoFitEmoji = useCallback(() => {
+    logger.tool("autofit transform", {});
     const updatedPixels = pixelCanvasRef.current?.autoFit();
     if (updatedPixels) {
       handlePixelsUpdated(updatedPixels, false);
@@ -588,6 +593,7 @@ const Index = () => {
   }, [handlePixelsUpdated]);
 
   const handleRemoveBackground = useCallback(() => {
+    logger.tool("remove background", { tolerance: backgroundRemovalTolerance });
     const updatedPixels = pixelCanvasRef.current?.removeBackground(backgroundRemovalTolerance);
     if (updatedPixels) {
       handlePixelsUpdated(updatedPixels, false);
