@@ -515,11 +515,14 @@ const Index = () => {
 
   // Keyboard shortcuts
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const mod = navigator.platform.includes('Mac') ? e.metaKey : e.ctrlKey;
-      
-      // === UNDO/REDO ===
-      if (mod && e.key === 'z') {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    // Don't capture shortcuts when typing in textarea
+    if (e.target instanceof HTMLTextAreaElement) return;
+    
+    const mod = navigator.platform.includes('Mac') ? e.metaKey : e.ctrlKey;
+    
+    // === UNDO/REDO ===
+    if (mod && e.key === 'z') {
         e.preventDefault();
         undo();
         return;
@@ -562,13 +565,10 @@ const Index = () => {
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedPixels.size > 0) {
         e.preventDefault();
         applyActionToSelection('erase');
-        return;
-      }
-      
-      // Prevent shortcuts when typing in textarea
-      if (e.target instanceof HTMLTextAreaElement) return;
-      
-      // === TOOL SELECTION ===
+      return;
+    }
+    
+    // === TOOL SELECTION ===
       if (e.key === 'p') {
         setDrawingMode('pencil');
         setIsMagicWandActive(false);
