@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { PixelCanvas, PixelCanvasRef } from "@/components/PixelCanvas";
 import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors, Wand2, Settings, Pencil, Move, Palette } from "lucide-react";
+import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors, Wand2, Settings, Pencil, Move, Palette, Image } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -189,7 +189,7 @@ const Index = () => {
 
   const extractColorsFromImage = useCallback((imageUrl: string): Promise<string[]> => {
     return new Promise((resolve) => {
-      const img = new Image();
+      const img = document.createElement('img');
       img.crossOrigin = "anonymous";
       
       img.onload = () => {
@@ -263,7 +263,7 @@ const Index = () => {
       img.onerror = () => resolve([]);
       img.src = imageUrl;
     });
-  }, []);
+  }, [colorExtractionTolerance]);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -1108,7 +1108,10 @@ const Index = () => {
                     {/* Magic Wand Tolerance */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label className="text-xs font-medium">Magic Wand Tolerance: {magicWandTolerance}</Label>
+                        <Label className="text-xs font-medium flex items-center gap-1.5">
+                          <Wand2 className="h-3.5 w-3.5" />
+                          Magic Wand Tolerance: {magicWandTolerance}
+                        </Label>
                       </div>
                       <Slider
                         min={10}
@@ -1124,7 +1127,10 @@ const Index = () => {
                     {/* Background Removal Tolerance */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label className="text-xs font-medium">Background Removal Tolerance: {backgroundRemovalTolerance}</Label>
+                        <Label className="text-xs font-medium flex items-center gap-1.5">
+                          <Scissors className="h-3.5 w-3.5" />
+                          Background Removal Tolerance: {backgroundRemovalTolerance}
+                        </Label>
                       </div>
                       <Slider
                         min={5}
@@ -1140,7 +1146,10 @@ const Index = () => {
                     {/* Color Extraction Tolerance */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label className="text-xs font-medium">Color Extraction Tolerance: {colorExtractionTolerance}</Label>
+                        <Label className="text-xs font-medium flex items-center gap-1.5">
+                          <Palette className="h-3.5 w-3.5" />
+                          Color variety during generation: {colorExtractionTolerance}
+                        </Label>
                       </div>
                       <Slider
                         min={5}
@@ -1150,12 +1159,15 @@ const Index = () => {
                         onValueChange={(value) => setColorExtractionTolerance(value[0])}
                         className="w-full"
                       />
-                      <p className="text-xs text-muted-foreground">Lower = fewer colors, higher = more colors</p>
+                      <p className="text-xs text-muted-foreground">Higher = more color variety</p>
                     </div>
                     
                     {/* Background Selection - integrated here */}
                     <div className="space-y-2">
-                      <Label className="text-xs font-medium">Background:</Label>
+                      <Label className="text-xs font-medium flex items-center gap-1.5">
+                        <Image className="h-3.5 w-3.5" />
+                        Background:
+                      </Label>
                       <RadioGroup 
                         value={backgroundColor} 
                         onValueChange={(value) => {
