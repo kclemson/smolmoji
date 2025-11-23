@@ -70,6 +70,7 @@ const Index = () => {
         if (savedPixels) {
           const pixels = JSON.parse(savedPixels);
           pixelCanvasRef.current.setPixels(pixels);
+          renderPreview(pixels); // Explicitly update preview
           
           // Check if we have valid persisted history
           const savedHistoryStack = localStorage.getItem("emoji-history-stack");
@@ -565,6 +566,7 @@ const Index = () => {
     const newIndex = historyIndex - 1;
     const restoredPixels = structuredClone(historyStack[newIndex]);
     pixelCanvasRef.current?.setPixels(restoredPixels);
+    renderPreview(restoredPixels); // Explicitly update preview
     setHistoryIndex(newIndex);
     historyIndexRef.current = newIndex;
   }, [historyIndex, historyStack]);
@@ -574,6 +576,7 @@ const Index = () => {
     const newIndex = historyIndex + 1;
     const restoredPixels = structuredClone(historyStack[newIndex]);
     pixelCanvasRef.current?.setPixels(restoredPixels);
+    renderPreview(restoredPixels); // Explicitly update preview
     setHistoryIndex(newIndex);
     historyIndexRef.current = newIndex;
   }, [historyIndex, historyStack]);
