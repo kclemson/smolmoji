@@ -1308,14 +1308,14 @@ const Index = () => {
                         <div>Select all pixels</div>
                         <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Ctrl/⌘ D</kbd></div>
                         <div>Deselect all</div>
-                        <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Del / ⌫ / Ctrl/⌘+X</kbd></div>
-                        <div>Delete selected pixels</div>
                         
                         <div className="col-span-2 font-medium text-foreground mt-2">Transform</div>
                         <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Arrow Keys</kbd></div>
                         <div>Shift pixels</div>
                         <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">B</kbd></div>
                         <div>Remove background</div>
+                        <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Del / ⌫ / Ctrl/⌘+X</kbd></div>
+                        <div>Delete selected pixels</div>
                       </div>
                     </div>
                   </div>
