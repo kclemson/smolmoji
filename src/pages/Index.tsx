@@ -1118,9 +1118,9 @@ const Index = () => {
                         step={1}
                         value={[magicWandTolerance]}
                         onValueChange={(value) => setMagicWandTolerance(value[0])}
-                        className="w-full"
+                        className="w-full ml-4"
                       />
-                      <p className="text-xs text-muted-foreground">Lower = more selective</p>
+                      <p className="text-xs text-muted-foreground ml-4">Lower = more selective</p>
                     </div>
                     
                     {/* Background Removal Tolerance */}
@@ -1137,9 +1137,9 @@ const Index = () => {
                         step={1}
                         value={[backgroundRemovalTolerance]}
                         onValueChange={(value) => setBackgroundRemovalTolerance(value[0])}
-                        className="w-full"
+                        className="w-full ml-4"
                       />
-                      <p className="text-xs text-muted-foreground">Higher = more aggressive</p>
+                      <p className="text-xs text-muted-foreground ml-4">Higher = more aggressive</p>
                     </div>
                     
                     {/* Color Extraction Tolerance */}
@@ -1156,9 +1156,9 @@ const Index = () => {
                         step={1}
                         value={[colorExtractionTolerance]}
                         onValueChange={(value) => setColorExtractionTolerance(value[0])}
-                        className="w-full"
+                        className="w-full ml-4"
                       />
-                      <p className="text-xs text-muted-foreground">Higher = more color variety</p>
+                      <p className="text-xs text-muted-foreground ml-4">Higher = more color variety</p>
                     </div>
                     
                     {/* Background Selection - integrated here */}
@@ -1175,7 +1175,7 @@ const Index = () => {
                           const pixels = pixelCanvasRef.current?.getPixels() || [];
                           renderPreview(pixels, newBg);
                         }}
-                        className="flex flex-col gap-1.5"
+                        className="flex flex-col gap-1.5 ml-4"
                       >
                         <div className="flex items-center gap-2">
                           <RadioGroupItem value="transparent" id="bg-transparent" />
