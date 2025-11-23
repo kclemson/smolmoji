@@ -777,7 +777,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
       {/* Helper text positioned right above canvas within buffer zone */}
       {!isVirginState && (
         <p className="text-xs text-muted-foreground/60 italic text-center mb-1 select-none">
-          right click to revert - click and drag to create a rectangle
+          click and drag to create a rectangle | right click to revert
         </p>
       )}
       
