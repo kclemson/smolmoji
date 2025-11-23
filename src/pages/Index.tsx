@@ -50,9 +50,9 @@ const Index = () => {
   const pixelCanvasRef = useRef<PixelCanvasRef>(null);
   const colorPaletteInputRef = useRef<HTMLInputElement>(null);
   
-  // Undo/Redo state
-  const [historyStack, setHistoryStack] = useLocalStorage<string[][][]>("emoji-history-stack", []);
-  const [historyIndex, setHistoryIndex] = useLocalStorage<number>("emoji-history-index", -1);
+  // Undo/Redo state (in-memory only, not persisted)
+  const [historyStack, setHistoryStack] = useState<string[][][]>([]);
+  const [historyIndex, setHistoryIndex] = useState<number>(-1);
   const historyIndexRef = useRef(historyIndex);
   const lastKnownPixelsRef = useRef<string[][] | null>(null);
   const MAX_HISTORY = 50;
@@ -67,44 +67,27 @@ const Index = () => {
     if (!hasRestoredFromStorage.current && pixelCanvasRef.current) {
       try {
         const savedPixels = localStorage.getItem("emoji-pixels");
+        const savedOriginalPixels = localStorage.getItem("emoji-original-pixels");
+        
         if (savedPixels) {
           const pixels = JSON.parse(savedPixels);
           pixelCanvasRef.current.setPixels(pixels);
-          renderPreview(pixels); // Explicitly update preview
+          renderPreview(pixels);
           
-          // Check if we have valid persisted history
-          const savedHistoryStack = localStorage.getItem("emoji-history-stack");
-          const savedHistoryIndex = localStorage.getItem("emoji-history-index");
-          
-          let shouldInitializeHistory = true;
-          
-          if (savedHistoryStack && savedHistoryIndex) {
-            try {
-              const stack = JSON.parse(savedHistoryStack);
-              const index = JSON.parse(savedHistoryIndex);
-              
-              // Validate: history should have entries and index should be valid
-              if (Array.isArray(stack) && stack.length > 0 && index >= 0 && index < stack.length) {
-                // History looks valid, just sync refs (state is already loaded by hooks)
-                lastKnownPixelsRef.current = structuredClone(pixels);
-                historyIndexRef.current = index;
-                shouldInitializeHistory = false;
-                logger.history("restored persisted history", { entries: stack.length, index });
-              }
-            } catch (e) {
-              logger.warn("invalid persisted history, reinitializing", e);
-            }
+          // Restore original pixels for right-click restore
+          if (savedOriginalPixels) {
+            const originalPixels = JSON.parse(savedOriginalPixels);
+            pixelCanvasRef.current.setOriginalPixels(originalPixels);
+            logger.state("restored original pixels from localStorage");
           }
           
-          if (shouldInitializeHistory) {
-            // No valid history exists, initialize with loaded pixels as base state
-            const initialHistory = [structuredClone(pixels)];
-            setHistoryStack(initialHistory);
-            setHistoryIndex(0);
-            historyIndexRef.current = 0;
-            lastKnownPixelsRef.current = structuredClone(pixels);
-            logger.history("initialized fresh history from loaded pixels", { pixelsSize: `${pixels.length}x${pixels[0]?.length || 0}` });
-          }
+          // Initialize fresh history with loaded pixels as base state
+          const initialHistory = [structuredClone(pixels)];
+          setHistoryStack(initialHistory);
+          setHistoryIndex(0);
+          historyIndexRef.current = 0;
+          lastKnownPixelsRef.current = structuredClone(pixels);
+          logger.history("initialized fresh history from loaded pixels");
         }
         hasRestoredFromStorage.current = true;
       } catch (error) {
@@ -342,11 +325,10 @@ const Index = () => {
       setHistoryIndex(-1);
       historyIndexRef.current = -1;
       
-      // Clear persisted pixels and history from localStorage
+      // Clear persisted pixels and original pixels from localStorage
       try {
         localStorage.removeItem("emoji-pixels");
-        localStorage.removeItem("emoji-history-stack");
-        localStorage.removeItem("emoji-history-index");
+        localStorage.removeItem("emoji-original-pixels");
       } catch (error) {
         logger.error("error clearing localStorage", error);
       }
@@ -433,11 +415,20 @@ const Index = () => {
     });
     
     if (isInitialImageFromAI) {
-      // For initial load, set up the base history
+      // For initial load, set up the base history and save original pixels
       setHistoryStack([structuredClone(newPixels)]);
       setHistoryIndex(0);
       historyIndexRef.current = 0;
       lastKnownPixelsRef.current = structuredClone(newPixels);
+      
+      // Save original pixels to localStorage for right-click restore
+      try {
+        localStorage.setItem("emoji-original-pixels", JSON.stringify(newPixels));
+        logger.state("saved original pixels to localStorage");
+      } catch (error) {
+        logger.error("error saving original pixels", error);
+      }
+      
       const nonTransparentCount = newPixels.flat().filter(p => p !== 'transparent').length;
       logger.history("initial load processed, history initialized", { 
         nonTransparentPixels: nonTransparentCount 
