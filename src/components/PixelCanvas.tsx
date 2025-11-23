@@ -17,7 +17,7 @@ interface PixelCanvasProps {
   canvasRef?: React.RefObject<HTMLCanvasElement>;
   isEyedropperActive?: boolean;
   onColorPick?: (color: string) => void;
-  onPixelsUpdated?: (pixels: string[][], isInitialLoad: boolean) => void;
+  onPixelsChanged?: (pixels: string[][], isInitialImageFromAI: boolean) => void;
   backgroundColor?: "transparent" | "white" | "black" | string;
   onReady?: () => void;
   isMagicWandActive?: boolean;
@@ -33,7 +33,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
   canvasRef: externalCanvasRef,
   isEyedropperActive = false,
   onColorPick,
-  onPixelsUpdated,
+  onPixelsChanged,
   backgroundColor = "transparent",
   isVirginState = false,
   onReady,
@@ -372,11 +372,11 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
         setPixels(newPixels);
         
         // Notify parent AFTER state is set (but this is now an imperative call, not during render)
-        onPixelsUpdated?.(newPixels, true);
+        onPixelsChanged?.(newPixels, true);
       };
       img.src = imageUrl;
     },
-  }), [pixels, onPixelsUpdated, gridSize]);
+  }), [pixels, onPixelsChanged, gridSize]);
 
   useEffect(() => {
     // Notify parent once that canvas is ready for loading saved pixels
@@ -660,7 +660,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
         setPixels(newPixels);
         
         // Notify parent callback AFTER setPixels is queued (no closure issue)
-        onPixelsUpdated?.(newPixels, false);
+        onPixelsChanged?.(newPixels, false);
       }
 
       setSelectionStart(null);

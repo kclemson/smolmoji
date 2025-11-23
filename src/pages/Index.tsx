@@ -51,17 +51,17 @@ const Index = () => {
   const [historyStack, setHistoryStack] = useDebouncedLocalStorage<string[][][]>("emoji-history-stack", [], 500);
   const [historyIndex, setHistoryIndex] = useLocalStorage<number>("emoji-history-index", -1);
   const historyIndexRef = useRef(historyIndex);
-  const lastPixelsRef = useRef<string[][] | null>(null);
+  const lastKnownPixelsRef = useRef<string[][] | null>(null);
   const MAX_HISTORY = 50;
-  const hasLoadedPixels = useRef(false);
+  const hasRestoredFromStorage = useRef(false);
 
   // Computed state: are we in "virgin" state (generating or no pixels)?
   const isVirginState = isGenerating || !localStorage.getItem("emoji-pixels");
 
   // Load persisted pixels when canvas is ready (ref callback pattern - no useEffect!)
   const handleCanvasReady = useCallback(() => {
-    console.log("🔍 handleCanvasReady called, hasLoadedPixels:", hasLoadedPixels.current, "pixelCanvasRef:", !!pixelCanvasRef.current);
-    if (!hasLoadedPixels.current && pixelCanvasRef.current) {
+    console.log("🔍 handleCanvasReady called, hasRestoredFromStorage:", hasRestoredFromStorage.current, "pixelCanvasRef:", !!pixelCanvasRef.current);
+    if (!hasRestoredFromStorage.current && pixelCanvasRef.current) {
       try {
         const savedPixels = localStorage.getItem("emoji-pixels");
         if (savedPixels) {
@@ -82,7 +82,7 @@ const Index = () => {
               // Validate: history should have entries and index should be valid
               if (Array.isArray(stack) && stack.length > 0 && index >= 0 && index < stack.length) {
                 // History looks valid, just sync refs (state is already loaded by hooks)
-                lastPixelsRef.current = structuredClone(pixels);
+                lastKnownPixelsRef.current = structuredClone(pixels);
                 historyIndexRef.current = index;
                 shouldInitializeHistory = false;
                 console.log(`Restored persisted history (${stack.length} entries, index ${index})`);
@@ -98,14 +98,14 @@ const Index = () => {
             setHistoryStack(initialHistory);
             setHistoryIndex(0);
             historyIndexRef.current = 0;
-            lastPixelsRef.current = structuredClone(pixels);
+            lastKnownPixelsRef.current = structuredClone(pixels);
             console.log("Initialized fresh history from loaded pixels");
           }
         }
-        hasLoadedPixels.current = true;
+        hasRestoredFromStorage.current = true;
       } catch (error) {
         console.error("Error loading pixels from localStorage:", error);
-        hasLoadedPixels.current = true;
+        hasRestoredFromStorage.current = true;
       }
     }
   }, []);
@@ -347,7 +347,7 @@ const Index = () => {
       }
       
       // Reset the loaded flag so new emoji can be persisted
-      hasLoadedPixels.current = false;
+      hasRestoredFromStorage.current = false;
     }
 
     setIsGenerating(true);
@@ -379,7 +379,7 @@ const Index = () => {
 
 
   // Helper function to render preview canvas with explicit parameters
-  const renderPreview = (pixels: string[][], bg: "transparent" | "white" | "black" | string) => {
+  const updatePreviewIcon = (pixels: string[][], bg: "transparent" | "white" | "black" | string) => {
     const preview32 = preview32Ref.current;
     if (!preview32) return;
 
@@ -435,23 +435,23 @@ const Index = () => {
     });
   }, []);
 
-  const handlePixelsUpdated = useCallback((newPixels: string[][], isInitialLoad: boolean) => {
+  const handlePixelsUpdated = useCallback((newPixels: string[][], isInitialImageFromAI: boolean) => {
     console.log('🔄 handlePixelsUpdated called:', { 
-      isInitialLoad, 
+      isInitialImageFromAI, 
       pixelsSize: `${newPixels.length}x${newPixels[0]?.length}`,
-      hasLastPixels: !!lastPixelsRef.current 
+      hasLastPixels: !!lastKnownPixelsRef.current 
     });
     
-    if (isInitialLoad) {
+    if (isInitialImageFromAI) {
       // For initial load, set up the base history
       setHistoryStack([structuredClone(newPixels)]);
       setHistoryIndex(0);
       historyIndexRef.current = 0;
-      lastPixelsRef.current = structuredClone(newPixels);
+      lastKnownPixelsRef.current = structuredClone(newPixels);
       console.log('📥 Initial load processed, history initialized');
     } else {
       // Compare against last known pixels (not getPixels which may be stale)
-      const lastPixels = lastPixelsRef.current;
+      const lastPixels = lastKnownPixelsRef.current;
       
       // Check if anything actually changed
       const hasChanges = !lastPixels || lastPixels.some((row, y) =>
@@ -467,7 +467,7 @@ const Index = () => {
       // Only push to history if pixels actually changed
       if (hasChanges) {
         pushToHistory(newPixels);
-        lastPixelsRef.current = structuredClone(newPixels);
+        lastKnownPixelsRef.current = structuredClone(newPixels);
       }
     }
     
@@ -479,7 +479,7 @@ const Index = () => {
     }
     
     // Update preview immediately with the new pixels
-    renderPreview(newPixels, backgroundColor);
+    updatePreviewIcon(newPixels, backgroundColor);
   }, [backgroundColor, pushToHistory]);
 
   const handleMagicWandClick = useCallback((x: number, y: number) => {
@@ -555,9 +555,9 @@ const Index = () => {
     pixelCanvasRef.current?.setPixels(restoredPixels);
     setHistoryIndex(newIndex);
     historyIndexRef.current = newIndex;
-    // Manually update preview since setPixels doesn't trigger onPixelsUpdated
-    renderPreview(restoredPixels, backgroundColor);
-  }, [historyIndex, historyStack, backgroundColor, renderPreview]);
+    // Manually update preview since setPixels doesn't trigger onPixelsChanged
+    updatePreviewIcon(restoredPixels, backgroundColor);
+  }, [historyIndex, historyStack, backgroundColor, updatePreviewIcon]);
 
   const redo = useCallback(() => {
     if (historyIndex >= historyStack.length - 1) return;
@@ -566,9 +566,9 @@ const Index = () => {
     pixelCanvasRef.current?.setPixels(restoredPixels);
     setHistoryIndex(newIndex);
     historyIndexRef.current = newIndex;
-    // Manually update preview since setPixels doesn't trigger onPixelsUpdated
-    renderPreview(restoredPixels, backgroundColor);
-  }, [historyIndex, historyStack, backgroundColor, renderPreview]);
+    // Manually update preview since setPixels doesn't trigger onPixelsChanged
+    updatePreviewIcon(restoredPixels, backgroundColor);
+  }, [historyIndex, historyStack, backgroundColor, updatePreviewIcon]);
 
   // Simplified tool functions - delegate to PixelCanvas
   const shiftPixels = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
@@ -890,7 +890,7 @@ const Index = () => {
                   canvasRef={mainCanvasRef}
                   isEyedropperActive={isEyedropperActive}
                   onColorPick={handleColorPick}
-                  onPixelsUpdated={handlePixelsUpdated}
+                  onPixelsChanged={handlePixelsUpdated}
                   backgroundColor={backgroundColor}
                   onReady={handleCanvasReady}
                   isMagicWandActive={isMagicWandActive}
@@ -1246,7 +1246,7 @@ const Index = () => {
                           const newBg = value as "transparent" | "white" | "black";
                           setBackgroundColor(newBg);
                           const pixels = pixelCanvasRef.current?.getPixels() || [];
-                          renderPreview(pixels, newBg);
+                          updatePreviewIcon(pixels, newBg);
                         }}
                         className="flex flex-col gap-1.5 ml-4"
                       >
