@@ -751,12 +751,14 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
       style={{
         cursor: isEyedropperActive 
           ? 'crosshair'
-          : (isMagicWandActive || brushSize === 1)
+          : isMagicWandActive
             ? 'cell'
-            : getBrushCursor(
-                brushSize, 
-                selectedColor === 'transparent' ? 'white' : 'black'
-              )
+            : brushSize === 1
+              ? 'cell'
+              : getBrushCursor(
+                  brushSize, 
+                  selectedColor === 'transparent' ? 'white' : 'black'
+                )
       }}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
