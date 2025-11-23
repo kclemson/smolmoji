@@ -51,6 +51,7 @@ const Index = () => {
   const [historyStack, setHistoryStack] = useState<string[][][]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const historyIndexRef = useRef(historyIndex);
+  const lastPixelsRef = useRef<string[][] | null>(null);
   const MAX_HISTORY = 50;
   const hasLoadedPixels = useRef(false);
 
@@ -378,26 +379,41 @@ const Index = () => {
   };
 
   // Handle pixels updated from PixelCanvas
+  // Undo/Redo functions - defined BEFORE handlePixelsUpdated
+  const pushToHistory = useCallback((newPixels: string[][]) => {
+    const currentIndex = historyIndexRef.current;
+    
+    setHistoryStack(prev => {
+      const truncated = prev.slice(0, currentIndex + 1);
+      const newStack = [...truncated, structuredClone(newPixels)];
+      return newStack.slice(-MAX_HISTORY);
+    });
+    const newIndex = Math.min(currentIndex + 1, MAX_HISTORY - 1);
+    setHistoryIndex(newIndex);
+    historyIndexRef.current = newIndex;
+  }, []);
+
   const handlePixelsUpdated = useCallback((newPixels: string[][], isInitialLoad: boolean) => {
-    // Don't push initial AI load to history
-    if (!isInitialLoad) {
-      // Get current pixels to compare
-      const currentPixels = pixelCanvasRef.current?.getPixels();
+    if (isInitialLoad) {
+      // For initial load, set up the base history
+      setHistoryStack([structuredClone(newPixels)]);
+      setHistoryIndex(0);
+      historyIndexRef.current = 0;
+      lastPixelsRef.current = structuredClone(newPixels);
+    } else {
+      // Compare against last known pixels (not getPixels which may be stale)
+      const lastPixels = lastPixelsRef.current;
       
-      // Compare pixels to see if anything actually changed
-      const hasChanges = !currentPixels || currentPixels.some((row, y) =>
+      // Check if anything actually changed
+      const hasChanges = !lastPixels || lastPixels.some((row, y) =>
         row.some((color, x) => color !== newPixels[y]?.[x])
       );
       
       // Only push to history if pixels actually changed
       if (hasChanges) {
         pushToHistory(newPixels);
+        lastPixelsRef.current = structuredClone(newPixels);
       }
-    } else {
-      // For initial load, set up the base history
-      setHistoryStack([structuredClone(newPixels)]);
-      setHistoryIndex(0);
-      historyIndexRef.current = 0;
     }
     
     // Save pixels to localStorage synchronously (no useEffect!)
@@ -409,7 +425,7 @@ const Index = () => {
     
     // Update preview immediately with the new pixels
     renderPreview(newPixels, backgroundColor);
-  }, [backgroundColor]);
+  }, [backgroundColor, pushToHistory]);
 
   const handleMagicWandClick = useCallback((x: number, y: number) => {
     if (!pixelCanvasRef.current) return;
@@ -473,18 +489,6 @@ const Index = () => {
   }, [historyIndex]);
 
   // Undo/Redo functions
-  const pushToHistory = useCallback((newPixels: string[][]) => {
-    const currentIndex = historyIndexRef.current;
-    
-    setHistoryStack(prev => {
-      const truncated = prev.slice(0, currentIndex + 1);
-      const newStack = [...truncated, structuredClone(newPixels)];
-      return newStack.slice(-MAX_HISTORY);
-    });
-    const newIndex = Math.min(currentIndex + 1, MAX_HISTORY - 1);
-    setHistoryIndex(newIndex);
-    historyIndexRef.current = newIndex;
-  }, []);
 
   const undo = useCallback(() => {
     if (historyIndex <= 0) return;
