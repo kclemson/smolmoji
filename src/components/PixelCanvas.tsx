@@ -687,6 +687,31 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
     handleMouseUp();
   };
 
+  const getBrushCursor = (size: number, color: 'black' | 'white'): string => {
+    // Calculate cursor dimensions
+    const radius = (size / 2) * pixelSize;
+    const diameter = radius * 2;
+    
+    // SVG circle with border
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${diameter}" height="${diameter}" viewBox="0 0 ${diameter} ${diameter}">
+        <circle 
+          cx="${radius}" 
+          cy="${radius}" 
+          r="${radius - 1}" 
+          fill="none" 
+          stroke="${color}" 
+          stroke-width="1.5"
+          opacity="0.8"
+        />
+      </svg>
+    `;
+    
+    // Convert to data URI
+    const encoded = encodeURIComponent(svg);
+    return `url("data:image/svg+xml,${encoded}") ${radius} ${radius}, auto`;
+  };
+
   const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
     e.preventDefault();
   };
@@ -707,10 +732,17 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
       - Desktop (lg:p-20, xl:p-32): 80-128px padding - massive wiggle room for desktop users
     */
     <div 
-      className={cn(
-        "relative px-4 py-0 sm:py-2 md:px-12 md:py-4 lg:px-20 lg:py-6 xl:px-32 xl:py-8",
-        isEyedropperActive ? "cursor-crosshair" : "cursor-cell"
-      )}
+      className="relative px-4 py-0 sm:py-2 md:px-12 md:py-4 lg:px-20 lg:py-6 xl:px-32 xl:py-8"
+      style={{
+        cursor: isEyedropperActive 
+          ? 'crosshair'
+          : (isMagicWandActive || brushSize === 1)
+            ? 'cell'
+            : getBrushCursor(
+                brushSize, 
+                selectedColor === 'transparent' ? 'white' : 'black'
+              )
+      }}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseMove={handleMouseMove}
