@@ -381,8 +381,8 @@ const Index = () => {
   };
 
 
-  // Helper function to render preview canvas with explicit parameters
-  const updatePreviewIcon = (pixels: string[][], bg: "transparent" | "white" | "black" | string) => {
+  // Simple preview renderer - just draws pixels, CSS handles background
+  const renderPreview = (pixels: string[][]) => {
     const preview32 = preview32Ref.current;
     if (!preview32) return;
 
@@ -392,20 +392,7 @@ const Index = () => {
     ctx.imageSmoothingEnabled = false;
     ctx.clearRect(0, 0, 32, 32);
     
-    // Fill background
-    if (bg === "white") {
-      ctx.fillStyle = "#FFFFFF";
-      ctx.fillRect(0, 0, 32, 32);
-    } else if (bg === "black") {
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(0, 0, 32, 32);
-    } else if (bg !== "transparent") {
-      // Custom color (any hex value)
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, 32, 32);
-    }
-    
-    // Draw emoji pixels
+    // Draw only non-transparent pixels
     for (let y = 0; y < 32; y++) {
       for (let x = 0; x < 32; x++) {
         if (pixels[y][x] !== "transparent") {
@@ -474,16 +461,16 @@ const Index = () => {
       }
     }
     
+    // Update preview (single source of truth)
+    renderPreview(newPixels);
+    
     // Save pixels to localStorage synchronously (no useEffect!)
     try {
       localStorage.setItem("emoji-pixels", JSON.stringify(newPixels));
     } catch (error) {
       console.error("Error saving pixels to localStorage:", error);
     }
-    
-    // Update preview immediately with the new pixels
-    updatePreviewIcon(newPixels, backgroundColor);
-  }, [backgroundColor, pushToHistory]);
+  }, [pushToHistory]);
 
   const handleMagicWandClick = useCallback((x: number, y: number) => {
     if (!pixelCanvasRef.current) return;
@@ -560,9 +547,7 @@ const Index = () => {
     pixelCanvasRef.current?.setPixels(restoredPixels);
     setHistoryIndex(newIndex);
     historyIndexRef.current = newIndex;
-    // Manually update preview since setPixels doesn't trigger onPixelsChanged
-    updatePreviewIcon(restoredPixels, backgroundColor);
-  }, [historyIndex, historyStack, backgroundColor, updatePreviewIcon]);
+  }, [historyIndex, historyStack]);
 
   const redo = useCallback(() => {
     if (historyIndex >= historyStack.length - 1) return;
@@ -571,9 +556,7 @@ const Index = () => {
     pixelCanvasRef.current?.setPixels(restoredPixels);
     setHistoryIndex(newIndex);
     historyIndexRef.current = newIndex;
-    // Manually update preview since setPixels doesn't trigger onPixelsChanged
-    updatePreviewIcon(restoredPixels, backgroundColor);
-  }, [historyIndex, historyStack, backgroundColor, updatePreviewIcon]);
+  }, [historyIndex, historyStack]);
 
   // Simplified tool functions - delegate to PixelCanvas
   const shiftPixels = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
@@ -870,7 +853,7 @@ const Index = () => {
                   ref={preview32Ref}
                   width={32}
                   height={32}
-                  className="border-2 border-border rounded pixelated"
+                  className="border-2 border-border rounded pixelated bg-[hsl(var(--canvas-bg))]"
                   style={{ 
                     imageRendering: "pixelated",
                     width: "32px",
@@ -1253,8 +1236,6 @@ const Index = () => {
                         onValueChange={(value) => {
                           const newBg = value as "transparent" | "white" | "black";
                           setBackgroundColor(newBg);
-                          const pixels = pixelCanvasRef.current?.getPixels() || [];
-                          updatePreviewIcon(pixels, newBg);
                         }}
                         className="flex flex-col gap-1.5 ml-4"
                       >
