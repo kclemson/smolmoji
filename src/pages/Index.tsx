@@ -961,6 +961,7 @@ const Index = () => {
                     "w-10 h-10 rounded-md border transition-all hover:scale-110",
                     "border-border bg-muted/20 flex items-center justify-center pointer-events-none"
                   )}
+                  title="Color Palette (C)"
                 >
                   <Palette className="h-5 w-5" />
                 </button>
@@ -975,7 +976,7 @@ const Index = () => {
                   "w-10 h-10 p-0",
                   isEyedropperActive && "ring-2 ring-primary ring-offset-1 ring-offset-background"
                 )}
-                title="Eyedropper (pick color from canvas)"
+                title="Eyedropper (I)"
               >
                 <Pipette className="h-5 w-5" />
               </Button>
@@ -1005,6 +1006,7 @@ const Index = () => {
                         : color && "border-border"
                     )}
                     style={color ? { backgroundColor: color } : {}}
+                    title={color ? `Custom Color ${index + 1} (${index + 1})` : undefined}
                     disabled={!color}
                   />
                 );
@@ -1049,13 +1051,13 @@ const Index = () => {
               variant="outline"
               className="flex gap-2"
             >
-              <ToggleGroupItem value="pencil" aria-label="Pencil tool" className="w-10 h-10 p-0">
+              <ToggleGroupItem value="pencil" aria-label="Pencil tool" className="w-10 h-10 p-0" title="Pencil (P)">
                 <Pencil className="h-5 w-5" />
               </ToggleGroupItem>
-              <ToggleGroupItem value="eraser" aria-label="Eraser tool" className="w-10 h-10 p-0">
+              <ToggleGroupItem value="eraser" aria-label="Eraser tool" className="w-10 h-10 p-0" title="Eraser (E)">
                 <Eraser className="h-5 w-5" />
               </ToggleGroupItem>
-              <ToggleGroupItem value="wand" aria-label="Magic wand tool" className="w-10 h-10 p-0">
+              <ToggleGroupItem value="wand" aria-label="Magic wand tool" className="w-10 h-10 p-0" title="Magic Wand (W)">
                 <Wand2 className="h-5 w-5" />
               </ToggleGroupItem>
             </ToggleGroup>
@@ -1069,13 +1071,13 @@ const Index = () => {
                 variant="outline"
                 className="flex gap-2"
               >
-                <ToggleGroupItem value="1" aria-label="1x1 brush" className="w-10 h-10 p-0">
+                <ToggleGroupItem value="1" aria-label="1x1 brush" className="w-10 h-10 p-0" title="1×1 Brush">
                   <div className="w-1 h-1 bg-current" />
                 </ToggleGroupItem>
-                <ToggleGroupItem value="3" aria-label="3x3 brush" className="w-10 h-10 p-0">
+                <ToggleGroupItem value="3" aria-label="3x3 brush" className="w-10 h-10 p-0" title="3×3 Brush">
                   <div className="w-2 h-2 bg-current" />
                 </ToggleGroupItem>
-                <ToggleGroupItem value="5" aria-label="5x5 brush" className="w-10 h-10 p-0">
+                <ToggleGroupItem value="5" aria-label="5x5 brush" className="w-10 h-10 p-0" title="5×5 Brush">
                   <div className="w-3 h-3 bg-current" />
                 </ToggleGroupItem>
               </ToggleGroup>
