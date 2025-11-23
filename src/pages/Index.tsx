@@ -413,7 +413,7 @@ const Index = () => {
     const selection = floodFillSelect(pixels, x, y);
     setSelectedPixels(selection);
     // Magic wand stays active - user can make multiple selections
-  }, []);
+  }, [magicWandTolerance]);
 
   const applyActionToSelection = useCallback((action: 'fill' | 'erase') => {
     if (!pixelCanvasRef.current || selectedPixels.size === 0) return;
