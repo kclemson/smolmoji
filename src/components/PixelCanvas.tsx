@@ -212,7 +212,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
     getPixels: () => pixels,
     setPixels: (newPixels: string[][]) => {
       setPixels(newPixels);
-      onPixelsChanged?.(newPixels, false);
+      // No callback - caller decides what to do
     },
     shift: (direction: 'up' | 'down' | 'left' | 'right') => {
       const currentPixels = pixels;
