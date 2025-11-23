@@ -5,6 +5,7 @@ import { logger } from "@/lib/logger";
 export interface PixelCanvasRef {
   getPixels: () => string[][];
   setPixels: (newPixels: string[][]) => void;
+  setOriginalPixels: (originalPixels: string[][]) => void;
   shift: (direction: 'up' | 'down' | 'left' | 'right') => string[][];
   autoFit: () => string[][];
   removeBackground: (tolerance?: number) => string[][];
@@ -213,6 +214,9 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
     setPixels: (newPixels: string[][]) => {
       setPixels(newPixels);
       // No callback - caller decides what to do
+    },
+    setOriginalPixels: (originalPixels: string[][]) => {
+      setOriginalPixelsFromAI(originalPixels);
     },
     shift: (direction: 'up' | 'down' | 'left' | 'right') => {
       const currentPixels = pixels;
