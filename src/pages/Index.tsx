@@ -51,7 +51,7 @@ const Index = () => {
   const colorPaletteInputRef = useRef<HTMLInputElement>(null);
   
   // Undo/Redo state
-  const [historyStack, setHistoryStack] = useDebouncedLocalStorage<string[][][]>("emoji-history-stack", [], 500);
+  const [historyStack, setHistoryStack] = useLocalStorage<string[][][]>("emoji-history-stack", []);
   const [historyIndex, setHistoryIndex] = useLocalStorage<number>("emoji-history-index", -1);
   const historyIndexRef = useRef(historyIndex);
   const lastKnownPixelsRef = useRef<string[][] | null>(null);
