@@ -6,10 +6,9 @@ export interface PixelCanvasRef {
   setPixels: (newPixels: string[][]) => void;
   shift: (direction: 'up' | 'down' | 'left' | 'right') => void;
   autoFit: () => void;
-  removeBackground: () => void;
+  removeBackground: (tolerance?: number) => void;
   animateDissolve: () => Promise<void>;
   loadImage: (imageUrl: string) => void;
-  backgroundRemovalTolerance?: number;
 }
 
 interface PixelCanvasProps {
@@ -25,7 +24,6 @@ interface PixelCanvasProps {
   onMagicWandClick?: (x: number, y: number) => void;
   selectedPixels?: Set<string>;
   isVirginState?: boolean;
-  backgroundRemovalTolerance?: number;
   brushSize?: number;
 }
 
@@ -42,7 +40,6 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
   isMagicWandActive = false,
   onMagicWandClick,
   selectedPixels = new Set(),
-  backgroundRemovalTolerance = 20,
   brushSize = 1,
 }, ref) => {
   const internalCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -120,8 +117,8 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
     return newPixels;
   };
 
-  const removeEdgeBackground = (pixelData: string[][]): string[][] => {
-    const COLOR_THRESHOLD = backgroundRemovalTolerance;
+  const removeEdgeBackground = (pixelData: string[][], tolerance: number): string[][] => {
+    const COLOR_THRESHOLD = tolerance;
     const gridSize = 32;
     
     const edgeColorGroups = new Map<string, { count: number, colors: Set<string> }>();
@@ -273,11 +270,11 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
         return newPixels;
       });
     },
-    removeBackground: () => {
+    removeBackground: (tolerance: number = 20) => {
       setPixels(prevPixels => {
         if (prevPixels.length === 0) return prevPixels;
         
-        const cleanedPixels = removeEdgeBackground(prevPixels);
+        const cleanedPixels = removeEdgeBackground(prevPixels, tolerance);
         onPixelsUpdated?.(cleanedPixels, false);
         return cleanedPixels;
       });
