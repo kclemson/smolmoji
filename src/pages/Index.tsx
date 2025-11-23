@@ -509,8 +509,8 @@ const Index = () => {
   }, []);
 
   const handleRemoveBackground = useCallback(() => {
-    pixelCanvasRef.current?.removeBackground();
-  }, []);
+    pixelCanvasRef.current?.removeBackground(backgroundRemovalTolerance);
+  }, [backgroundRemovalTolerance]);
 
 
   // Keyboard shortcuts
@@ -805,7 +805,6 @@ const Index = () => {
                   onMagicWandClick={handleMagicWandClick}
                   selectedPixels={selectedPixels}
                   isVirginState={isVirginState}
-                  backgroundRemovalTolerance={backgroundRemovalTolerance}
                   brushSize={brushSize}
                 />
               </div>
