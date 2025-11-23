@@ -509,15 +509,15 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
     // Magic wand mode - select pixels, don't draw
     if (isMagicWandActive && onMagicWandClick) {
       onMagicWandClick(x, y);
-      return; // Exit early, don't start drawing
+      return; // Exit early, don't initialize ANY drawing state
     }
 
-    // Reset any previous drag state first
-    setIsRightClickDrag(false);
+    // Eyedropper mode - only pick color, don't draw
+    // (handled in handleMouseUp, but we need selection coordinates)
     
-    // Detect which mouse button was pressed
+    // Now initialize drawing state for pencil/eraser modes
     const isRightClick = e.button === 2;
-    buttonRef.current = e.button; // Store which button was pressed
+    buttonRef.current = e.button;
     
     setIsDrawing(true);
     setIsRightClickDrag(isRightClick);
@@ -589,7 +589,8 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
         return;
       }
       
-      if (!isEyedropperActive) {
+      // Process drawing/filling when not in eyedropper or magic wand mode
+      if (!isEyedropperActive && !isMagicWandActive) {
         // Calculate rectangle bounds
         const minX = Math.min(selectionStart.x, selectionEnd.x);
         const minY = Math.min(selectionStart.y, selectionEnd.y);
