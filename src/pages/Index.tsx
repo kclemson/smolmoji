@@ -448,10 +448,28 @@ const Index = () => {
         row.some((color, x) => color !== newPixels[y]?.[x])
       );
       
+      // Calculate pixel changes for useful logging
+      let changedCount = 0;
+      const sampleChanges: Array<{x: number, y: number, from: string, to: string}> = [];
+      
+      if (lastPixels && lastPixels.length === 32 && newPixels.length === 32) {
+        for (let y = 0; y < 32; y++) {
+          for (let x = 0; x < 32; x++) {
+            if (lastPixels[y][x] !== newPixels[y][x]) {
+              changedCount++;
+              if (sampleChanges.length < 3) {
+                sampleChanges.push({x, y, from: lastPixels[y][x], to: newPixels[y][x]});
+              }
+            }
+          }
+        }
+      }
+      
       logger.state("change detection", { 
         hasChanges,
-        lastPixelsSize: lastPixels ? `${lastPixels.length}x${lastPixels[0]?.length}` : 'none',
-        newPixelsSize: `${newPixels.length}x${newPixels[0]?.length}`
+        hadPreviousState: !!lastPixels,
+        changedPixelCount: lastPixels ? changedCount : 'all (1024)',
+        sampleChanges: sampleChanges.length > 0 ? sampleChanges : 'none'
       });
       
       // Only push to history if pixels actually changed
