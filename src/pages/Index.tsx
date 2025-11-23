@@ -873,7 +873,7 @@ const Index = () => {
                   onClick={handleDownload} 
                   size="sm"
                   className="gap-2"
-                  disabled={!imageData || isVirginState}
+                  disabled={isVirginState}
                   variant="outline"
                 >
                   <Download className="w-4 h-4" />
