@@ -18,7 +18,7 @@ interface PixelCanvasProps {
   isEyedropperActive?: boolean;
   onColorPick?: (color: string) => void;
   onPixelsUpdated?: (pixels: string[][], isInitialLoad: boolean) => void;
-  backgroundColor?: "transparent" | "white" | "black";
+  backgroundColor?: "transparent" | "white" | "black" | string;
   onReady?: () => void;
   isMagicWandActive?: boolean;
   onMagicWandClick?: (x: number, y: number) => void;
