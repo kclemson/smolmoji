@@ -796,10 +796,12 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
         ref={canvasRef}
         width={320}
         height={320}
-        className={cn(
-          "border-2 border-border rounded-lg",
-          "bg-[hsl(var(--canvas-bg))]"
-        )}
+        className="border-2 border-border rounded-lg"
+        style={{
+          backgroundColor: backgroundColor === "transparent" 
+            ? "hsl(var(--canvas-bg))" 
+            : backgroundColor
+        }}
         onContextMenu={handleContextMenu}
       />
     </div>
