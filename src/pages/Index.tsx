@@ -556,8 +556,9 @@ const Index = () => {
     pixelCanvasRef.current?.setPixels(restoredPixels);
     setHistoryIndex(newIndex);
     historyIndexRef.current = newIndex;
-    // Preview will update via handlePixelsUpdated
-  }, [historyIndex, historyStack]);
+    // Manually update preview since setPixels doesn't trigger onPixelsUpdated
+    renderPreview(restoredPixels, backgroundColor);
+  }, [historyIndex, historyStack, backgroundColor, renderPreview]);
 
   const redo = useCallback(() => {
     if (historyIndex >= historyStack.length - 1) return;
@@ -566,8 +567,9 @@ const Index = () => {
     pixelCanvasRef.current?.setPixels(restoredPixels);
     setHistoryIndex(newIndex);
     historyIndexRef.current = newIndex;
-    // Preview will update via handlePixelsUpdated
-  }, [historyIndex, historyStack]);
+    // Manually update preview since setPixels doesn't trigger onPixelsUpdated
+    renderPreview(restoredPixels, backgroundColor);
+  }, [historyIndex, historyStack, backgroundColor, renderPreview]);
 
   // Simplified tool functions - delegate to PixelCanvas
   const shiftPixels = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
