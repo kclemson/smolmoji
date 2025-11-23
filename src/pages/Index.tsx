@@ -68,17 +68,44 @@ const Index = () => {
           const pixels = JSON.parse(savedPixels);
           pixelCanvasRef.current.setPixels(pixels);
           
-          // Initialize history refs with loaded pixels
-          // The history state itself is already loaded from localStorage via hooks
-          // We just need to sync the refs
-          lastPixelsRef.current = structuredClone(pixels);
-          historyIndexRef.current = historyIndex;
-          console.log(`Loaded persisted pixels and synced history (index: ${historyIndex})`);
+          // Check if we have valid persisted history
+          const savedHistoryStack = localStorage.getItem("emoji-history-stack");
+          const savedHistoryIndex = localStorage.getItem("emoji-history-index");
+          
+          let shouldInitializeHistory = true;
+          
+          if (savedHistoryStack && savedHistoryIndex) {
+            try {
+              const stack = JSON.parse(savedHistoryStack);
+              const index = JSON.parse(savedHistoryIndex);
+              
+              // Validate: history should have entries and index should be valid
+              if (Array.isArray(stack) && stack.length > 0 && index >= 0 && index < stack.length) {
+                // History looks valid, just sync refs (state is already loaded by hooks)
+                lastPixelsRef.current = structuredClone(pixels);
+                historyIndexRef.current = index;
+                shouldInitializeHistory = false;
+                console.log(`Restored persisted history (${stack.length} entries, index ${index})`);
+              }
+            } catch (e) {
+              console.warn("Invalid persisted history, reinitializing", e);
+            }
+          }
+          
+          if (shouldInitializeHistory) {
+            // No valid history exists, initialize with loaded pixels as base state
+            const initialHistory = [structuredClone(pixels)];
+            setHistoryStack(initialHistory);
+            setHistoryIndex(0);
+            historyIndexRef.current = 0;
+            lastPixelsRef.current = structuredClone(pixels);
+            console.log("Initialized fresh history from loaded pixels");
+          }
         }
         hasLoadedPixels.current = true;
       } catch (error) {
         console.error("Error loading pixels from localStorage:", error);
-        hasLoadedPixels.current = true; // Prevent retry on error
+        hasLoadedPixels.current = true;
       }
     }
   }, [historyIndex]);
