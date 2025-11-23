@@ -10,6 +10,7 @@ export interface PixelCanvasRef {
   autoFit: () => string[][];
   removeBackground: (tolerance?: number) => string[][];
   animateDissolve: () => Promise<void>;
+  animateMaterialize: (targetPixels: string[][]) => Promise<void>;
   loadImage: (imageUrl: string) => void;
 }
 
@@ -209,93 +210,152 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
   };
 
   // Expose methods via ref
-  useImperativeHandle(ref, () => ({
-    getPixels: () => pixels,
-    setPixels: (newPixels: string[][]) => {
-      setPixels(newPixels);
-      // No callback - caller decides what to do
-    },
-    setOriginalPixels: (originalPixels: string[][]) => {
-      setOriginalPixelsFromAI(originalPixels);
-    },
-    shift: (direction: 'up' | 'down' | 'left' | 'right') => {
-      const currentPixels = pixels;
-      if (currentPixels.length === 0) return currentPixels;
-      
-      const newPixels: string[][] = Array(32).fill(null).map(() => Array(32).fill('transparent'));
-      
-      currentPixels.forEach((row, y) => {
-        row.forEach((color, x) => {
-          if (color === 'transparent') return;
-          
-          let newX = x;
-          let newY = y;
-          
-          switch (direction) {
-            case 'up':
-              newY = y - 1;
-              break;
-            case 'down':
-              newY = y + 1;
-              break;
-            case 'left':
-              newX = x - 1;
-              break;
-            case 'right':
-              newX = x + 1;
-              break;
-          }
-          
-          if (newX >= 0 && newX < 32 && newY >= 0 && newY < 32) {
-            newPixels[newY][newX] = color;
-          }
+  useImperativeHandle(ref, () => {
+    const methods = {
+      getPixels: () => pixels,
+      setPixels: (newPixels: string[][]) => {
+        setPixels(newPixels);
+        // No callback - caller decides what to do
+      },
+      setOriginalPixels: (originalPixels: string[][]) => {
+        setOriginalPixelsFromAI(originalPixels);
+      },
+      shift: (direction: 'up' | 'down' | 'left' | 'right') => {
+        const currentPixels = pixels;
+        if (currentPixels.length === 0) return currentPixels;
+        
+        const newPixels: string[][] = Array(32).fill(null).map(() => Array(32).fill('transparent'));
+        
+        currentPixels.forEach((row, y) => {
+          row.forEach((color, x) => {
+            if (color === 'transparent') return;
+            
+            let newX = x;
+            let newY = y;
+            
+            switch (direction) {
+              case 'up':
+                newY = y - 1;
+                break;
+              case 'down':
+                newY = y + 1;
+                break;
+              case 'left':
+                newX = x - 1;
+                break;
+              case 'right':
+                newX = x + 1;
+                break;
+            }
+            
+            if (newX >= 0 && newX < 32 && newY >= 0 && newY < 32) {
+              newPixels[newY][newX] = color;
+            }
+          });
         });
-      });
-      
-      setPixels(newPixels);
-      return newPixels;
-    },
-    autoFit: () => {
-      const currentPixels = pixels;
-      if (currentPixels.length === 0) return currentPixels;
-      
-      const bounds = findBoundingBox(currentPixels);
-      if (!bounds) return currentPixels;
-      
-      const contentWidth = bounds.maxX - bounds.minX + 1;
-      const contentHeight = bounds.maxY - bounds.minY + 1;
-      
-      const maxSize = 30;
-      const scale = Math.min(maxSize / contentWidth, maxSize / contentHeight);
-      const targetWidth = Math.round(contentWidth * scale);
-      const targetHeight = Math.round(contentHeight * scale);
-      
-      const newPixels = scaleContent(currentPixels, bounds, targetWidth, targetHeight);
-      setPixels(newPixels);
-      return newPixels;
-    },
-    removeBackground: (tolerance: number = 20) => {
-      const currentPixels = pixels;
-      if (currentPixels.length === 0) return currentPixels;
-      
-      const cleanedPixels = removeEdgeBackground(currentPixels, tolerance);
-      setPixels(cleanedPixels);
-      return cleanedPixels;
-    },
-    animateDissolve: () => {
-      return new Promise<void>((resolve) => {
-        setPixels(currentPixels => {
-          // Collect all non-transparent pixel coordinates
-          const pixelCoords: { x: number, y: number }[] = [];
-          currentPixels.forEach((row, y) => {
+        
+        setPixels(newPixels);
+        return newPixels;
+      },
+      autoFit: () => {
+        const currentPixels = pixels;
+        if (currentPixels.length === 0) return currentPixels;
+        
+        const bounds = findBoundingBox(currentPixels);
+        if (!bounds) return currentPixels;
+        
+        const contentWidth = bounds.maxX - bounds.minX + 1;
+        const contentHeight = bounds.maxY - bounds.minY + 1;
+        
+        const maxSize = 30;
+        const scale = Math.min(maxSize / contentWidth, maxSize / contentHeight);
+        const targetWidth = Math.round(contentWidth * scale);
+        const targetHeight = Math.round(contentHeight * scale);
+        
+        const newPixels = scaleContent(currentPixels, bounds, targetWidth, targetHeight);
+        setPixels(newPixels);
+        return newPixels;
+      },
+      removeBackground: (tolerance: number = 20) => {
+        const currentPixels = pixels;
+        if (currentPixels.length === 0) return currentPixels;
+        
+        const cleanedPixels = removeEdgeBackground(currentPixels, tolerance);
+        setPixels(cleanedPixels);
+        return cleanedPixels;
+      },
+      animateDissolve: () => {
+        return new Promise<void>((resolve) => {
+          setPixels(currentPixels => {
+            // Collect all non-transparent pixel coordinates
+            const pixelCoords: { x: number, y: number }[] = [];
+            currentPixels.forEach((row, y) => {
+              row.forEach((color, x) => {
+                if (color !== 'transparent') {
+                  pixelCoords.push({ x, y });
+                }
+              });
+            });
+            
+            // Shuffle pixels randomly
+            for (let i = pixelCoords.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [pixelCoords[i], pixelCoords[j]] = [pixelCoords[j], pixelCoords[i]];
+            }
+            
+            // Calculate timing
+            const totalDuration = 350; // ms
+            const pixelsPerFrame = Math.max(1, Math.ceil(pixelCoords.length / 20));
+            const frameDelay = pixelCoords.length > 0 ? totalDuration / Math.ceil(pixelCoords.length / pixelsPerFrame) : 0;
+            
+            let workingPixels = currentPixels.map(row => [...row]);
+            let currentIndex = 0;
+            
+            const dissolveFrame = () => {
+              // Remove batch of pixels
+              const endIndex = Math.min(currentIndex + pixelsPerFrame, pixelCoords.length);
+              for (let i = currentIndex; i < endIndex; i++) {
+                const { x, y } = pixelCoords[i];
+                workingPixels[y][x] = 'transparent';
+              }
+              currentIndex = endIndex;
+              
+              // Update state
+              setPixels([...workingPixels.map(row => [...row])]);
+              
+              if (currentIndex < pixelCoords.length) {
+                requestAnimationFrame(() => {
+                  setTimeout(dissolveFrame, frameDelay);
+                });
+              } else {
+                // Animation complete
+                resolve();
+              }
+            };
+            
+            if (pixelCoords.length > 0) {
+              dissolveFrame();
+            } else {
+              resolve();
+            }
+            
+            return currentPixels;
+          });
+        });
+      },
+      animateMaterialize: (targetPixels: string[][]) => {
+        return new Promise<void>((resolve) => {
+          // Collect all non-transparent pixel coordinates from target
+          const pixelCoords: { x: number, y: number, color: string }[] = [];
+          targetPixels.forEach((row, y) => {
             row.forEach((color, x) => {
               if (color !== 'transparent') {
-                pixelCoords.push({ x, y });
+                pixelCoords.push({ x, y, color });
               }
             });
           });
           
-          // Shuffle pixels randomly
+          // Shuffle pixels randomly (Fisher-Yates)
           for (let i = pixelCoords.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [pixelCoords[i], pixelCoords[j]] = [pixelCoords[j], pixelCoords[i]];
@@ -306,15 +366,18 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
           const pixelsPerFrame = Math.max(1, Math.ceil(pixelCoords.length / 20));
           const frameDelay = pixelCoords.length > 0 ? totalDuration / Math.ceil(pixelCoords.length / pixelsPerFrame) : 0;
           
-          let workingPixels = currentPixels.map(row => [...row]);
+          // Start with transparent canvas
+          let workingPixels: string[][] = Array(gridSize).fill(null).map(() => 
+            Array(gridSize).fill('transparent')
+          );
           let currentIndex = 0;
           
-          const dissolveFrame = () => {
-            // Remove batch of pixels
+          const materializeFrame = () => {
+            // Add batch of pixels
             const endIndex = Math.min(currentIndex + pixelsPerFrame, pixelCoords.length);
             for (let i = currentIndex; i < endIndex; i++) {
-              const { x, y } = pixelCoords[i];
-              workingPixels[y][x] = 'transparent';
+              const { x, y, color } = pixelCoords[i];
+              workingPixels[y][x] = color;
             }
             currentIndex = endIndex;
             
@@ -323,7 +386,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
             
             if (currentIndex < pixelCoords.length) {
               requestAnimationFrame(() => {
-                setTimeout(dissolveFrame, frameDelay);
+                setTimeout(materializeFrame, frameDelay);
               });
             } else {
               // Animation complete
@@ -332,63 +395,66 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
           };
           
           if (pixelCoords.length > 0) {
-            dissolveFrame();
+            materializeFrame();
           } else {
             resolve();
           }
-          
-          return currentPixels;
         });
-      });
-    },
-    loadImage: (imageUrl: string) => {
-      const img = new Image();
-      img.onload = () => {
-        // Draw image to get pixel data
-        const tempCanvas = document.createElement("canvas");
-        tempCanvas.width = gridSize;
-        tempCanvas.height = gridSize;
-        const tempCtx = tempCanvas.getContext("2d");
-        if (!tempCtx) return;
+      },
+      loadImage: (imageUrl: string) => {
+        const img = new Image();
+        img.onload = async () => {
+          // Draw image to get pixel data
+          const tempCanvas = document.createElement("canvas");
+          tempCanvas.width = gridSize;
+          tempCanvas.height = gridSize;
+          const tempCtx = tempCanvas.getContext("2d");
+          if (!tempCtx) return;
 
-        tempCtx.drawImage(img, 0, 0, gridSize, gridSize);
-        const imageData = tempCtx.getImageData(0, 0, gridSize, gridSize);
-        
-        // Convert to pixel array
-        const newPixels: string[][] = Array(gridSize).fill(null).map(() => 
-          Array(gridSize).fill("transparent")
-        );
-        
-        for (let y = 0; y < gridSize; y++) {
-          for (let x = 0; x < gridSize; x++) {
-            const idx = (y * gridSize + x) * 4;
-            const r = imageData.data[idx];
-            const g = imageData.data[idx + 1];
-            const b = imageData.data[idx + 2];
-            const a = imageData.data[idx + 3];
-            
-            if (a > 0) {
-              newPixels[y][x] = `rgba(${r},${g},${b},${a / 255})`;
+          tempCtx.drawImage(img, 0, 0, gridSize, gridSize);
+          const imageData = tempCtx.getImageData(0, 0, gridSize, gridSize);
+          
+          // Convert to pixel array
+          const newPixels: string[][] = Array(gridSize).fill(null).map(() => 
+            Array(gridSize).fill("transparent")
+          );
+          
+          for (let y = 0; y < gridSize; y++) {
+            for (let x = 0; x < gridSize; x++) {
+              const idx = (y * gridSize + x) * 4;
+              const r = imageData.data[idx];
+              const g = imageData.data[idx + 1];
+              const b = imageData.data[idx + 2];
+              const a = imageData.data[idx + 3];
+              
+              if (a > 0) {
+                newPixels[y][x] = `rgba(${r},${g},${b},${a / 255})`;
+              }
             }
           }
-        }
-        
-        // Update internal state
-        setOriginalPixelsFromAI(newPixels.map(row => [...row]));
-        setPixels(newPixels);
-        
-        const nonTransparentCount = newPixels.flat().filter(p => p !== 'transparent').length;
-        logger.ai("image loaded from AI generation", { 
-          nonTransparentPixels: nonTransparentCount,
-          totalPixels: gridSize * gridSize 
-        });
-        
-        // Notify parent AFTER state is set (but this is now an imperative call, not during render)
-        onPixelsChanged?.(newPixels, true);
-      };
-      img.src = imageUrl;
-    },
-  }), [pixels, onPixelsChanged, gridSize]);
+          
+          const nonTransparentCount = newPixels.flat().filter(p => p !== 'transparent').length;
+          logger.ai("image loaded from AI generation", { 
+            nonTransparentPixels: nonTransparentCount,
+            totalPixels: gridSize * gridSize 
+          });
+          
+          // Store original and start with transparent canvas
+          setOriginalPixelsFromAI(newPixels.map(row => [...row]));
+          setPixels(Array(gridSize).fill(null).map(() => Array(gridSize).fill("transparent")));
+          
+          // Animate pixels materializing
+          await methods.animateMaterialize(newPixels);
+          
+          // Notify parent after animation completes
+          onPixelsChanged?.(newPixels, true);
+        };
+        img.src = imageUrl;
+      },
+    };
+    
+    return methods;
+  }, [pixels, onPixelsChanged, gridSize]);
 
   useEffect(() => {
     // Notify parent once that canvas is ready for loading saved pixels
