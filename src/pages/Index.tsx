@@ -872,11 +872,14 @@ const Index = () => {
                   ref={preview32Ref}
                   width={32}
                   height={32}
-                  className="border-2 border-border rounded pixelated bg-[hsl(var(--canvas-bg))]"
+                  className="border-2 border-border rounded pixelated"
                   style={{ 
                     imageRendering: "pixelated",
                     width: "32px",
-                    height: "32px"
+                    height: "32px",
+                    backgroundColor: backgroundColor === "transparent" 
+                      ? "hsl(var(--canvas-bg))" 
+                      : backgroundColor
                   }}
                 />
                 <Button 
