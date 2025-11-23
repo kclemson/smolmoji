@@ -723,22 +723,23 @@ const Index = () => {
         <div className="space-y-2 sm:space-y-3">
           {/* Row 1: Design Direction with integrated generate button */}
           <div className="relative w-[320px] mx-auto">
-            <Textarea
-              placeholder={errorMessage || "Describe your emoji idea: chicken nugget with wizard hat, woman laughing with salad, etc..."}
-              value={prompt}
-              onChange={(e) => {
-                setPrompt(e.target.value);
-                setErrorMessage(null);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && prompt.trim()) {
-                  e.preventDefault();
-                  handleGenerate();
-                }
-              }}
-              rows={2}
-              className="w-full text-xs resize-none pr-2"
-            />
+              <Textarea
+                placeholder={errorMessage || "Describe your emoji idea: chicken nugget with wizard hat, woman laughing with salad, etc..."}
+                value={prompt}
+                onChange={(e) => {
+                  setPrompt(e.target.value);
+                  setErrorMessage(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && prompt.trim()) {
+                    e.preventDefault();
+                    handleGenerate();
+                  }
+                }}
+                rows={2}
+                className="w-full text-xs resize-none pr-2"
+                spellCheck={false}
+              />
             
             {/* Generate button - bottom right */}
             <Button
