@@ -689,16 +689,16 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
 
   const getBrushCursor = (size: number, color: 'black' | 'white'): string => {
     // Calculate cursor dimensions
-    const radius = (size / 2) * pixelSize;
-    const diameter = radius * 2;
+    const sideLength = size * pixelSize;
     
-    // SVG circle with border
+    // SVG square with border
     const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="${diameter}" height="${diameter}" viewBox="0 0 ${diameter} ${diameter}">
-        <circle 
-          cx="${radius}" 
-          cy="${radius}" 
-          r="${radius - 1}" 
+      <svg xmlns="http://www.w3.org/2000/svg" width="${sideLength}" height="${sideLength}" viewBox="0 0 ${sideLength} ${sideLength}">
+        <rect 
+          x="0.75" 
+          y="0.75" 
+          width="${sideLength - 1.5}" 
+          height="${sideLength - 1.5}" 
           fill="none" 
           stroke="${color}" 
           stroke-width="1.5"
@@ -708,8 +708,9 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
     `;
     
     // Convert to data URI
+    const centerPoint = sideLength / 2;
     const encoded = encodeURIComponent(svg);
-    return `url("data:image/svg+xml,${encoded}") ${radius} ${radius}, auto`;
+    return `url("data:image/svg+xml,${encoded}") ${centerPoint} ${centerPoint}, auto`;
   };
 
   const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
