@@ -552,17 +552,30 @@ const Index = () => {
   // Simplified tool functions - delegate to PixelCanvas
   const shiftPixels = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
     pixelCanvasRef.current?.shift(direction);
-    // Preview will update via handlePixelsUpdated
-  }, []);
+    const updatedPixels = pixelCanvasRef.current?.getPixels();
+    if (updatedPixels) {
+      pushToHistory(updatedPixels);
+      lastPixelsRef.current = structuredClone(updatedPixels);
+    }
+  }, [pushToHistory]);
 
   const autoFitEmoji = useCallback(() => {
     pixelCanvasRef.current?.autoFit();
-    // Preview will update via handlePixelsUpdated
-  }, []);
+    const updatedPixels = pixelCanvasRef.current?.getPixels();
+    if (updatedPixels) {
+      pushToHistory(updatedPixels);
+      lastPixelsRef.current = structuredClone(updatedPixels);
+    }
+  }, [pushToHistory]);
 
   const handleRemoveBackground = useCallback(() => {
     pixelCanvasRef.current?.removeBackground(backgroundRemovalTolerance);
-  }, [backgroundRemovalTolerance]);
+    const updatedPixels = pixelCanvasRef.current?.getPixels();
+    if (updatedPixels) {
+      pushToHistory(updatedPixels);
+      lastPixelsRef.current = structuredClone(updatedPixels);
+    }
+  }, [backgroundRemovalTolerance, pushToHistory]);
 
 
   // Keyboard shortcuts
