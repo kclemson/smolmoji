@@ -32,7 +32,7 @@ const Index = () => {
   const [selectedPixels, setSelectedPixels] = useState<Set<string>>(new Set());
   const [magicWandTolerance, setMagicWandTolerance] = useLocalStorage<number>("emoji-magicWandTolerance", 25);
   const [backgroundRemovalTolerance, setBackgroundRemovalTolerance] = useLocalStorage<number>("emoji-backgroundRemovalTolerance", 20);
-  const [colorExtractionTolerance, setColorExtractionTolerance] = useLocalStorage<number>("emoji-colorExtractionTolerance", 20);
+  const [colorExtractionTolerance] = useState<number>(20);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   // Drawing mode state
@@ -1154,25 +1154,6 @@ const Index = () => {
                         className="w-full ml-4"
                       />
                       <p className="text-xs text-muted-foreground ml-4">Higher = more aggressive</p>
-                    </div>
-                    
-                    {/* Color Extraction Tolerance */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs font-medium flex items-center gap-1.5">
-                          <Palette className="h-3.5 w-3.5" />
-                          Color variety during generation: {colorExtractionTolerance}
-                        </Label>
-                      </div>
-                      <Slider
-                        min={5}
-                        max={50}
-                        step={1}
-                        value={[colorExtractionTolerance]}
-                        onValueChange={(value) => setColorExtractionTolerance(value[0])}
-                        className="w-full ml-4"
-                      />
-                      <p className="text-xs text-muted-foreground ml-4">Higher = more color variety</p>
                     </div>
                     
                     {/* Background Selection - integrated here */}
