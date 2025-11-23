@@ -61,6 +61,7 @@ const Index = () => {
 
   // Load persisted pixels when canvas is ready (ref callback pattern - no useEffect!)
   const handleCanvasReady = useCallback(() => {
+    console.log("🔍 handleCanvasReady called, hasLoadedPixels:", hasLoadedPixels.current, "pixelCanvasRef:", !!pixelCanvasRef.current);
     if (!hasLoadedPixels.current && pixelCanvasRef.current) {
       try {
         const savedPixels = localStorage.getItem("emoji-pixels");
@@ -108,7 +109,7 @@ const Index = () => {
         hasLoadedPixels.current = true;
       }
     }
-  }, [historyIndex]);
+  }, []);
 
   const floodFillSelect = (
     pixels: string[][],
