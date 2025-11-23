@@ -575,28 +575,25 @@ const Index = () => {
     pixelCanvasRef.current?.shift(direction);
     const updatedPixels = pixelCanvasRef.current?.getPixels();
     if (updatedPixels) {
-      pushToHistory(updatedPixels);
-      lastPixelsRef.current = structuredClone(updatedPixels);
+      handlePixelsUpdated(updatedPixels, false);
     }
-  }, [pushToHistory]);
+  }, [handlePixelsUpdated]);
 
   const autoFitEmoji = useCallback(() => {
     pixelCanvasRef.current?.autoFit();
     const updatedPixels = pixelCanvasRef.current?.getPixels();
     if (updatedPixels) {
-      pushToHistory(updatedPixels);
-      lastPixelsRef.current = structuredClone(updatedPixels);
+      handlePixelsUpdated(updatedPixels, false);
     }
-  }, [pushToHistory]);
+  }, [handlePixelsUpdated]);
 
   const handleRemoveBackground = useCallback(() => {
     pixelCanvasRef.current?.removeBackground(backgroundRemovalTolerance);
     const updatedPixels = pixelCanvasRef.current?.getPixels();
     if (updatedPixels) {
-      pushToHistory(updatedPixels);
-      lastPixelsRef.current = structuredClone(updatedPixels);
+      handlePixelsUpdated(updatedPixels, false);
     }
-  }, [backgroundRemovalTolerance, pushToHistory]);
+  }, [backgroundRemovalTolerance, handlePixelsUpdated]);
 
 
   // Keyboard shortcuts
