@@ -46,7 +46,6 @@ const Index = () => {
   const preview32Ref = useRef<HTMLCanvasElement>(null);
   const pixelCanvasRef = useRef<PixelCanvasRef>(null);
   const colorPaletteInputRef = useRef<HTMLInputElement>(null);
-  const customBackgroundInputRef = useRef<HTMLInputElement>(null);
   
   // Undo/Redo state
   const [historyStack, setHistoryStack] = useDebouncedLocalStorage<string[][][]>("emoji-history-stack", [], 500);
@@ -1248,21 +1247,12 @@ const Index = () => {
                         Background:
                       </Label>
                       <RadioGroup 
-                        value={
-                          backgroundColor === "transparent" || backgroundColor === "white" || backgroundColor === "black"
-                            ? backgroundColor
-                            : "custom"
-                        } 
+                        value={backgroundColor} 
                         onValueChange={(value) => {
-                          if (value === "custom") {
-                            // Open color picker
-                            setTimeout(() => customBackgroundInputRef.current?.click(), 0);
-                          } else {
-                            const newBg = value as "transparent" | "white" | "black";
-                            setBackgroundColor(newBg);
-                            const pixels = pixelCanvasRef.current?.getPixels() || [];
-                            renderPreview(pixels, newBg);
-                          }
+                          const newBg = value as "transparent" | "white" | "black";
+                          setBackgroundColor(newBg);
+                          const pixels = pixelCanvasRef.current?.getPixels() || [];
+                          renderPreview(pixels, newBg);
                         }}
                         className="flex flex-col gap-1.5 ml-4"
                       >
@@ -1283,33 +1273,6 @@ const Index = () => {
                           <Label htmlFor="bg-black" className="text-xs cursor-pointer">
                             Black
                           </Label>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <RadioGroupItem value="custom" id="bg-custom" />
-                          <Label htmlFor="bg-custom" className="text-xs cursor-pointer">
-                            Custom Color
-                          </Label>
-                          {backgroundColor !== "transparent" && backgroundColor !== "white" && backgroundColor !== "black" && (
-                            <div className="relative ml-2">
-                              <input
-                                ref={customBackgroundInputRef}
-                                type="color"
-                                defaultValue={backgroundColor.startsWith('#') ? backgroundColor : '#888888'}
-                                onBlur={(e) => {
-                                  const newColor = e.target.value.toUpperCase();
-                                  setBackgroundColor(newColor);
-                                  const pixels = pixelCanvasRef.current?.getPixels() || [];
-                                  renderPreview(pixels, newColor);
-                                }}
-                                className="absolute inset-0 w-8 h-8 opacity-0 cursor-pointer z-10"
-                              />
-                              <button
-                                className="w-8 h-8 rounded border border-border flex items-center justify-center pointer-events-none"
-                                style={{ backgroundColor: backgroundColor }}
-                              >
-                              </button>
-                            </div>
-                          )}
                         </div>
                       </RadioGroup>
                     </div>
