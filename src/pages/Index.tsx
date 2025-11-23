@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useDebouncedLocalStorage } from "@/hooks/useDebouncedLocalStorage";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
@@ -48,8 +49,8 @@ const Index = () => {
   const customBackgroundInputRef = useRef<HTMLInputElement>(null);
   
   // Undo/Redo state
-  const [historyStack, setHistoryStack] = useState<string[][][]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [historyStack, setHistoryStack] = useDebouncedLocalStorage<string[][][]>("emoji-history-stack", [], 500);
+  const [historyIndex, setHistoryIndex] = useLocalStorage<number>("emoji-history-index", -1);
   const historyIndexRef = useRef(historyIndex);
   const lastPixelsRef = useRef<string[][] | null>(null);
   const MAX_HISTORY = 50;
@@ -304,11 +305,13 @@ const Index = () => {
       setHistoryIndex(-1);
       historyIndexRef.current = -1;
       
-      // Clear persisted pixels from localStorage
+      // Clear persisted pixels and history from localStorage
       try {
         localStorage.removeItem("emoji-pixels");
+        localStorage.removeItem("emoji-history-stack");
+        localStorage.removeItem("emoji-history-index");
       } catch (error) {
-        console.error("Error clearing pixels from localStorage:", error);
+        console.error("Error clearing localStorage:", error);
       }
       
       // Reset the loaded flag so new emoji can be persisted
