@@ -437,12 +437,19 @@ const Index = () => {
   }, []);
 
   const handlePixelsUpdated = useCallback((newPixels: string[][], isInitialLoad: boolean) => {
+    console.log('🔄 handlePixelsUpdated called:', { 
+      isInitialLoad, 
+      pixelsSize: `${newPixels.length}x${newPixels[0]?.length}`,
+      hasLastPixels: !!lastPixelsRef.current 
+    });
+    
     if (isInitialLoad) {
       // For initial load, set up the base history
       setHistoryStack([structuredClone(newPixels)]);
       setHistoryIndex(0);
       historyIndexRef.current = 0;
       lastPixelsRef.current = structuredClone(newPixels);
+      console.log('📥 Initial load processed, history initialized');
     } else {
       // Compare against last known pixels (not getPixels which may be stale)
       const lastPixels = lastPixelsRef.current;
@@ -451,6 +458,12 @@ const Index = () => {
       const hasChanges = !lastPixels || lastPixels.some((row, y) =>
         row.some((color, x) => color !== newPixels[y]?.[x])
       );
+      
+      console.log('🔍 Change detection:', { 
+        hasChanges, 
+        lastPixelsSize: lastPixels ? `${lastPixels.length}x${lastPixels[0]?.length}` : 'none',
+        newPixelsSize: `${newPixels.length}x${newPixels[0]?.length}`
+      });
       
       // Only push to history if pixels actually changed
       if (hasChanges) {
