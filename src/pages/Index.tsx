@@ -67,8 +67,13 @@ const Index = () => {
         if (savedPixels) {
           const pixels = JSON.parse(savedPixels);
           pixelCanvasRef.current.setPixels(pixels);
-          renderPreview(pixels, backgroundColor);
-          console.log("Loaded persisted pixels from localStorage");
+          
+          // Initialize history refs with loaded pixels
+          // The history state itself is already loaded from localStorage via hooks
+          // We just need to sync the refs
+          lastPixelsRef.current = structuredClone(pixels);
+          historyIndexRef.current = historyIndex;
+          console.log(`Loaded persisted pixels and synced history (index: ${historyIndex})`);
         }
         hasLoadedPixels.current = true;
       } catch (error) {
@@ -76,7 +81,7 @@ const Index = () => {
         hasLoadedPixels.current = true; // Prevent retry on error
       }
     }
-  }, []);
+  }, [historyIndex]);
 
   const floodFillSelect = (
     pixels: string[][],
@@ -459,7 +464,10 @@ const Index = () => {
     
     pixelCanvasRef.current.setPixels(newPixels);
     setSelectedPixels(new Set()); // Clear selection after action
-  }, [selectedPixels, selectedColor]);
+    
+    // Add to history (this is an edit action)
+    handlePixelsUpdated(newPixels, false);
+  }, [selectedPixels, selectedColor, handlePixelsUpdated]);
 
   const handleEyedropperToggle = () => {
     const newEyedropperState = !isEyedropperActive;
