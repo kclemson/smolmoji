@@ -246,7 +246,6 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
           });
         });
         
-        onPixelsUpdated?.(newPixels, false);
         return newPixels;
       });
     },
@@ -266,7 +265,6 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
         const targetHeight = Math.round(contentHeight * scale);
         
         const newPixels = scaleContent(prevPixels, bounds, targetWidth, targetHeight);
-        onPixelsUpdated?.(newPixels, false);
         return newPixels;
       });
     },
@@ -275,7 +273,6 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
         if (prevPixels.length === 0) return prevPixels;
         
         const cleanedPixels = removeEdgeBackground(prevPixels, tolerance);
-        onPixelsUpdated?.(cleanedPixels, false);
         return cleanedPixels;
       });
     },
