@@ -596,7 +596,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
         const maxX = Math.max(selectionStart.x, selectionEnd.x);
         const maxY = Math.max(selectionStart.y, selectionEnd.y);
 
-        // Helper to expand coordinates based on brush size
+        // Helper to expand coordinates based on brush size (only for single clicks)
         const applyBrushSize = (x: number, y: number, size: number) => {
           const offset = Math.floor(size / 2);
           return {
@@ -607,46 +607,66 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
           };
         };
 
+        let updatedPixels: string[][] | null = null;
+
         setPixels(prevPixels => {
           const newPixels = prevPixels.map(row => [...row]);
           
-          if (wasRightClickDrag) {
-            // Restore rectangle to original AI pixels with brush size
-            if (originalPixels.length > 0) {
-              for (let y = minY; y <= maxY; y++) {
-                for (let x = minX; x <= maxX; x++) {
-                  // Apply brush size to each pixel in selection
-                  const brushArea = applyBrushSize(x, y, brushSize);
-                  for (let by = brushArea.minY; by <= brushArea.maxY; by++) {
-                    for (let bx = brushArea.minX; bx <= brushArea.maxX; bx++) {
-                      const originalColor = originalPixels[by]?.[bx];
-                      if (originalColor !== undefined) {
-                        newPixels[by][bx] = originalColor;
-                      }
+          if (isDrag) {
+            // RECTANGLE: Fill exact selection (no brush size expansion)
+            if (wasRightClickDrag) {
+              // Restore exact rectangle from original
+              if (originalPixels.length > 0) {
+                for (let y = minY; y <= maxY; y++) {
+                  for (let x = minX; x <= maxX; x++) {
+                    const originalColor = originalPixels[y]?.[x];
+                    if (originalColor !== undefined) {
+                      newPixels[y][x] = originalColor;
                     }
                   }
                 }
               }
+            } else {
+              // Paint exact rectangle with selected color
+              for (let y = minY; y <= maxY; y++) {
+                for (let x = minX; x <= maxX; x++) {
+                  newPixels[y][x] = selectedColor === "transparent" ? "transparent" : selectedColor;
+                }
+              }
             }
           } else {
-            // Paint rectangle (or single pixel if !isDrag) with selected color and brush size
-            for (let y = minY; y <= maxY; y++) {
-              for (let x = minX; x <= maxX; x++) {
-                // Apply brush size to each pixel in selection
-                const brushArea = applyBrushSize(x, y, brushSize);
+            // SINGLE PIXEL: Apply brush size
+            const brushArea = applyBrushSize(minX, minY, brushSize);
+            if (wasRightClickDrag) {
+              // Restore with brush
+              if (originalPixels.length > 0) {
                 for (let by = brushArea.minY; by <= brushArea.maxY; by++) {
                   for (let bx = brushArea.minX; bx <= brushArea.maxX; bx++) {
-                    newPixels[by][bx] = selectedColor === "transparent" ? "transparent" : selectedColor;
+                    const originalColor = originalPixels[by]?.[bx];
+                    if (originalColor !== undefined) {
+                      newPixels[by][bx] = originalColor;
+                    }
                   }
+                }
+              }
+            } else {
+              // Paint with brush
+              for (let by = brushArea.minY; by <= brushArea.maxY; by++) {
+                for (let bx = brushArea.minX; bx <= brushArea.maxX; bx++) {
+                  newPixels[by][bx] = selectedColor === "transparent" ? "transparent" : selectedColor;
                 }
               }
             }
           }
           
-          // Only call onPixelsUpdated ONCE - whether it's a single click or drag
-          onPixelsUpdated?.(newPixels, false);
+          updatedPixels = newPixels;
           return newPixels;
         });
+
+        // Call parent callback AFTER setPixels completes (fixes React warning)
+        if (updatedPixels) {
+          onPixelsUpdated?.(updatedPixels, false);
+        }
       }
 
       setSelectionStart(null);
