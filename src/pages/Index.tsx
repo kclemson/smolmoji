@@ -411,7 +411,11 @@ const Index = () => {
     
     const pixels = pixelCanvasRef.current.getPixels();
     const selection = floodFillSelect(pixels, x, y);
-    setSelectedPixels(selection);
+    
+    // Defer state update to avoid "setState during render" warning
+    queueMicrotask(() => {
+      setSelectedPixels(selection);
+    });
     // Magic wand stays active - user can make multiple selections
   }, [magicWandTolerance]);
 
