@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useImperativeHandle, forwardRef } from "react";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 
 export interface PixelCanvasRef {
   getPixels: () => string[][];
@@ -371,6 +372,8 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
         setOriginalPixelsFromAI(newPixels.map(row => [...row]));
         setPixels(newPixels);
         
+        logger.ai("image loaded from AI generation", { pixelsSize: `${gridSize}x${gridSize}` });
+        
         // Notify parent AFTER state is set (but this is now an imperative call, not during render)
         onPixelsChanged?.(newPixels, true);
       };
@@ -658,6 +661,13 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
         
         // Update state with pre-calculated pixels
         setPixels(newPixels);
+        
+        logger.pixel("mouse-up action", {
+          isRightClick: wasRightClickDrag,
+          action: wasRightClickDrag ? 'right-click-restore' : (selectedColor === 'transparent' ? 'eraser' : 'pencil-or-rectangle'),
+          isDrag,
+          selectedColor,
+        });
         
         // Notify parent callback AFTER setPixels is queued (no closure issue)
         onPixelsChanged?.(newPixels, false);
