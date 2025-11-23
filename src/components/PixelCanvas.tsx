@@ -605,66 +605,62 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
           };
         };
 
-        let updatedPixels: string[][] | null = null;
-
-        setPixels(prevPixels => {
-          const newPixels = prevPixels.map(row => [...row]);
-          
-          if (isDrag) {
-            // RECTANGLE: Fill exact selection (no brush size expansion)
-            if (wasRightClickDrag) {
-              // Restore exact rectangle from original
-              if (originalPixels.length > 0) {
-                for (let y = minY; y <= maxY; y++) {
-                  for (let x = minX; x <= maxX; x++) {
-                    const originalColor = originalPixels[y]?.[x];
-                    if (originalColor !== undefined) {
-                      newPixels[y][x] = originalColor;
-                    }
-                  }
-                }
-              }
-            } else {
-              // Paint exact rectangle with selected color
+        // Calculate new pixels synchronously BEFORE setPixels
+        const currentPixels = pixels;
+        const newPixels = currentPixels.map(row => [...row]);
+        
+        if (isDrag) {
+          // RECTANGLE: Fill exact selection (no brush size expansion)
+          if (wasRightClickDrag) {
+            // Restore exact rectangle from original
+            if (originalPixels.length > 0) {
               for (let y = minY; y <= maxY; y++) {
                 for (let x = minX; x <= maxX; x++) {
-                  newPixels[y][x] = selectedColor === "transparent" ? "transparent" : selectedColor;
+                  const originalColor = originalPixels[y]?.[x];
+                  if (originalColor !== undefined) {
+                    newPixels[y][x] = originalColor;
+                  }
                 }
               }
             }
           } else {
-            // SINGLE PIXEL: Apply brush size
-            const brushArea = applyBrushSize(minX, minY, brushSize);
-            if (wasRightClickDrag) {
-              // Restore with brush
-              if (originalPixels.length > 0) {
-                for (let by = brushArea.minY; by <= brushArea.maxY; by++) {
-                  for (let bx = brushArea.minX; bx <= brushArea.maxX; bx++) {
-                    const originalColor = originalPixels[by]?.[bx];
-                    if (originalColor !== undefined) {
-                      newPixels[by][bx] = originalColor;
-                    }
-                  }
-                }
-              }
-            } else {
-              // Paint with brush
-              for (let by = brushArea.minY; by <= brushArea.maxY; by++) {
-                for (let bx = brushArea.minX; bx <= brushArea.maxX; bx++) {
-                  newPixels[by][bx] = selectedColor === "transparent" ? "transparent" : selectedColor;
-                }
+            // Paint exact rectangle with selected color
+            for (let y = minY; y <= maxY; y++) {
+              for (let x = minX; x <= maxX; x++) {
+                newPixels[y][x] = selectedColor === "transparent" ? "transparent" : selectedColor;
               }
             }
           }
-          
-          updatedPixels = newPixels;
-          return newPixels;
-        });
-
-        // Call parent callback AFTER setPixels completes (fixes React warning)
-        if (updatedPixels) {
-          onPixelsUpdated?.(updatedPixels, false);
+        } else {
+          // SINGLE PIXEL: Apply brush size
+          const brushArea = applyBrushSize(minX, minY, brushSize);
+          if (wasRightClickDrag) {
+            // Restore with brush
+            if (originalPixels.length > 0) {
+              for (let by = brushArea.minY; by <= brushArea.maxY; by++) {
+                for (let bx = brushArea.minX; bx <= brushArea.maxX; bx++) {
+                  const originalColor = originalPixels[by]?.[bx];
+                  if (originalColor !== undefined) {
+                    newPixels[by][bx] = originalColor;
+                  }
+                }
+              }
+            }
+          } else {
+            // Paint with brush
+            for (let by = brushArea.minY; by <= brushArea.maxY; by++) {
+              for (let bx = brushArea.minX; bx <= brushArea.maxX; bx++) {
+                newPixels[by][bx] = selectedColor === "transparent" ? "transparent" : selectedColor;
+              }
+            }
+          }
         }
+        
+        // Update state with pre-calculated pixels
+        setPixels(newPixels);
+        
+        // Notify parent callback AFTER setPixels is queued (no closure issue)
+        onPixelsUpdated?.(newPixels, false);
       }
 
       setSelectionStart(null);
