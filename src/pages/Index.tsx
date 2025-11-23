@@ -421,7 +421,6 @@ const Index = () => {
       prevIndex: currentIndex,
       newIndex,
       stackLength: Math.min(currentIndex + 2, MAX_HISTORY),
-      pixelsAdded: `${newPixels.length}x${newPixels[0]?.length || 0}`,
     });
   }, []);
 
