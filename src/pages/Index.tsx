@@ -427,8 +427,7 @@ const Index = () => {
 
   const handlePixelsUpdated = useCallback((newPixels: string[][], isInitialImageFromAI: boolean) => {
     logger.state("handlePixelsUpdated called", { 
-      isInitialImageFromAI, 
-      pixelsSize: `${newPixels.length}x${newPixels[0]?.length}`,
+      source: isInitialImageFromAI ? 'AI generation' : 'user edit',
       hasLastPixels: !!lastKnownPixelsRef.current 
     });
     
@@ -438,7 +437,10 @@ const Index = () => {
       setHistoryIndex(0);
       historyIndexRef.current = 0;
       lastKnownPixelsRef.current = structuredClone(newPixels);
-      logger.history("initial load processed, history initialized", { pixelsSize: `${newPixels.length}x${newPixels[0]?.length}` });
+      const nonTransparentCount = newPixels.flat().filter(p => p !== 'transparent').length;
+      logger.history("initial load processed, history initialized", { 
+        nonTransparentPixels: nonTransparentCount 
+      });
     } else {
       // Compare against last known pixels (not getPixels which may be stale)
       const lastPixels = lastKnownPixelsRef.current;

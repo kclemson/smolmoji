@@ -372,7 +372,11 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
         setOriginalPixelsFromAI(newPixels.map(row => [...row]));
         setPixels(newPixels);
         
-        logger.ai("image loaded from AI generation", { pixelsSize: `${gridSize}x${gridSize}` });
+        const nonTransparentCount = newPixels.flat().filter(p => p !== 'transparent').length;
+        logger.ai("image loaded from AI generation", { 
+          nonTransparentPixels: nonTransparentCount,
+          totalPixels: gridSize * gridSize 
+        });
         
         // Notify parent AFTER state is set (but this is now an imperative call, not during render)
         onPixelsChanged?.(newPixels, true);
