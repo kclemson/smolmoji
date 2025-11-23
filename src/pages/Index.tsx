@@ -49,6 +49,7 @@ const Index = () => {
   const preview32Ref = useRef<HTMLCanvasElement>(null);
   const pixelCanvasRef = useRef<PixelCanvasRef>(null);
   const colorPaletteInputRef = useRef<HTMLInputElement>(null);
+  const dpadContainerRef = useRef<HTMLDivElement>(null);
   
   // Undo/Redo state (in-memory only, not persisted)
   const [historyStack, setHistoryStack] = useState<string[][][]>([]);
@@ -96,6 +97,26 @@ const Index = () => {
       }
     }
   }, []);
+
+  // Close D-pad when clicking outside
+  useEffect(() => {
+    if (!isDpadExpanded) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dpadContainerRef.current && !dpadContainerRef.current.contains(event.target as Node)) {
+        setIsDpadExpanded(false);
+      }
+    };
+
+    // Add listener on next tick to avoid immediate trigger
+    setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 0);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDpadExpanded]);
 
   const floodFillSelect = (
     pixels: string[][],
@@ -1092,7 +1113,7 @@ const Index = () => {
               </div>
 
               {/* Right Section: Scissors, Autofit, and Collapsible D-Pad */}
-              <div className="relative flex gap-2 items-center">
+              <div className="relative flex gap-2 items-center" ref={dpadContainerRef}>
                 <Button
                   variant="outline"
                   size="sm"
