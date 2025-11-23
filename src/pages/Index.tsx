@@ -1308,6 +1308,54 @@ const Index = () => {
                     </div>
                   </div>
                 )}
+
+                {/* Keyboard Shortcuts - Desktop Only */}
+                <div className="hidden md:block mt-6 pt-6 border-t border-border">
+                  <h3 className="text-xs font-medium mb-3">Keyboard Shortcuts</h3>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs text-muted-foreground">
+                    <div className="col-span-2 font-medium text-foreground mt-2 first:mt-0">Editing</div>
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Ctrl/⌘ Z</kbd></div>
+                    <div>Undo</div>
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Ctrl/⌘ Y</kbd></div>
+                    <div>Redo</div>
+                    
+                    <div className="col-span-2 font-medium text-foreground mt-2">Tools</div>
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">P</kbd></div>
+                    <div>Pencil tool</div>
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">E</kbd></div>
+                    <div>Eraser tool</div>
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">W</kbd></div>
+                    <div>Magic wand tool</div>
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">I</kbd></div>
+                    <div>Toggle eyedropper</div>
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">C</kbd></div>
+                    <div>Open color picker</div>
+                    
+                    <div className="col-span-2 font-medium text-foreground mt-2">Selection</div>
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Esc</kbd></div>
+                    <div>Clear selection</div>
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Ctrl/⌘ A</kbd></div>
+                    <div>Select all pixels</div>
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Ctrl/⌘ D</kbd></div>
+                    <div>Deselect all</div>
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Del / ⌫</kbd></div>
+                    <div>Delete selected pixels</div>
+                    
+                    <div className="col-span-2 font-medium text-foreground mt-2">Colors</div>
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">1-5</kbd></div>
+                    <div>Select palette colors</div>
+                    
+                    <div className="col-span-2 font-medium text-foreground mt-2">Transform</div>
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Arrow Keys</kbd></div>
+                    <div>Shift pixels</div>
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">B</kbd></div>
+                    <div>Remove background</div>
+                    
+                    <div className="col-span-2 font-medium text-foreground mt-2">Input</div>
+                    <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Enter</kbd></div>
+                    <div>Generate emoji</div>
+                  </div>
+                </div>
               </div>
             )}
         </div>
