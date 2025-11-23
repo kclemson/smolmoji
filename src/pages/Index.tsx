@@ -14,6 +14,7 @@ import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, Ar
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 import { Slider } from "@/components/ui/slider";
@@ -35,6 +36,7 @@ const Index = () => {
   const [backgroundRemovalTolerance, setBackgroundRemovalTolerance] = useLocalStorage<number>("emoji-backgroundRemovalTolerance", 20);
   const [colorExtractionTolerance] = useState<number>(20);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isKeyboardShortcutsOpen, setIsKeyboardShortcutsOpen] = useState(false);
   
   // Drawing mode state
   const [drawingMode, setDrawingMode] = useState<'pencil' | 'eraser' | 'wand'>('pencil');
@@ -1271,46 +1273,57 @@ const Index = () => {
                       </RadioGroup>
                     </div>
 
-                    {/* Keyboard Shortcuts - Desktop Only */}
+                    {/* Keyboard Shortcuts Button - Desktop Only */}
                     <div className="hidden md:block mt-6 pt-6 border-t border-border">
-                      <h3 className="text-xs font-medium mb-3">Keyboard Shortcuts</h3>
-                      <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs text-muted-foreground">
-                        <div className="col-span-2 font-medium text-foreground mt-2 first:mt-0">Editing</div>
-                        <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Ctrl/⌘ Z</kbd></div>
-                        <div>Undo</div>
-                        <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Ctrl/⌘ Y</kbd></div>
-                        <div>Redo</div>
-                        
-                        <div className="col-span-2 font-medium text-foreground mt-2">Tools</div>
-                        <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">P</kbd></div>
-                        <div>Pencil tool</div>
-                        <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">E</kbd></div>
-                        <div>Eraser tool</div>
-                        <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">W</kbd></div>
-                        <div>Magic wand tool</div>
-                        <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">I</kbd></div>
-                        <div>Toggle eyedropper</div>
-                        <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">C</kbd></div>
-                        <div>Open color picker</div>
-                        <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">1-5</kbd></div>
-                        <div>Select palette colors</div>
-                        
-                        <div className="col-span-2 font-medium text-foreground mt-2">Selection</div>
-                        <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Esc</kbd></div>
-                        <div>Clear selection</div>
-                        <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Ctrl/⌘ A</kbd></div>
-                        <div>Select all pixels</div>
-                        <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Ctrl/⌘ D</kbd></div>
-                        <div>Deselect all</div>
-                        
-                        <div className="col-span-2 font-medium text-foreground mt-2">Transform</div>
-                        <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Arrow Keys</kbd></div>
-                        <div>Shift pixels</div>
-                        <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">B</kbd></div>
-                        <div>Remove background</div>
-                        <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Del / ⌫ / Ctrl/⌘+X</kbd></div>
-                        <div>Delete selected pixels</div>
-                      </div>
+                      <Dialog open={isKeyboardShortcutsOpen} onOpenChange={setIsKeyboardShortcutsOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="w-full">
+                            Keyboard Shortcuts
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Keyboard Shortcuts</DialogTitle>
+                          </DialogHeader>
+                          <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs text-muted-foreground">
+                            <div className="col-span-2 font-medium text-foreground mt-2 first:mt-0">Editing</div>
+                            <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Ctrl/⌘ Z</kbd></div>
+                            <div>Undo</div>
+                            <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Ctrl/⌘ Y</kbd></div>
+                            <div>Redo</div>
+                            
+                            <div className="col-span-2 font-medium text-foreground mt-2">Tools</div>
+                            <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">P</kbd></div>
+                            <div>Pencil tool</div>
+                            <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">E</kbd></div>
+                            <div>Eraser tool</div>
+                            <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">W</kbd></div>
+                            <div>Magic wand tool</div>
+                            <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">I</kbd></div>
+                            <div>Toggle eyedropper</div>
+                            <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">C</kbd></div>
+                            <div>Open color picker</div>
+                            <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">1-5</kbd></div>
+                            <div>Select palette colors</div>
+                            
+                            <div className="col-span-2 font-medium text-foreground mt-2">Selection</div>
+                            <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Esc</kbd></div>
+                            <div>Clear selection</div>
+                            <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Ctrl/⌘ A</kbd></div>
+                            <div>Select all pixels</div>
+                            <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Ctrl/⌘ D</kbd></div>
+                            <div>Deselect all</div>
+                            
+                            <div className="col-span-2 font-medium text-foreground mt-2">Transform</div>
+                            <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Arrow Keys</kbd></div>
+                            <div>Shift pixels</div>
+                            <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">B</kbd></div>
+                            <div>Remove background</div>
+                            <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Del / ⌫ / Ctrl/⌘+X</kbd></div>
+                            <div>Delete selected pixels</div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </div>
                 )}
