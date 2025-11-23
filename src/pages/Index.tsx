@@ -335,6 +335,7 @@ const Index = () => {
       setBackgroundColor("transparent");
       setIsEyedropperActive(false);
       setIsMagicWandActive(false);
+      setIsSettingsOpen(false);
       setSelectedPixels(new Set());
       setHistoryStack([]);
       setHistoryIndex(-1);
