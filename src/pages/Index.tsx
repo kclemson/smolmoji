@@ -376,6 +376,14 @@ const Index = () => {
         // Extract and set colors as initial customColors
         const colors = await extractColorsFromImage(data.imageUrl);
         setCustomColors(colors);
+        
+        // Fire-and-forget prompt tracking (non-blocking)
+        supabase
+          .from('prompts')
+          .insert({ prompt_text: prompt })
+          .then(({ error }) => {
+            if (error) logger.warn('Failed to track prompt', error);
+          });
       }
     } catch (error) {
       // Handle any thrown errors (like 500 responses)
