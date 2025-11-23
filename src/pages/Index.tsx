@@ -427,6 +427,13 @@ const Index = () => {
     const newIndex = Math.min(currentIndex + 1, MAX_HISTORY - 1);
     setHistoryIndex(newIndex);
     historyIndexRef.current = newIndex;
+    
+    console.log('📝 History updated:', {
+      prevIndex: currentIndex,
+      newIndex,
+      stackLength: Math.min(currentIndex + 2, MAX_HISTORY),
+      pixelsAdded: `${newPixels.length}x${newPixels[0]?.length || 0}`,
+    });
   }, []);
 
   const handlePixelsUpdated = useCallback((newPixels: string[][], isInitialLoad: boolean) => {
