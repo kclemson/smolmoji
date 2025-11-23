@@ -581,6 +581,7 @@ const Index = () => {
     renderPreview(restoredPixels); // Explicitly update preview
     setHistoryIndex(newIndex);
     historyIndexRef.current = newIndex;
+    lastKnownPixelsRef.current = restoredPixels;
   }, [historyIndex, historyStack]);
 
   const redo = useCallback(() => {
@@ -591,6 +592,7 @@ const Index = () => {
     renderPreview(restoredPixels); // Explicitly update preview
     setHistoryIndex(newIndex);
     historyIndexRef.current = newIndex;
+    lastKnownPixelsRef.current = restoredPixels;
   }, [historyIndex, historyStack]);
 
   // Simplified tool functions - delegate to PixelCanvas
