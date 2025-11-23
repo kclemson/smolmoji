@@ -652,8 +652,15 @@ const Index = () => {
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedPixels.size > 0) {
         e.preventDefault();
         applyActionToSelection('erase');
-      return;
-    }
+        return;
+      }
+      
+      // === CUT SELECTED PIXELS (Ctrl+X) ===
+      if (mod && e.key === 'x' && selectedPixels.size > 0) {
+        e.preventDefault();
+        applyActionToSelection('erase');
+        return;
+      }
     
     // === TOOL SELECTION ===
       if (e.key === 'p') {
@@ -1338,7 +1345,7 @@ const Index = () => {
                         <div>Select all pixels</div>
                         <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Ctrl/⌘ D</kbd></div>
                         <div>Deselect all</div>
-                        <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Del / ⌫</kbd></div>
+                        <div><kbd className="px-1.5 py-0.5 rounded bg-muted text-foreground font-mono text-[10px]">Del / ⌫ / Ctrl/⌘+X</kbd></div>
                         <div>Delete selected pixels</div>
                         
                         <div className="col-span-2 font-medium text-foreground mt-2">Transform</div>
