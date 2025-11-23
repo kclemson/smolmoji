@@ -1116,7 +1116,7 @@ const Index = () => {
                       <Slider
                         min={10}
                         max={50}
-                        step={5}
+                        step={1}
                         value={[magicWandTolerance]}
                         onValueChange={(value) => setMagicWandTolerance(value[0])}
                         className="w-full"
@@ -1135,7 +1135,7 @@ const Index = () => {
                       <Slider
                         min={5}
                         max={40}
-                        step={5}
+                        step={1}
                         value={[backgroundRemovalTolerance]}
                         onValueChange={(value) => setBackgroundRemovalTolerance(value[0])}
                         className="w-full"
@@ -1154,7 +1154,7 @@ const Index = () => {
                       <Slider
                         min={5}
                         max={50}
-                        step={5}
+                        step={1}
                         value={[colorExtractionTolerance]}
                         onValueChange={(value) => setColorExtractionTolerance(value[0])}
                         className="w-full"
