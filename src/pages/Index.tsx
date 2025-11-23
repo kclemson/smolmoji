@@ -288,8 +288,8 @@ const Index = () => {
         }
       }
       
-      // Animate pixel grid dissolve
-      pixelCanvasRef.current?.animateDissolve();
+      // Animate pixel grid dissolve and wait for it to complete
+      await pixelCanvasRef.current?.animateDissolve();
       
       setImageData(null);
       setCustomColors(DEFAULT_CUSTOM_COLORS);
