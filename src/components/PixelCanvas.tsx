@@ -49,7 +49,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
   const [pixels, setPixels] = useState<string[][]>(() => 
     Array(gridSize).fill(null).map(() => Array(gridSize).fill("transparent"))
   );
-  const [originalPixels, setOriginalPixels] = useState<string[][]>([]);
+  const [originalPixelsFromAI, setOriginalPixelsFromAI] = useState<string[][]>([]);
   
   const [isDrawing, setIsDrawing] = useState(false);
   const [selectionStart, setSelectionStart] = useState<{x: number, y: number} | null>(null);
@@ -368,7 +368,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
         }
         
         // Update internal state
-        setOriginalPixels(newPixels.map(row => [...row]));
+        setOriginalPixelsFromAI(newPixels.map(row => [...row]));
         setPixels(newPixels);
         
         // Notify parent AFTER state is set (but this is now an imperative call, not during render)
@@ -613,10 +613,10 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
           // RECTANGLE: Fill exact selection (no brush size expansion)
           if (wasRightClickDrag) {
             // Restore exact rectangle from original
-            if (originalPixels.length > 0) {
+            if (originalPixelsFromAI.length > 0) {
               for (let y = minY; y <= maxY; y++) {
                 for (let x = minX; x <= maxX; x++) {
-                  const originalColor = originalPixels[y]?.[x];
+                  const originalColor = originalPixelsFromAI[y]?.[x];
                   if (originalColor !== undefined) {
                     newPixels[y][x] = originalColor;
                   }
@@ -636,10 +636,10 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
           const brushArea = applyBrushSize(minX, minY, brushSize);
           if (wasRightClickDrag) {
             // Restore with brush
-            if (originalPixels.length > 0) {
+            if (originalPixelsFromAI.length > 0) {
               for (let by = brushArea.minY; by <= brushArea.maxY; by++) {
                 for (let bx = brushArea.minX; bx <= brushArea.maxX; bx++) {
-                  const originalColor = originalPixels[by]?.[bx];
+                  const originalColor = originalPixelsFromAI[by]?.[bx];
                   if (originalColor !== undefined) {
                     newPixels[by][bx] = originalColor;
                   }
