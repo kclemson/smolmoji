@@ -34,7 +34,21 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      prompts_view: {
+        Row: {
+          date_created: string | null
+          prompt_text: string | null
+        }
+        Insert: {
+          date_created?: never
+          prompt_text?: string | null
+        }
+        Update: {
+          date_created?: never
+          prompt_text?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
