@@ -1367,6 +1367,16 @@ const Index = () => {
               </div>
             )}
         </div>
+
+        {/* Footer */}
+        <a 
+          href="https://kcloadletter.com" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-xs text-muted-foreground/50 hover:text-muted-foreground mt-8 transition-colors"
+        >
+          made by kcloadletter.com
+        </a>
       </div>
     </div>
   );
