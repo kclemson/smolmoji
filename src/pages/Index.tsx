@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { PixelCanvas, PixelCanvasRef } from "@/components/PixelCanvas";
 import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors, Wand2, Settings, Pencil, Move, Palette, Image } from "lucide-react";
+import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors, Wand2, Settings, Pencil, Move, Palette, Image, Trash2 } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -628,6 +628,47 @@ const Index = () => {
     }
   }, [backgroundRemovalTolerance, handlePixelsUpdated]);
 
+  const handleClear = useCallback(async () => {
+    logger.tool("clear canvas", {});
+    
+    // Animate pixel grid dissolve for visual feedback
+    await pixelCanvasRef.current?.animateDissolve();
+    
+    // Clear preview canvas
+    const preview32 = preview32Ref.current;
+    if (preview32) {
+      const ctx = preview32.getContext("2d");
+      if (ctx) {
+        ctx.clearRect(0, 0, 32, 32);
+      }
+    }
+    
+    // Reset all relevant state
+    setPrompt("");
+    setImageData(null);
+    setCustomColors(DEFAULT_CUSTOM_COLORS);
+    setSelectedColor("#000000");
+    setBackgroundColor("transparent");
+    setIsEyedropperActive(false);
+    setIsMagicWandActive(false);
+    setDrawingMode('pencil');
+    setIsSettingsOpen(false);
+    setSelectedPixels(new Set());
+    setHistoryStack([]);
+    setHistoryIndex(-1);
+    historyIndexRef.current = -1;
+    setErrorMessage(null);
+    
+    // Clear localStorage
+    localStorage.removeItem("emoji-pixels");
+    localStorage.removeItem("emoji-original-pixels");
+    localStorage.removeItem("emoji-prompt");
+    
+    // Reset refs
+    hasRestoredFromStorage.current = false;
+    lastKnownPixelsRef.current = null;
+  }, [setPrompt, setCustomColors, setSelectedColor, setBackgroundColor]);
+
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -917,6 +958,15 @@ const Index = () => {
                 >
                   <Download className="w-4 h-4" />
                   Download PNG
+                </Button>
+                <Button 
+                  onClick={handleClear} 
+                  size="sm"
+                  variant="outline"
+                  disabled={isVirginState}
+                  title="Clear canvas and start fresh"
+                >
+                  <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
               
