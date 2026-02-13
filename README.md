@@ -2,7 +2,7 @@
 
 Easily create and edit pixel art emojis or icons with AI
 
-<img src="public/smolmoji-overview.jpg" alt="smolmoji - pixel art emoji creator" width="75%" />
+![smolmoji - pixel art emoji creator](public/smolmoji-overview.jpg)
 
 **Live:** [smolmoji.com](https://smolmoji.com)
 
