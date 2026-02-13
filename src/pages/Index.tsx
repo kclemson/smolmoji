@@ -930,7 +930,7 @@ const Index = () => {
           {/* Pixel Editor */}
           <div className="space-y-2 sm:space-y-3">
               {/* 32x32 Preview + Download Button */}
-              <div className="flex items-center justify-center gap-4">
+              <div className="flex items-center justify-center gap-2">
                 <canvas
                   ref={preview32Ref}
                   width={32}
