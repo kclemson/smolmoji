@@ -1,15 +1,20 @@
 
 
-## Replace README showcase image
+## Fix README image to use markdown syntax
 
-Replace the current `og-image.png` reference in the README with the uploaded screenshot of the app.
+The TinyToolTown bot requires standard markdown image syntax `![Description](image-url)` to detect the showcase image. The current HTML `<img>` tag won't be recognized.
 
-### Steps
+### Change in `README.md`
 
-1. Copy `user-uploads://smolmoji-overview.jpg` to `public/smolmoji-overview.jpg`
-2. Update `README.md` to reference the new image instead of `og-image.png`, using an HTML `<img>` tag at 75% width to keep it from being too large:
-
-```markdown
+Replace:
+```html
 <img src="public/smolmoji-overview.jpg" alt="smolmoji - pixel art emoji creator" width="75%" />
 ```
+
+With:
+```markdown
+![smolmoji - pixel art emoji creator](public/smolmoji-overview.jpg)
+```
+
+This loses the 75% width constraint, but the bot needs the standard markdown syntax to pick up the image. The image size in the README will be full-width, which should be fine for the bot's purposes.
 
