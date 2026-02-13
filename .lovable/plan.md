@@ -1,30 +1,70 @@
 
 
-## Clean Up Remaining Template Traces
+## Code Cleanup, Deduplication, and Test Automation
 
-### 1. Delete `src/App.css` (dead code)
-This file contains leftover Vite starter template styles (`.logo`, `.logo-spin`, `.read-the-docs`, `.card`) that are never imported or used anywhere in the app. It can be safely deleted.
+This plan implements the previously approved cleanup in **separate, well-named commits** so the Git history looks intentional and professional.
 
-### 2. Update OG/Twitter image URLs in `index.html`
-The `og:image` and `twitter:image` meta tags still point to `https://smolmoji.lovable.app/og-image.png`. These should be updated to `https://smolmoji.com/og-image.png` to match your custom domain.
+---
 
-### 3. Remove boilerplate comment in `App.tsx`
-Line 19 has the template comment `{/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}`. This is a scaffold instruction that doesn't belong in a finished project -- remove it.
+### Step 1: Extract shared color utilities into `src/lib/color.ts`
+**Commit: "refactor: extract color distance utilities into shared module"**
 
-### 4. Add `robots.txt` sitemap reference
-The `robots.txt` is fine but could include a `Sitemap: https://smolmoji.com/sitemap.xml` line if you ever add one. Optional/low priority.
+Create `src/lib/color.ts` with `hexToRgb`, `colorDistance`, and `colorsAreSimilar` -- currently duplicated between `Index.tsx` and `PixelCanvas.tsx`.
 
-### 5. Things to leave alone
-- **`lovable-tagger`** in `vite.config.ts` / `package.json` -- this is a dev dependency only (not in production builds), so it won't be visible to anyone. Removing it could break the dev workflow.
-- **`LOVABLE_API_KEY`** in the edge function -- this is the backend AI gateway and is required for functionality.
-- **`components.json`** -- standard shadcn/ui config, not Lovable-specific.
+- Update `Index.tsx` to import from `@/lib/color` and remove the local `hexToRgb`, `colorDistance`, `colorsAreSimilar` functions (lines 181-231)
+- Update `PixelCanvas.tsx` to import `colorDistance` from `@/lib/color` and remove the local copy (lines 66-76)
 
-### Summary of changes
+### Step 2: Remove dead components
+**Commit: "chore: remove unused NavLink and ColorPicker components"**
 
-| File | Change |
+- Delete `src/components/NavLink.tsx` (never imported anywhere)
+- Delete `src/components/ColorPicker.tsx` (only `DEFAULT_CUSTOM_COLORS` is used)
+- In `Index.tsx`, replace the import with a local `const DEFAULT_CUSTOM_COLORS: string[] = []`
+- Remove unused `Separator` import from `Index.tsx` (line 9)
+
+### Step 3: Rename `isVirginState` to `hasNoContent`
+**Commit: "refactor: rename isVirginState to hasNoContent for clarity"**
+
+- `Index.tsx`: rename variable, comment, and all ~25 usages
+- `PixelCanvas.tsx`: rename prop in interface (line 29), destructured param (line 41), and any internal references
+
+### Step 4: Add `.env` to `.gitignore`
+**Commit: "chore: add .env to .gitignore"**
+
+Append `.env` to `.gitignore`.
+
+### Step 5: Set up test infrastructure and write tests
+**Commit: "test: add vitest setup and unit/component tests"**
+
+- Install dev dependencies: `vitest`, `@testing-library/react`, `@testing-library/jest-dom`, `@testing-library/user-event`, `jsdom`
+- Create `vitest.config.ts` with jsdom environment and path aliases
+- Create `src/test/setup.ts` with `@testing-library/jest-dom` import
+- Create tests:
+  - `src/lib/color.test.ts` -- unit tests for `hexToRgb`, `colorDistance`, `colorsAreSimilar`
+  - `src/lib/logger.test.ts` -- verify logger methods don't throw
+  - `src/pages/Index.test.tsx` -- smoke test: renders key UI elements (header, textarea, generate button)
+  - `src/components/PixelCanvas.test.tsx` -- smoke test: renders canvas element
+
+---
+
+### Summary
+
+| File | Action |
 |------|--------|
-| `src/App.css` | Delete entirely (unused Vite template styles) |
-| `index.html` | Update og:image and twitter:image URLs to `smolmoji.com` |
-| `src/App.tsx` | Remove boilerplate comment on line 19 |
+| `src/lib/color.ts` | Create (shared color utilities) |
+| `src/lib/color.test.ts` | Create (unit tests) |
+| `src/lib/logger.test.ts` | Create (unit tests) |
+| `src/pages/Index.tsx` | Edit (remove duplication, dead imports, rename variable) |
+| `src/pages/Index.test.tsx` | Create (smoke test) |
+| `src/components/PixelCanvas.tsx` | Edit (import from color.ts, rename prop) |
+| `src/components/PixelCanvas.test.tsx` | Create (smoke test) |
+| `src/components/NavLink.tsx` | Delete |
+| `src/components/ColorPicker.tsx` | Delete |
+| `.gitignore` | Append `.env` |
+| `vitest.config.ts` | Create |
+| `src/test/setup.ts` | Create |
 
-No functional changes -- purely cosmetic cleanup.
+**Note on commits**: In Lovable, all changes in a single response go into one commit. To get separate, clean commit messages in Git, I will implement these changes across multiple responses. Alternatively, I can do all changes at once (single commit) and you can use interactive rebase (`git rebase -i`) to split them later. Which approach would you prefer, or should I just proceed with all changes in one well-described commit?
+
+No functional changes -- purely cleanup and test infrastructure.
+
