@@ -1,13 +1,38 @@
 
 
-## Make the design direction textarea one row taller
+## Export and Import Pixel Art Data
 
-Currently the textarea at line 857 of `src/pages/Index.tsx` has `rows={2}`. Change it to `rows={3}` so there's more room for longer prompts and the generate button is less likely to overlap the text.
+Add the ability to export the current pixel grid as a small JSON file and re-import it later, so users can save multiple versions and come back to them.
 
-### Change
+### How it works
 
-**`src/pages/Index.tsx`** (line 857): Change `rows={2}` to `rows={3}`
+- **Export**: A new "Export" button next to the existing Download PNG / Clear buttons. Clicking it saves a `.smolmoji` JSON file containing the 32x32 pixel grid data and the prompt text.
+- **Import**: A new "Import" button that opens a hidden file input. When the user selects a `.smolmoji` file, it loads the pixel data back onto the canvas and restores the prompt.
 
-Also update the base `min-h` in `src/components/ui/textarea.tsx` from `min-h-[60px]` back to a value that accommodates 3 rows of `text-xs` content (roughly `min-h-[64px]`), or simply leave it as-is since the `rows={3}` attribute will naturally expand the textarea beyond the minimum.
+The `.smolmoji` file is just JSON with a structure like:
+```json
+{
+  "version": 1,
+  "gridSize": 32,
+  "prompt": "happy cat",
+  "pixels": [["transparent", "#ff0000", ...], ...]
+}
+```
 
-Single-line change, no other files affected.
+### Technical details
+
+**`src/pages/Index.tsx`**:
+
+1. Add two new handler functions:
+   - `handleExportProject` -- calls `pixelCanvasRef.current.getPixels()`, bundles it with the prompt into a JSON object, and triggers a file download as `smolmoji-[slug].smolmoji`
+   - `handleImportProject` -- reads a `.smolmoji` file via a hidden `<input type="file">`, parses the JSON, calls `pixelCanvasRef.current.setPixels()` to load the pixels, restores the prompt, and pushes to history
+
+2. Add a hidden `<input type="file" accept=".smolmoji">` ref
+
+3. Add two buttons in the button row (next to Download PNG and Clear):
+   - **Export** button with an upload/save icon
+   - **Import** button with a folder-open icon
+
+4. Import `Upload, FolderOpen` (or similar) from `lucide-react`
+
+No new files or components needed -- this is self-contained in `Index.tsx` with ~40 lines of new code.
