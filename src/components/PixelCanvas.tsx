@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useImperativeHandle, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import { logger } from "@/lib/logger";
+import { colorDistance } from "@/lib/color";
 
 export interface PixelCanvasRef {
   getPixels: () => string[][];
@@ -26,7 +27,7 @@ interface PixelCanvasProps {
   isMagicWandActive?: boolean;
   onMagicWandClick?: (x: number, y: number) => void;
   selectedPixels?: Set<string>;
-  isVirginState?: boolean;
+  hasNoContent?: boolean;
   brushSize?: number;
 }
 
@@ -38,7 +39,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
   onColorPick,
   onPixelsChanged,
   backgroundColor = "transparent",
-  isVirginState = false,
+  hasNoContent = false,
   onReady,
   isMagicWandActive = false,
   onMagicWandClick,
@@ -855,7 +856,7 @@ export const PixelCanvas = forwardRef<PixelCanvasRef, PixelCanvasProps>(({
       onTouchCancel={handleTouchEnd}
     >
       {/* Helper text positioned right above canvas within buffer zone */}
-      {!isVirginState && (
+      {!hasNoContent && (
         <p className="text-xs text-muted-foreground/60 italic text-center mb-1 select-none">
           click and drag to create a rectangle | right click to revert
         </p>
