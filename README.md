@@ -1,6 +1,6 @@
 # smolmoji
 
-Create pixel art emojis with AI ✨
+Easily create and edit pixel art emojis or icons with AI
 
 **Live:** [smolmoji.com](https://smolmoji.com)
 
