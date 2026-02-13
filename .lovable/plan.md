@@ -1,20 +1,13 @@
 
 
-## Fix README image to use markdown syntax
+## Make the design direction textarea one row taller
 
-The TinyToolTown bot requires standard markdown image syntax `![Description](image-url)` to detect the showcase image. The current HTML `<img>` tag won't be recognized.
+Currently the textarea at line 857 of `src/pages/Index.tsx` has `rows={2}`. Change it to `rows={3}` so there's more room for longer prompts and the generate button is less likely to overlap the text.
 
-### Change in `README.md`
+### Change
 
-Replace:
-```html
-<img src="public/smolmoji-overview.jpg" alt="smolmoji - pixel art emoji creator" width="75%" />
-```
+**`src/pages/Index.tsx`** (line 857): Change `rows={2}` to `rows={3}`
 
-With:
-```markdown
-![smolmoji - pixel art emoji creator](public/smolmoji-overview.jpg)
-```
+Also update the base `min-h` in `src/components/ui/textarea.tsx` from `min-h-[60px]` back to a value that accommodates 3 rows of `text-xs` content (roughly `min-h-[64px]`), or simply leave it as-is since the `rows={3}` attribute will naturally expand the textarea beyond the minimum.
 
-This loses the 75% width constraint, but the bot needs the standard markdown syntax to pick up the image. The image size in the README will be full-width, which should be fine for the bot's purposes.
-
+Single-line change, no other files affected.
