@@ -2,6 +2,8 @@
 
 Easily create and edit pixel art emojis or icons with AI
 
+![smolmoji - pixel art emoji creator](public/og-image.png)
+
 **Live:** [smolmoji.com](https://smolmoji.com)
 
 ## Tech Stack
