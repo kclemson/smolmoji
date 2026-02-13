@@ -11,7 +11,7 @@ import { hexToRgb, colorDistance, colorsAreSimilar } from "@/lib/color";
 
 const DEFAULT_CUSTOM_COLORS: string[] = [];
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors, Wand2, Settings, Pencil, Move, Palette, Image, Trash2 } from "lucide-react";
+import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors, Wand2, Settings, Pencil, Move, Palette, Image, Trash2, Upload, FolderOpen } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -51,6 +51,7 @@ const Index = () => {
   const pixelCanvasRef = useRef<PixelCanvasRef>(null);
   const colorPaletteInputRef = useRef<HTMLInputElement>(null);
   const dpadContainerRef = useRef<HTMLDivElement>(null);
+  const importFileInputRef = useRef<HTMLInputElement>(null);
   
   // Undo/Redo state (in-memory only, not persisted)
   const [historyStack, setHistoryStack] = useState<string[][][]>([]);
@@ -824,6 +825,51 @@ const Index = () => {
     });
   };
 
+  const handleExportProject = () => {
+    const pixels = pixelCanvasRef.current?.getPixels();
+    if (!pixels || pixels.length === 0) return;
+
+    const projectData = {
+      version: 1,
+      gridSize: 32,
+      prompt: prompt || "",
+      pixels,
+    };
+
+    const json = JSON.stringify(projectData);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = generateFilename(prompt).replace(/\.png$/, ".smolmoji");
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportProject = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target?.result as string);
+        if (data.version !== 1 || !Array.isArray(data.pixels)) {
+          logger.error("Invalid .smolmoji file format");
+          return;
+        }
+        pixelCanvasRef.current?.setPixels(data.pixels);
+        if (data.prompt) setPrompt(data.prompt);
+        handlePixelsUpdated(data.pixels, false);
+      } catch (err) {
+        logger.error("Failed to parse .smolmoji file", err);
+      }
+    };
+    reader.readAsText(file);
+    // Reset input so the same file can be re-imported
+    e.target.value = "";
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center p-4">
       <div 
@@ -918,6 +964,30 @@ const Index = () => {
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
+                <Button
+                  onClick={handleExportProject}
+                  size="sm"
+                  variant="outline"
+                  disabled={hasNoContent}
+                  title="Export project as .smolmoji file"
+                >
+                  <Upload className="w-4 h-4" />
+                </Button>
+                <Button
+                  onClick={() => importFileInputRef.current?.click()}
+                  size="sm"
+                  variant="outline"
+                  title="Import a .smolmoji file"
+                >
+                  <FolderOpen className="w-4 h-4" />
+                </Button>
+                <input
+                  ref={importFileInputRef}
+                  type="file"
+                  accept=".smolmoji"
+                  onChange={handleImportProject}
+                  className="hidden"
+                />
               </div>
               
               {/* Main Canvas - Centered */}
