@@ -6,9 +6,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Separator } from "@/components/ui/separator";
 import { PixelCanvas, PixelCanvasRef } from "@/components/PixelCanvas";
-import { ColorPicker, DEFAULT_CUSTOM_COLORS } from "@/components/ColorPicker";
+import { hexToRgb, colorDistance, colorsAreSimilar } from "@/lib/color";
+
+const DEFAULT_CUSTOM_COLORS: string[] = [];
 import { supabase } from "@/integrations/supabase/client";
 import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors, Wand2, Settings, Pencil, Move, Palette, Image, Trash2 } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -59,8 +60,8 @@ const Index = () => {
   const MAX_HISTORY = 50;
   const hasRestoredFromStorage = useRef(false);
 
-  // Computed state: are we in "virgin" state (generating or no pixels)?
-  const isVirginState = isGenerating || !localStorage.getItem("emoji-pixels");
+  // Computed state: is the canvas empty (generating or no pixels)?
+  const hasNoContent = isGenerating || !localStorage.getItem("emoji-pixels");
 
   // Load persisted pixels when canvas is ready (ref callback pattern - no useEffect!)
   const handleCanvasReady = useCallback(() => {
@@ -178,57 +179,6 @@ const Index = () => {
     return `smolmoji-${slug}.png`;
   };
 
-  const hexToRgb = (color: string): { r: number; g: number; b: number } | null => {
-    // Handle rgba format: rgba(r,g,b,a)
-    const rgbaMatch = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)$/i.exec(color);
-    if (rgbaMatch) {
-      return {
-        r: parseInt(rgbaMatch[1]),
-        g: parseInt(rgbaMatch[2]),
-        b: parseInt(rgbaMatch[3])
-      };
-    }
-    
-    // Handle hex format: #rrggbb
-    const hexMatch = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
-    if (hexMatch) {
-      return {
-        r: parseInt(hexMatch[1], 16),
-        g: parseInt(hexMatch[2], 16),
-        b: parseInt(hexMatch[3], 16)
-      };
-    }
-    
-    return null;
-  };
-
-  const colorDistance = (color1: string, color2: string): number => {
-    const rgb1 = hexToRgb(color1);
-    const rgb2 = hexToRgb(color2);
-    
-    if (!rgb1 || !rgb2) return Infinity;
-    
-    // Euclidean distance in RGB space
-    return Math.sqrt(
-      Math.pow(rgb1.r - rgb2.r, 2) +
-      Math.pow(rgb1.g - rgb2.g, 2) +
-      Math.pow(rgb1.b - rgb2.b, 2)
-    );
-  };
-
-  const colorsAreSimilar = (
-    color1: string, 
-    color2: string, 
-    threshold: number = 20
-  ): boolean => {
-    // For selection purposes, always treat transparent as white
-    // This ensures consistent magic wand behavior
-    const normalizedColor1 = color1 === 'transparent' ? '#ffffff' : color1;
-    const normalizedColor2 = color2 === 'transparent' ? '#ffffff' : color2;
-    
-    if (normalizedColor1 === normalizedColor2) return true;
-    return colorDistance(normalizedColor1, normalizedColor2) <= threshold;
-  };
 
   const extractColorsFromImage = useCallback((imageUrl: string): Promise<string[]> => {
     return new Promise((resolve) => {
@@ -788,7 +738,7 @@ const Index = () => {
       }
       
       // === TRANSFORM/EDIT (only when not in virgin state) ===
-      if (!isVirginState) {
+      if (!hasNoContent) {
         if (e.key === 'ArrowUp') {
           e.preventDefault();
           shiftPixels('up');
@@ -822,7 +772,7 @@ const Index = () => {
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo, selectedPixels, applyActionToSelection, isVirginState, customColors, selectedColor, isEyedropperActive, isMagicWandActive, shiftPixels, handleRemoveBackground]);
+  }, [undo, redo, selectedPixels, applyActionToSelection, hasNoContent, customColors, selectedColor, isEyedropperActive, isMagicWandActive, shiftPixels, handleRemoveBackground]);
 
   const handleDownload = () => {
     const pixels = pixelCanvasRef.current?.getPixels();
@@ -953,7 +903,7 @@ const Index = () => {
                   onClick={handleDownload} 
                   size="sm"
                   className="gap-2"
-                  disabled={isVirginState}
+                  disabled={hasNoContent}
                   variant="outline"
                 >
                   <Download className="w-4 h-4" />
@@ -963,7 +913,7 @@ const Index = () => {
                   onClick={handleClear} 
                   size="sm"
                   variant="outline"
-                  disabled={isVirginState}
+                  disabled={hasNoContent}
                   title="Clear canvas and start fresh"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -985,13 +935,13 @@ const Index = () => {
                   isMagicWandActive={isMagicWandActive}
                   onMagicWandClick={handleMagicWandClick}
                   selectedPixels={selectedPixels}
-                  isVirginState={isVirginState}
+                  hasNoContent={hasNoContent}
                   brushSize={brushSize}
                 />
               </div>
 
         {/* Row 1: Palette, Eyedropper, + 5 Color Slots - hidden in virgin state */}
-        {!isVirginState && (
+        {!hasNoContent && (
           <div className="w-[320px] mx-auto">
             <div className="grid grid-cols-7 gap-2 w-full">
               {/* Color Picker (Palette) */}
@@ -1076,7 +1026,7 @@ const Index = () => {
         )}
 
         {/* Row 2: Drawing Modes (Pencil, Eraser, Magic Wand) + Brush Size - hidden in virgin state */}
-        {!isVirginState && (
+        {!hasNoContent && (
           <div className="w-[320px] mx-auto flex items-center justify-between gap-2">
             {/* Drawing Mode Toggle Group */}
             <ToggleGroup 
@@ -1146,7 +1096,7 @@ const Index = () => {
         )}
             
         {/* Row 3: Edit Tools (Undo, Redo, Scissors, Autofit, Collapsible D-pad) - hidden in virgin state */}
-        {!isVirginState && (
+        {!hasNoContent && (
           <div className="w-[320px] mx-auto relative">
             <div className="flex justify-between items-center w-full">
               {/* Left Section: Undo/Redo */}
@@ -1155,7 +1105,7 @@ const Index = () => {
                   variant="outline"
                   size="sm"
                   onClick={undo}
-                  disabled={historyIndex <= 0 || isVirginState}
+                  disabled={historyIndex <= 0 || hasNoContent}
                   className="w-10 h-10 p-0"
                   title="Undo (Ctrl+Z)"
                 >
@@ -1166,7 +1116,7 @@ const Index = () => {
                   variant="outline"
                   size="sm"
                   onClick={redo}
-                  disabled={historyIndex >= historyStack.length - 1 || isVirginState}
+                  disabled={historyIndex >= historyStack.length - 1 || hasNoContent}
                   className="w-10 h-10 p-0"
                   title="Redo (Ctrl+Y)"
                 >
@@ -1180,7 +1130,7 @@ const Index = () => {
                   variant="outline"
                   size="sm"
                   onClick={handleRemoveBackground}
-                  disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                  disabled={!pixelCanvasRef.current?.getPixels().length || hasNoContent}
                   title="Remove background from edges"
                   className="w-10 h-10 p-0"
                 >
@@ -1191,7 +1141,7 @@ const Index = () => {
                   variant="outline"
                   size="sm"
                   onClick={autoFitEmoji}
-                  disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                  disabled={!pixelCanvasRef.current?.getPixels().length || hasNoContent}
                   title="Auto-fit (remove padding and maximize emoji)"
                   className="w-10 h-10 p-0"
                 >
@@ -1220,7 +1170,7 @@ const Index = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => shiftPixels('up')}
-                          disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                          disabled={!pixelCanvasRef.current?.getPixels().length || hasNoContent}
                           className="w-6 h-6 p-0"
                         >
                           <ArrowUp className="h-3 w-3" />
@@ -1232,7 +1182,7 @@ const Index = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => shiftPixels('left')}
-                          disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                          disabled={!pixelCanvasRef.current?.getPixels().length || hasNoContent}
                           className="w-6 h-6 p-0"
                         >
                           <ArrowLeft className="h-3 w-3" />
@@ -1244,7 +1194,7 @@ const Index = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => shiftPixels('down')}
-                          disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                          disabled={!pixelCanvasRef.current?.getPixels().length || hasNoContent}
                           className="w-6 h-6 p-0"
                         >
                           <ArrowDown className="h-3 w-3" />
@@ -1256,7 +1206,7 @@ const Index = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => shiftPixels('right')}
-                          disabled={!pixelCanvasRef.current?.getPixels().length || isVirginState}
+                          disabled={!pixelCanvasRef.current?.getPixels().length || hasNoContent}
                           className="w-6 h-6 p-0"
                         >
                           <ArrowRight className="h-3 w-3" />
@@ -1271,7 +1221,7 @@ const Index = () => {
         )}
 
             {/* Settings Section - inline collapsible at bottom */}
-            {!isVirginState && (
+            {!hasNoContent && (
               <div className="flex flex-col items-center gap-2 mt-4">
                 {/* Settings Toggle Button */}
                 <Button
