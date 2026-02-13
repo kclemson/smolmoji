@@ -11,7 +11,7 @@ import { hexToRgb, colorDistance, colorsAreSimilar } from "@/lib/color";
 
 const DEFAULT_CUSTOM_COLORS: string[] = [];
 import { supabase } from "@/integrations/supabase/client";
-import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors, Wand2, Settings, Pencil, Move, Palette, Image, Trash2, Upload, FolderOpen } from "lucide-react";
+import { Download, Sparkles, Loader2, Undo2, Redo2, Pipette, Eraser, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Maximize2, Scissors, Wand2, Settings, Pencil, Move, Palette, Image, Trash2, FileUp, FileDown } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -971,7 +971,7 @@ const Index = () => {
                   disabled={hasNoContent}
                   title="Export project as .smolmoji file"
                 >
-                  <Upload className="w-4 h-4" />
+                  <FileUp className="w-4 h-4" />
                 </Button>
                 <Button
                   onClick={() => importFileInputRef.current?.click()}
@@ -979,7 +979,7 @@ const Index = () => {
                   variant="outline"
                   title="Import a .smolmoji file"
                 >
-                  <FolderOpen className="w-4 h-4" />
+                  <FileDown className="w-4 h-4" />
                 </Button>
                 <input
                   ref={importFileInputRef}
