@@ -854,7 +854,7 @@ const Index = () => {
                     handleGenerate();
                   }
                 }}
-                rows={2}
+                rows={3}
                 className="w-full text-xs resize-none pr-2"
                 spellCheck={false}
               />
