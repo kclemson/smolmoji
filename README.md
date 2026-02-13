@@ -4,6 +4,8 @@ Easily create and edit pixel art emojis or icons with AI
 
 ![smolmoji - pixel art emoji creator](public/smolmoji-overview.jpg)
 
+![smolmoji example](public/smolmoji-example.gif)
+
 **Live:** [smolmoji.com](https://smolmoji.com)
 
 ## Tech Stack
