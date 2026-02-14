@@ -18,6 +18,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { logger } from "@/lib/logger";
+import { DEFAULT_PIXELS } from "@/data/defaultPixels";
 
 import { Slider } from "@/components/ui/slider";
 
@@ -91,6 +92,17 @@ const Index = () => {
           historyIndexRef.current = 0;
           lastKnownPixelsRef.current = structuredClone(pixels);
           logger.history("initialized fresh history from loaded pixels");
+        } else {
+          // First visit: load default pixel art
+          const pixels = structuredClone(DEFAULT_PIXELS);
+          pixelCanvasRef.current.setPixels(pixels);
+          renderPreview(pixels);
+          const initialHistory = [structuredClone(pixels)];
+          setHistoryStack(initialHistory);
+          setHistoryIndex(0);
+          historyIndexRef.current = 0;
+          lastKnownPixelsRef.current = structuredClone(pixels);
+          logger.state("loaded default pixel art for first visit");
         }
         hasRestoredFromStorage.current = true;
       } catch (error) {
