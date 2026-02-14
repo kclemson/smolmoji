@@ -92,8 +92,8 @@ const Index = () => {
           historyIndexRef.current = 0;
           lastKnownPixelsRef.current = structuredClone(pixels);
           logger.history("initialized fresh history from loaded pixels");
-        } else {
-          // First visit: load default pixel art
+        } else if (!localStorage.getItem("smolmoji-has-visited")) {
+          // First-ever visit: load default pixel art
           const pixels = structuredClone(DEFAULT_PIXELS);
           pixelCanvasRef.current.setPixels(pixels);
           renderPreview(pixels);
@@ -104,6 +104,7 @@ const Index = () => {
           lastKnownPixelsRef.current = structuredClone(pixels);
           logger.state("loaded default pixel art for first visit");
         }
+        localStorage.setItem("smolmoji-has-visited", "true");
         hasRestoredFromStorage.current = true;
       } catch (error) {
         logger.error("error loading pixels from localStorage", error);
