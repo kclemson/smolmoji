@@ -1,28 +1,25 @@
 
 
-## Show Default Pixels Only Once Per Browser
+## Fix Button Enable Delay After Default Pixels Load
 
-Currently, the default pixel art loads whenever there's no `emoji-pixels` in localStorage -- including after the user deliberately clears the canvas. The fix is to track whether the user has ever visited before using a separate localStorage flag.
+### Problem
 
-### Change
+When default pixels load on first visit, the download/delete buttons stay disabled for 1-2 seconds. This happens because `hasNoContent` is computed as:
 
-**`src/pages/Index.tsx`** -- Update the `handleCanvasReady` else branch (around line 95):
-
-- Instead of just checking `!savedPixels`, also check for a new localStorage key like `smolmoji-has-visited`.
-- Only load `DEFAULT_PIXELS` if both conditions are true: no saved pixels AND no `has-visited` flag.
-- After loading default pixels (or after any first canvas ready), set `localStorage.setItem("smolmoji-has-visited", "true")`.
-
-```text
-} else if (!localStorage.getItem("smolmoji-has-visited")) {
-  // First-ever visit: load default pixel art
-  const pixels = structuredClone(DEFAULT_PIXELS);
-  pixelCanvasRef.current.setPixels(pixels);
-  renderPreview(pixels);
-  ...
-  localStorage.setItem("smolmoji-has-visited", "true");
-}
+```
+const hasNoContent = isGenerating || !localStorage.getItem("emoji-pixels");
 ```
 
-- Also set the `smolmoji-has-visited` flag in `handleCanvasReady`'s `if (savedPixels)` branch (or unconditionally after both branches) so that any user who already has saved data is also marked as "visited."
+The default pixels are rendered on the canvas but `emoji-pixels` isn't written to localStorage until the debounced save fires after a delay. During that gap, `hasNoContent` is `true` and buttons remain disabled.
 
-No other files need changes. The `handleClear` function already removes `emoji-pixels` without needing modification -- after clearing + refresh, the `has-visited` flag prevents the default art from reappearing.
+### Solution
+
+**`src/pages/Index.tsx`** -- Replace the direct `localStorage.getItem` check with a React state variable that gets set immediately when pixels are loaded:
+
+1. Add a state variable like `const [hasPixelData, setHasPixelData] = useState(false)`.
+2. Change `hasNoContent` to: `const hasNoContent = isGenerating || !hasPixelData;`
+3. Set `setHasPixelData(true)` in both branches of `handleCanvasReady` (the saved-pixels branch and the default-pixels branch), and also wherever pixels are generated or loaded.
+4. Set `setHasPixelData(false)` in `handleClear`.
+
+This way, as soon as pixels are loaded onto the canvas (whether from storage or defaults), the buttons become enabled immediately -- no waiting for the debounced localStorage write.
+
