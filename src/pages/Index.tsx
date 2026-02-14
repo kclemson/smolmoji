@@ -61,9 +61,10 @@ const Index = () => {
   const lastKnownPixelsRef = useRef<string[][] | null>(null);
   const MAX_HISTORY = 50;
   const hasRestoredFromStorage = useRef(false);
+  const [hasPixelData, setHasPixelData] = useState(false);
 
   // Computed state: is the canvas empty (generating or no pixels)?
-  const hasNoContent = isGenerating || !localStorage.getItem("emoji-pixels");
+  const hasNoContent = isGenerating || !hasPixelData;
 
   // Load persisted pixels when canvas is ready (ref callback pattern - no useEffect!)
   const handleCanvasReady = useCallback(() => {
@@ -91,6 +92,7 @@ const Index = () => {
           setHistoryIndex(0);
           historyIndexRef.current = 0;
           lastKnownPixelsRef.current = structuredClone(pixels);
+          setHasPixelData(true);
           logger.history("initialized fresh history from loaded pixels");
         } else if (!localStorage.getItem("smolmoji-has-visited")) {
           // First-ever visit: load default pixel art
@@ -102,6 +104,7 @@ const Index = () => {
           setHistoryIndex(0);
           historyIndexRef.current = 0;
           lastKnownPixelsRef.current = structuredClone(pixels);
+          setHasPixelData(true);
           logger.state("loaded default pixel art for first visit");
         }
         localStorage.setItem("smolmoji-has-visited", "true");
@@ -468,7 +471,7 @@ const Index = () => {
     
     // Update preview (single source of truth)
     renderPreview(newPixels);
-    
+    setHasPixelData(true);
     // Save pixels to localStorage synchronously (no useEffect!)
     try {
       localStorage.setItem("emoji-pixels", JSON.stringify(newPixels));
@@ -622,6 +625,7 @@ const Index = () => {
     setHistoryIndex(-1);
     historyIndexRef.current = -1;
     setErrorMessage(null);
+    setHasPixelData(false);
     
     // Clear localStorage
     localStorage.removeItem("emoji-pixels");
