@@ -1,36 +1,12 @@
 
-## Load Default Pixel Art on First Visit
 
-When the app loads with no saved data, show the smolmoji emoji character in the grid instead of an empty canvas. The prompt input stays empty so users see the placeholder/ghost text.
+## Fix Default Pixels to Use the Correct Uploaded Data
 
-### Changes
+The `src/data/defaultPixels.ts` file currently contains the blue mascot pixel data, but should use the yellow emoji character from the uploaded `smolmoji-smolmoji.smolmoji` file.
 
-**1. Add default pixel data as a constant (`src/data/defaultPixels.ts` -- new file)**
+### Change
 
-Extract the pixel array from the uploaded `.smolmoji` file into a typed constant. This keeps the large data out of the main component.
+**`src/data/defaultPixels.ts`** -- Replace the entire pixel array with the data from the uploaded `.smolmoji` file. The uploaded file uses `rgba()` color format (e.g., `rgba(251,204,41,1)`) instead of hex codes, and depicts a yellow/gold emoji with black eyes and white highlights.
 
-**2. Update `src/pages/Index.tsx` -- `handleCanvasReady`**
+No other files need to change -- the `Index.tsx` integration is already correct.
 
-In the existing `handleCanvasReady` callback (around line 68-101), after the check for `savedPixels` in localStorage, add an `else` branch that loads the default pixels when there's nothing saved:
-
-```text
-if (savedPixels) {
-  // ... existing restore logic ...
-} else {
-  // First visit: load default pixel art
-  const pixels = structuredClone(DEFAULT_PIXELS);
-  pixelCanvasRef.current.setPixels(pixels);
-  renderPreview(pixels);
-  const initialHistory = [structuredClone(pixels)];
-  setHistoryStack(initialHistory);
-  setHistoryIndex(0);
-  historyIndexRef.current = 0;
-  lastKnownPixelsRef.current = structuredClone(pixels);
-}
-```
-
-This ensures the cute smolmoji character appears on the grid immediately, while the prompt input remains empty (showing the ghost/placeholder text). The default pixels are also saved to history so undo/redo works from the start.
-
-**3. No change to prompt state**
-
-The `prompt` localStorage key (`emoji-prompt`) defaults to `""`, so the placeholder text remains visible -- no changes needed here.
