@@ -1,25 +1,10 @@
+## Switch emoji generation to the newer image model
 
+Today the app uses **Gemini 2.5 Flash Image** ("Nano Banana"), the original fast image model. The newer **Gemini 3.1 Flash Image** ("Nano Banana 2") is about as fast and cheap, but follows instructions better. That matters a lot here: the prompt asks for no background, 32x32 framing, and few colors, which the older model sometimes ignores.
 
-## Fix Button Enable Delay After Default Pixels Load
+The premium option, **Gemini 3 Pro Image**, gives the best quality but is slower and costs more per emoji. Since the output gets squeezed down to 32x32 pixels anyway, that extra detail mostly gets thrown away.
 
-### Problem
-
-When default pixels load on first visit, the download/delete buttons stay disabled for 1-2 seconds. This happens because `hasNoContent` is computed as:
-
-```
-const hasNoContent = isGenerating || !localStorage.getItem("emoji-pixels");
-```
-
-The default pixels are rendered on the canvas but `emoji-pixels` isn't written to localStorage until the debounced save fires after a delay. During that gap, `hasNoContent` is `true` and buttons remain disabled.
-
-### Solution
-
-**`src/pages/Index.tsx`** -- Replace the direct `localStorage.getItem` check with a React state variable that gets set immediately when pixels are loaded:
-
-1. Add a state variable like `const [hasPixelData, setHasPixelData] = useState(false)`.
-2. Change `hasNoContent` to: `const hasNoContent = isGenerating || !hasPixelData;`
-3. Set `setHasPixelData(true)` in both branches of `handleCanvasReady` (the saved-pixels branch and the default-pixels branch), and also wherever pixels are generated or loaded.
-4. Set `setHasPixelData(false)` in `handleClear`.
-
-This way, as soon as pixels are loaded onto the canvas (whether from storage or defaults), the buttons become enabled immediately -- no waiting for the debounced localStorage write.
-
+### Steps
+1. In the emoji generation function, change the model from `google/gemini-2.5-flash-image` to `google/gemini-3.1-flash-image-preview`.
+2. Generate a few test emojis (e.g. "cat", "fire", "pizza") and check that they come back without backgrounds and fill the grid.
+3. If the results look worse, switch back to the old model. It's a one-line change.
