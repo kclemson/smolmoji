@@ -5,12 +5,13 @@ Today the app uses **Gemini 2.5 Flash Image** ("Nano Banana"), the original fast
 The premium option, **Gemini 3 Pro Image**, gives the best quality but is slower and costs more per emoji. Since the output gets squeezed down to 32x32 pixels anyway, that extra detail mostly gets thrown away.
 
 ### What about an OpenAI model with your own key?
-I don't know of an OpenAI image model called "Luna." OpenAI's image models are the "GPT Image" family. We could use one with your own key, but there are downsides:
-- You'd get a separate OpenAI bill on top of Lovable.
-- We'd have to write a second connection to OpenAI instead of using the one the app already has.
-- GPT Image tends to be slower, and it's no better at strict, flat pixel-art output.
+GPT-6 Luna is OpenAI's cheap, fast model, but it can only produce text, not images. It can't draw emojis, so it won't work here. OpenAI's image models are GPT-Image-2.6 Flare (fast) and Sunburst (higher detail).
 
-My recommendation is to try Nano Banana 2 first, since it needs no new key. If its results disappoint, we can test GPT Image next.
+Using Flare with your own key would mean:
+- a separate OpenAI bill on top of Lovable;
+- a second connection to OpenAI, alongside the one the app already uses.
+
+My recommendation is to try Nano Banana 2 first, since it needs no new key. If its results disappoint, we can test GPT-Image Flare next.
 
 ### Steps
 1. In the emoji generation function, change the model from `google/gemini-2.5-flash-image` to `google/gemini-3.1-flash-image-preview`.
