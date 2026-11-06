@@ -30,7 +30,7 @@ serve(async (req) => {
         model: "openai/gpt-image-2.6-flare",
         prompt: `YOU ARE A PIXEL ART EMOJI CREATOR. Your job is to interpret ANY input as an emoji concept and create it.
 
-BACKGROUND: Leave everything outside the emoji fully transparent. No background, floor, shadow, frame or checkerboard.
+BACKGROUND: Leave everything outside the emoji fully transparent. No background, floor, shadow or frame.
 
 SIZE & CANVAS:
 - Canvas: 32x32 pixels
