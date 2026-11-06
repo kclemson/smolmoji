@@ -20,30 +20,17 @@ serve(async (req) => {
 
     console.log("Generating emoji with prompt:", prompt);
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/images/generations", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
-        messages: [
-          {
-            role: "user",
-            content: `YOU ARE A PIXEL ART EMOJI CREATOR. Your job is to interpret ANY input as an emoji concept and create it.
+        model: "openai/gpt-image-2.6-flare",
+        prompt: `YOU ARE A PIXEL ART EMOJI CREATOR. Your job is to interpret ANY input as an emoji concept and create it.
 
-CRITICAL RULE: Do not draw anything that a human being would see as a "background".
-
-If a person looked at your drawing and said "that has a background" - you failed.
-Only draw the emoji object itself. The rest should be nothing - not gray, not white, 
-not a pattern, not anything. Just emptiness.
-
-WHAT THIS MEANS:
-- Drawing a cat? Draw ONLY the cat pixels. Everything else = nothing.
-- Drawing a heart? Draw ONLY the heart pixels. Everything else = nothing.
-- Any gray checkerboard, white space, or texture outside the object = WRONG
-- Think: you're cutting out a sticker - there is no paper, no surface, just the sticker
+BACKGROUND: Leave everything outside the emoji fully transparent. No background, floor, shadow or frame.
 
 SIZE & CANVAS:
 - Canvas: 32x32 pixels
@@ -79,44 +66,37 @@ EXAMPLES:
 - Heart: solid shape with highlight (2-3 colors)
 
 Create a pixel art emoji based on: ${prompt}`,
-          },
-        ],
-        modalities: ["image", "text"],
+        size: "1024x1024",
+        background: "transparent",
+        output_format: "png",
+        n: 1,
       }),
     });
 
     if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Payment required. Please add credits to continue." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
-      throw new Error("Failed to generate image");
+      let message = "Failed to generate image";
+      if (response.status === 429) message = "Rate limit exceeded. Please try again later.";
+      else if (response.status === 402) message = "Payment required. Please add credits to continue.";
+      else if (response.status === 403) {
+        try { message = JSON.parse(errorText)?.error?.message || JSON.parse(errorText)?.message || "Request denied."; } catch { message = "Request denied."; }
+      } else if (response.status === 400) message = "Content blocked: The AI couldn't generate this image. Try a different prompt.";
+      if ([429, 402, 403, 400].includes(response.status)) {
+        return new Response(JSON.stringify({ error: message }), {
+          status: response.status,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      throw new Error(message);
     }
 
     const data = await response.json();
-    console.log("AI Response:", JSON.stringify(data, null, 2));
-    
-    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    const textContent = data.choices?.[0]?.message?.content;
-
-    if (!imageUrl) {
-      // Check if there's a text response explaining why image wasn't generated
-      if (textContent) {
-        console.error("AI refused to generate image:", textContent);
-        throw new Error("Content blocked: The AI couldn't generate this image. Try a different prompt.");
-      }
-      throw new Error("No image generated");
+    const b64 = data.data?.[0]?.b64_json;
+    if (!b64) {
+      throw new Error("Content blocked: The AI couldn't generate this image. Try a different prompt.");
     }
+    const imageUrl = `data:image/png;base64,${b64}`;
 
     console.log("Successfully generated emoji");
     return new Response(
